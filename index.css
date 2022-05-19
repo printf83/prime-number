@@ -1,11 +1,71 @@
-.d-flex div{
+body{
+    font-family: system-ui,
+                -apple-system,
+                "Segoe UI",
+                Roboto,
+                "Helvetica Neue",
+                Arial,
+                "Noto Sans",
+                "Liberation Sans",
+                sans-serif,
+                "Apple Color Emoji",
+                "Segoe UI Emoji",
+                "Segoe UI Symbol",
+                "Noto Color Emoji";
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+        
+}
+#root{
+    padding:1rem;
+    margin:3rem;
     border:1px solid;
-    width: 3rem;
-    margin:0.2rem;
+    border-radius: 5px;
+    background-color: #fafafa;
     text-align: center;
-    color:#d1d1d1
 }
 
-.d-flex .prime{
+input{
+    padding:0.5rem 1rem;
+    border:1px solid gray;
+    border-radius: 5px;
+    width: 11rem;
+}
+button{
+    margin:0.5rem 0;
+    padding:0.5rem 1rem;
+    border:1px solid gray;
+    border-radius: 5px;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color:#fff;
+    min-width: 14rem;
+}
+
+.d-flex{
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.d-flex div,span{
+    border:1px solid;
+    min-width: 3rem;
+    margin:0.2rem;
+    text-align: center;
+    border-radius: 5px;
+    background-color: #fff;
+    
+}
+
+.d-flex div {
+    color: #d1d1d1;
+}
+
+.d-flex span{
     color:red;
 }
