@@ -1,0 +1,11 @@
+.d-flex div{
+    border:1px solid;
+    width: 3rem;
+    margin:0.2rem;
+    text-align: center;
+    color:#d1d1d1
+}
+
+.d-flex .prime{
+    color:red;
+}
