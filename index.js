@@ -1,6 +1,7 @@
 // var totalLoop = 0;
 let result = [];
-let max = 0;
+let max = 9999;
+let col = 6;
 
 function addResizeListener(elem, fun) {
 	let id;
@@ -20,52 +21,67 @@ function addResizeListener(elem, fun) {
 }
 
 function showStart() {
-	document.getElementById(
-		"root"
-	).innerHTML = `Max : <input type="number" id="max" value="99999"/><br/><button onclick="startCalc()">Start Calculate Prime</button>`;
+	document.getElementById("root").innerHTML = `
+	
+	<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
+	<div class="form-group"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
+	<button onclick="startCalc()">Start Calculate Prime</button>
+	`;
 }
 
 function startCalc() {
 	max = parseInt(document.getElementById("max").value);
+	col = parseInt(document.getElementById("col").value);
 
-	document.getElementById("root").innerHTML = `Find prime number in <b>${max.toLocaleString("en-US")}</b> numbers...`;
+	if (max > 0 && col > 0) {
+		document.getElementById("root").innerHTML = `Find prime number in <b>${max.toLocaleString(
+			"en-US"
+		)}</b> numbers...`;
 
-	setTimeout(function () {
-		let min = 1;
+		setTimeout(function () {
+			let min = 1;
 
-		let iteminrow = 10;
+			let item = "";
+			let itsPrime = false;
+			let arrayOfPrime = [];
 
-		let item = "";
-		let itsPrime = false;
-		let arrayOfPrime = [];
+			result = [];
+			let start = window.performance.now();
 
-		result = [];
-		let start = window.performance.now();
+			for (let x = min; x <= max; x++) {
+				// totalLoop++;
+				itsPrime = isPrime(x, arrayOfPrime);
+				if (itsPrime) {
+					arrayOfPrime.push(x);
+					item += `<span>${x}</span>`;
+				} else {
+					item += `<div>${x}</div>`;
+				}
 
-		for (let x = min; x <= max; x++) {
-			// totalLoop++;
-			itsPrime = isPrime(x, arrayOfPrime);
-			if (itsPrime) {
-				arrayOfPrime.push(x);
-				item += `<span>${x}</span>`;
-			} else {
-				item += `<div>${x}</div>`;
+				if (x % col === 0) {
+					result.push(item);
+					item = "";
+				}
 			}
 
-			if (x % iteminrow === 0) {
+			if (item !== "") {
 				result.push(item);
-				item = "";
 			}
-		}
-		let end = window.performance.now();
-		document.getElementById("root").innerHTML = `We found <b>${arrayOfPrime.length.toLocaleString(
-			"en-US"
-		)} prime</b> inside <b>${max.toLocaleString("en-US")} numbers</b> in <b>${parseFloat(
-			(end - start).toFixed(1)
-		).toLocaleString(
-			"en-US"
-		)}ms</b>.<br/><button onclick="showResult()">Show result</button> <button onclick="showStart()">Try Again</button>`;
-	}, 1);
+
+			let end = window.performance.now();
+			document.getElementById("root").innerHTML = `We found <b>${arrayOfPrime.length.toLocaleString(
+				"en-US"
+			)} prime</b> inside <b>${max.toLocaleString("en-US")} numbers</b> in <b>${parseFloat(
+				(end - start).toFixed(1)
+			).toLocaleString(
+				"en-US"
+			)}ms</b>.<br/><button onclick="showResult()">Show Result</button> <button onclick="showStart()">Try Again</button>`;
+		}, 1);
+	} else {
+		document.getElementById(
+			"root"
+		).innerHTML = `Max and Col must be a positive integer.<br/><button onclick="showStart()">Try Again</button>`;
+	}
 }
 
 let render_start = 0;
