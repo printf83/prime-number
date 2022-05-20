@@ -28,7 +28,6 @@ body{
     border-radius: 5px;
     background-color: #fafafa;
     text-align: center;
-    overflow: hidden;
 }
 
 input{
@@ -55,26 +54,54 @@ label{
     text-align: right;
 }
 
-.d-flex,.form-group{
+small {
+    color:gray;
+    font-size: xx-small;
+}
+
+.form-group{
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
 }
 
-.d-flex div,span{
+.d-flex {
+    display: flex !important;
+    justify-content: start !important;
+}
+
+.d-row{
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.result_container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: auto;
+}
+
+
+
+.d-flex div,.d-flex span{
+    width: auto;
     border:1px solid;
+    
     min-width: 3rem;
-    margin:0.2rem;
+    margin:0.05rem;
     text-align: center;
     border-radius: 5px;
     background-color: #fff;
-    padding:0.15rem 0.25rem;
-    font-size: small;
+    padding:0.05rem 0.15rem;
+    font-size: x-small;
+    display: inline-block;
     
 }
 
 .d-flex div {
     color: #d1d1d1;
+    
 }
 
 .d-flex span{

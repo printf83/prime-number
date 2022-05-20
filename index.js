@@ -107,7 +107,11 @@ function showResult() {
 			root.innerHTML = `
         <button onclick="showStart()">Try Again</button><br/>
         <small id="speed_label1"></small>
-        <div class="d-flex">${result.join(`</div><div class="d-flex">`)}</div>
+		<div class="result_container">
+		<div class="result">
+        <div class="d-flex">${result.join(`</div><div class="d-flex">`)}</div></div>
+		</div>
+		</div>
         <small id="speed_label2"></small><br/>
         <button onclick="showStart()">Try Again</button>`;
 		},
