@@ -21,12 +21,14 @@ function addResizeListener(elem, fun) {
 }
 
 function showOutput(id, html) {
-	let frag = document.createElement("div");
-	frag.id = html ? id : "root";
-	frag.innerHTML = `${html ? html : id}`;
+	setTimeout(function () {
+		let frag = document.createElement("div");
+		frag.id = html ? id : "root";
+		frag.innerHTML = `${html ? html : id}`;
 
-	let dom = document.getElementById(html ? id : "root");
-	dom.replaceWith(frag);
+		let dom = document.getElementById(html ? id : "root");
+		dom.replaceWith(frag);
+	}, 0);
 }
 
 function showTooltip(target, html) {
@@ -90,7 +92,7 @@ function startCalc() {
 		if (window.Worker) {
 			showOutput(`
 				${header}
-				${loading} Find prime number in <b>${formatNumber(max)}</b> numbers...
+				${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers...
 			`);
 
 			setTimeout(function () {
@@ -149,7 +151,7 @@ function showResult() {
 				</div><br/>
 				<div id="speed_label2"></div><br/>
 				${btnTryAgain}`);
-	}, 0);
+	}, 100);
 }
 
 function showInfo(e) {
