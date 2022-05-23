@@ -20,13 +20,41 @@ function addResizeListener(elem, fun) {
 	}
 }
 
+function showOutput(id, html) {
+	setTimeout(function () {
+		let frag = document.createElement("div");
+		frag.id = html ? id : "root";
+		frag.innerHTML = html ? html : id;
+
+		let dom = document.getElementById(html ? id : "root");
+		dom.replaceWith(frag);
+
+		// let dom = document.getElementById(html ? id : "root");
+		// dom.innerHTML = html ? html : id;
+	}, 0);
+}
+
+const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
+const btnShowResult = `<button onclick="showResult()">Show Result</button>`;
+
+function formatNumber(num) {
+	return num.toLocaleString("en-US");
+}
+
+function formatTime(num) {
+	if (num > 1000) {
+		return (parseFloat(num.toFixed(1)) / 1000).toLocaleString("en-US") + "s";
+	} else {
+		return parseFloat(num.toFixed(1)).toLocaleString("en-US") + "ms";
+	}
+}
+
 function showStart() {
-	document.getElementById("root").innerHTML = `
-	
-	<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
-	<div class="form-group"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
-	<button onclick="startCalc()">Start Calculate Prime</button>
-	`;
+	showOutput(`
+		<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
+		<div class="form-group"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
+		<button onclick="startCalc()">Start Calculate Prime</button>
+	`);
 }
 
 function startCalc() {
@@ -35,74 +63,62 @@ function startCalc() {
 
 	if (max > 0 && col > 0) {
 		if (window.Worker) {
-			document.getElementById("root").innerHTML = `Find prime number in <b>${max.toLocaleString(
-				"en-US"
-			)}</b> numbers...`;
+			showOutput(`
+				Find prime number in <b>${formatNumber(max)}</b> numbers...
+			`);
 
-			setTimeout(function () {
-				let start = window.performance.now();
+			let start = window.performance.now();
 
-				let wk = new Worker("prime.js");
-				wk.postMessage([max, col]);
-				wk.onmessage = function (e) {
-					result = e.data;
+			let wk = new Worker("prime.js");
+			wk.postMessage([max, col]);
+			wk.onmessage = function (e) {
+				if (e.data) {
+					result = e.data.result;
+					primeFound = e.data.count;
 
-					let end = window.performance.now();
-					document.getElementById("root").innerHTML = `We found <b>${result.length.toLocaleString(
-						"en-US"
-					)} prime</b> inside <b>${max.toLocaleString("en-US")} numbers</b> in <b>${parseFloat(
-						(end - start).toFixed(1)
-					).toLocaleString(
-						"en-US"
-					)}ms</b>.<br/><button onclick="showResult()">Show Result</button> <button onclick="showStart()">Try Again</button>`;
-				};
-			}, 1);
+					let processTime = window.performance.now() - start;
+
+					showOutput(`
+						We found <b>${formatNumber(primeFound)} prime</b> inside <b>${formatNumber(max)} numbers</b> in <b>${formatTime(
+						processTime
+					)}</b>.<br/>${btnShowResult} ${btnTryAgain}
+					`);
+				} else {
+					showOutput(`Fail to find prime number<br/>${btnTryAgain}`);
+				}
+			};
 		} else {
-			document.getElementById(
-				"root"
-			).innerHTML = `Web Worker not available.<br/><button onclick="showStart()">Try Again</button>`;
+			showOutput(`Web Worker not available<br/>${btnTryAgain}`);
 		}
 	} else {
-		document.getElementById(
-			"root"
-		).innerHTML = `Max and Col must be a positive integer.<br/><button onclick="showStart()">Try Again</button>`;
+		showOutput(`Max and Col must be a positive integer<br/>${btnTryAgain}`);
 	}
 }
 
 let render_start = 0;
-let render_end = 0;
 
 function showResult() {
-	document.getElementById("root").innerHTML = `Please wait. Generating <b>${max.toLocaleString(
-		"en-US"
-	)}</b> result into your browser...`;
+	showOutput(`Please wait. Generating <b>${formatNumber(max)}</b> result into your browser...`);
 
 	render_start = window.performance.now();
 	let root = document.getElementById("root");
 	addResizeListener(root, function () {
-		render_end = window.performance.now();
-		let genLength = parseFloat((render_end - render_start).toFixed(1)).toLocaleString("en-US");
+		let renderEnd = window.performance.now() - render_start;
+		let genLength = formatTime(renderEnd);
 
-		document.getElementById("speed_label1").innerHTML = `This list generated in ${genLength}ms`;
-		document.getElementById("speed_label2").innerHTML = `This list generated in ${genLength}ms`;
+		showOutput(`speed_label1`, `This list generated in ${genLength}`);
+		showOutput(`speed_label2`, `This list generated in ${genLength}`);
 	});
 
-	setTimeout(
-		function (root) {
-			root.innerHTML = `
-        <button onclick="showStart()">Try Again</button><br/>
-        <small id="speed_label1"></small>
-		<div class="result_container">
-		<div class="result">
-        <div class="d-flex">${result.join(`</div><div class="d-flex">`)}</div></div>
-		</div>
-		</div>
-        <small id="speed_label2"></small><br/>
-        <button onclick="showStart()">Try Again</button>`;
-		},
-		1,
-		root
-	);
+	showOutput(`${btnTryAgain}<br/><br/>
+				<div id="speed_label1"></div><br/>
+				<div class="result_container">
+					<div class="result">
+						<div class="d-flex">${result.join(`</div><div class="d-flex">`)}</div></div>
+					</div>
+				</div><br/>
+				<div id="speed_label2"></div><br/>
+				${btnTryAgain}`);
 }
 
 showStart();

@@ -12,7 +12,7 @@ body{
                 "Segoe UI Emoji",
                 "Segoe UI Symbol",
                 "Noto Color Emoji";
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 400;
         line-height: 1.5;
         color: #212529;
@@ -24,28 +24,32 @@ body{
 #root{
     padding:1rem;
     margin:1.5rem 1rem;
-    border:1px solid;
+    border:1px solid #d1d1d1;
     border-radius: 5px;
     background-color: #fafafa;
     text-align: center;
+    color:#555;
 }
 
 input{
     padding:0.5rem 1rem;
-    border:1px solid gray;
+    border:1px solid #d1d1d1;
     border-radius: 5px;
     width: 5.5rem;
     margin:0.5rem 0;
+    color:#555;
+    font-size: 0.95rem;
 }
 button{
     margin:0.5rem 0 0 0;
     padding:0.5rem 1rem;
-    border:1px solid gray;
+    border:1px solid #0d6efd;
     border-radius: 5px;
     background-color: #0d6efd;
     border-color: #0d6efd;
     color:#fff;
     min-width: 14rem;
+    font-size: 0.95rem;
 }
 
 label{
@@ -54,9 +58,8 @@ label{
     text-align: right;
 }
 
-small {
-    color:gray;
-    font-size: xx-small;
+#speed_label1,#speed_label2 {
+    font-size: x-small;
 }
 
 .form-group{
@@ -88,19 +91,19 @@ small {
     width: auto;
     border:1px solid;
     
-    min-width: 3rem;
+    min-width: 2rem;
     margin:0.05rem;
     text-align: center;
     border-radius: 5px;
     background-color: #fff;
-    padding:0.05rem 0.15rem;
+    padding:0.05rem;
     font-size: x-small;
     display: inline-block;
     
 }
 
 .d-flex div {
-    color: #d1d1d1;
+    color: #ccc;
     
 }
 

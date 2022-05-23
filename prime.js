@@ -1,21 +1,3 @@
-function isPrime(num, arrayOfPrime) {
-	if (num > 10) {
-		return factor(num, arrayOfPrime);
-	} else {
-		switch (num) {
-			case 2:
-			case 3:
-			case 5:
-			case 7:
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	// return factor(num, arrayOfPrime);
-}
-
 function factor(num, arrayOfPrime) {
 	//return factor1(num);
 	return factor4(num, arrayOfPrime);
@@ -94,6 +76,24 @@ function factor4(num, arrayOfPrime) {
 	return result;
 }
 
+function isPrime(num, arrayOfPrime) {
+	if (num > 10) {
+		return factor(num, arrayOfPrime);
+	} else {
+		switch (num) {
+			case 2:
+			case 3:
+			case 5:
+			case 7:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	// return factor(num, arrayOfPrime);
+}
+
 onmessage = function (e) {
 	try {
 		let max = e.data[0];
@@ -125,7 +125,10 @@ onmessage = function (e) {
 			result.push(item);
 		}
 
-		postMessage(result);
+		postMessage({
+			result: result,
+			count: arrayOfPrime.length,
+		});
 	} catch (err) {
 		postMessage(null);
 	}
