@@ -1,5 +1,6 @@
 // var totalLoop = 0;
 let result = [];
+let min = 1;
 let max = 99999;
 let col = 6;
 
@@ -79,6 +80,7 @@ function showStart() {
 	showOutput(`
 		${header}
 		
+		<div class="form-group"><label for="min">Min : </label><input type="number" id="min" value="${min}"/></div>
 		<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
 		<div class="form-group"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
 		<button onclick="startCalc()">Start Calculate Prime</button><br/><br/>
@@ -87,41 +89,46 @@ function showStart() {
 }
 
 function startCalc() {
+	min = parseInt(document.getElementById("min").value);
 	max = parseInt(document.getElementById("max").value);
 	col = parseInt(document.getElementById("col").value);
 
 	if (max > 0 && col > 0) {
-		if (window.Worker) {
-			showOutput(`
+		if (min > 0 && min <= max) {
+			if (window.Worker) {
+				showOutput(`
 				${header}
 				${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers...
 			`);
 
-			setTimeout(function () {
-				let start = window.performance.now();
+				setTimeout(function () {
+					let start = window.performance.now();
 
-				let wk = new Worker("prime.js");
-				wk.postMessage([max, col]);
-				wk.onmessage = function (e) {
-					if (e.data) {
-						result = e.data.result;
-						primeFound = e.data.count;
+					let wk = new Worker("prime.js");
+					wk.postMessage([min, max, col]);
+					wk.onmessage = function (e) {
+						if (e.data) {
+							result = e.data.result;
+							primeFound = e.data.count;
 
-						let processTime = window.performance.now() - start;
+							let processTime = window.performance.now() - start;
 
-						showOutput(`
-						${header}
-						We found <b>${formatNumber(primeFound)} prime</b> inside <b>${formatNumber(max)} numbers</b> in <b>${formatTime(
-							processTime
-						)}</b>.<br/>${btnShowResult} ${btnTryAgain}
-					`);
-					} else {
-						showOutput(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
-					}
-				};
-			}, 0);
+							showOutput(`
+								${header}
+								We found <b>${formatNumber(primeFound)} prime</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
+								max
+							)}</b> in <b>${formatTime(processTime)}</b>.<br/>${btnShowResult} ${btnTryAgain}
+							`);
+						} else {
+							showOutput(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
+						}
+					};
+				}, 0);
+			} else {
+				showOutput(`${errorHeader}Web Worker not available<br/>${btnTryAgain}`);
+			}
 		} else {
-			showOutput(`${errorHeader}Web Worker not available<br/>${btnTryAgain}`);
+			showOutput(`${errorHeader}Min must be a positive integer and less or equal with Max<br/>${btnTryAgain}`);
 		}
 	} else {
 		showOutput(`${errorHeader}Max and Col must be a positive integer<br/>${btnTryAgain}`);
@@ -131,39 +138,39 @@ function startCalc() {
 let render_start = 0;
 
 function showResult() {
-	showOutput(`${header}${loading} Generating <b>${formatNumber(max)}</b> result into your browser...`);
+	showOutput(`${header}${loading} Generating <b>${formatNumber(max - min + 1)}</b> result into your browser...`);
 
+	render_start = window.performance.now();
 	setTimeout(function () {
-		render_start = window.performance.now();
-		let root = document.getElementById("root");
-		addResizeListener(root, function () {
-			let renderEnd = window.performance.now() - render_start;
-			let genLength = formatTime(renderEnd);
+		let wk = new Worker("joinresult.js");
+		wk.postMessage([result]);
+		wk.onmessage = function (e) {
+			if (e.data) {
+				let root = document.getElementById("root");
+				addResizeListener(root, function () {
+					let render_end = window.performance.now() - render_start;
+					let render_length = formatTime(render_end);
 
-			showOutput(`speed_label1`, `This list generated in ${genLength}`);
-			showOutput(`speed_label2`, `This list generated in ${genLength}`);
-		});
+					showOutput(`speed_label1`, `This list generated in ${render_length}`);
+					showOutput(`speed_label2`, `This list generated in ${render_length}`);
+				});
 
-		setTimeout(function () {
-			let wk = new Worker("joinresult.js");
-			wk.postMessage([result]);
-			wk.onmessage = function (e) {
-				if (e.data) {
-					showOutput(`${header}${btnTryAgain}<br/><br/>
-				<div id="speed_label1"></div><br/>
-				<div class="result_container">
-					<div class="result" onclick="showInfo(event)">
-						<div class="d-flex">${e.data}</div></div>
-					</div>
-				</div><br/>
-				<div id="speed_label2"></div><br/>
-				${btnTryAgain}`);
-				} else {
-					showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
-				}
-			};
-		}, 0);
-	}, 100);
+				showOutput(`
+							${header}${btnTryAgain}<br/><br/>
+							<div id="speed_label1"></div><br/>
+							<div class="result_container">
+								<div class="result" onclick="showInfo(event)">
+									<div class="d-flex">${e.data}</div></div>
+								</div>
+							</div><br/>
+							<div id="speed_label2"></div><br/>
+							${btnTryAgain}
+							`);
+			} else {
+				showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
+			}
+		};
+	}, 0);
 }
 
 function showInfo(e) {

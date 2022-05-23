@@ -96,38 +96,48 @@ function isPrime(num, arrayOfPrime) {
 
 onmessage = function (e) {
 	try {
-		let max = e.data[0];
-		let col = e.data[1];
+		let min = e.data[0];
+		let max = e.data[1];
+		let col = e.data[2];
+		let colIndex = 0;
 
-		let min = 1;
-		let item = "";
+		let item = [];
 		let itsPrime = false;
 		let arrayOfPrime = [];
+		let arrayOfPrimeMin = [];
 		let result = [];
 
-		for (let x = min; x <= max; x++) {
+		for (let x = 1; x <= max; x++) {
 			// totalLoop++;
 			itsPrime = isPrime(x, arrayOfPrime);
 			if (itsPrime) {
 				arrayOfPrime.push(x);
-				item += `<span>${x}</span>`;
+				if (x >= min) {
+					arrayOfPrimeMin.push(x);
+					item.push(`<span>${x}</span>`);
+					colIndex++;
+				}
 			} else {
-				item += `<div>${x}</div>`;
+				if (x >= min) {
+					item.push(`<div>${x}</div>`);
+					colIndex++;
+				}
 			}
 
-			if (x % col === 0) {
-				result.push(item);
-				item = "";
+			if (colIndex % col === 0) {
+				result.push(item.join(""));
+				item = [];
+				colIndex = 0;
 			}
 		}
 
-		if (item !== "") {
-			result.push(item);
+		if (item.length > 0) {
+			result.push(item.join(""));
 		}
 
 		postMessage({
 			result: result,
-			count: arrayOfPrime.length,
+			count: arrayOfPrimeMin.length,
 		});
 	} catch (err) {
 		postMessage(null);
