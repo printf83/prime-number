@@ -159,6 +159,10 @@ h2{
     transform: translate(-50%, -100%);
 }
 
+#tooltip small{
+    color:#fff;
+}
+
 #arrow,
 #arrow::before {
     position: absolute;
