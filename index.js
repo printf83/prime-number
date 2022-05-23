@@ -144,11 +144,12 @@ function showResult() {
 			showOutput(`speed_label2`, `This list generated in ${genLength}`);
 		});
 
-		let wk = new Worker("joinresult.js");
-		wk.postMessage([result]);
-		wk.onmessage = function (e) {
-			if (e.data) {
-				showOutput(`${header}${btnTryAgain}<br/><br/>
+		setTimeout(function () {
+			let wk = new Worker("joinresult.js");
+			wk.postMessage([result]);
+			wk.onmessage = function (e) {
+				if (e.data) {
+					showOutput(`${header}${btnTryAgain}<br/><br/>
 				<div id="speed_label1"></div><br/>
 				<div class="result_container">
 					<div class="result" onclick="showInfo(event)">
@@ -157,10 +158,11 @@ function showResult() {
 				</div><br/>
 				<div id="speed_label2"></div><br/>
 				${btnTryAgain}`);
-			} else {
-				showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
-			}
-		};
+				} else {
+					showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
+				}
+			};
+		}, 0);
 	}, 100);
 }
 
