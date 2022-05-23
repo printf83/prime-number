@@ -27,7 +27,9 @@ function showOutput(id, html) {
 		frag.innerHTML = `${html ? html : id}`;
 
 		let dom = document.getElementById(html ? id : "root");
-		dom.replaceWith(frag);
+		if (dom) {
+			dom.replaceWith(frag);
+		}
 	}, 0);
 }
 
@@ -142,15 +144,23 @@ function showResult() {
 			showOutput(`speed_label2`, `This list generated in ${genLength}`);
 		});
 
-		showOutput(`${header}${btnTryAgain}<br/><br/>
+		let wk = new Worker("joinresult.js");
+		wk.postMessage([result]);
+		wk.onmessage = function (e) {
+			if (e.data) {
+				showOutput(`${header}${btnTryAgain}<br/><br/>
 				<div id="speed_label1"></div><br/>
 				<div class="result_container">
 					<div class="result" onclick="showInfo(event)">
-						<div class="d-flex">${result.join(`</div><div class="d-flex">`)}</div></div>
+						<div class="d-flex">${e.data}</div></div>
 					</div>
 				</div><br/>
 				<div id="speed_label2"></div><br/>
 				${btnTryAgain}`);
+			} else {
+				showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
+			}
+		};
 	}, 100);
 }
 
