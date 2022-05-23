@@ -21,27 +21,34 @@ function addResizeListener(elem, fun) {
 }
 
 function showOutput(id, html) {
-	setTimeout(function () {
-		let frag = document.createElement("div");
-		frag.id = html ? id : "root";
-		frag.innerHTML = html ? html : id;
+	let frag = document.createElement("div");
+	frag.id = html ? id : "root";
+	frag.innerHTML = `${html ? html : id}`;
 
-		let dom = document.getElementById(html ? id : "root");
-		dom.replaceWith(frag);
-	}, 0);
+	let dom = document.getElementById(html ? id : "root");
+	dom.replaceWith(frag);
 }
 
-function showTooltip(html) {
+function showTooltip(target, html) {
 	let frag = document.createElement("div");
 	frag.id = "tooltip";
 	frag.innerHTML = html;
 
 	let dom = document.getElementById("tooltip");
 	dom.replaceWith(frag);
+
+	let rect = target.getBoundingClientRect();
+	const tooltip_container = document.getElementById("tooltip_container");
+	tooltip_container.style.top = `${rect.top + window.scrollY - 5}px`;
+	tooltip_container.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
+	tooltip_container.style.display = "block";
 }
 
+const header = `<h2>Prime Calculator</h2>`;
+const errorHeader = `<h2 class="font-danger">Error!</h2>`;
 const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
 const btnShowResult = `<button onclick="showResult()">Show Result</button>`;
+const loading = `<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
 
 function formatNumber(num) {
 	return num.toLocaleString("en-US");
@@ -55,14 +62,23 @@ function formatTime(num) {
 	}
 }
 
+function formatList(num) {
+	return num.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1");
+}
+
 function showStart() {
-	// const tooltip = document.getElementById("tooltip");
-	// tooltip.style.display = "none";
+	const tooltip_container = document.getElementById("tooltip_container");
+	if (tooltip_container) {
+		tooltip_container.style.display = "none";
+	}
 
 	showOutput(`
+		${header}
+		
 		<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
 		<div class="form-group"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
-		<button onclick="startCalc()">Start Calculate Prime</button>
+		<button onclick="startCalc()">Start Calculate Prime</button><br/><br/>
+		<small>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your device memory.</small>
 	`);
 }
 
@@ -73,7 +89,8 @@ function startCalc() {
 	if (max > 0 && col > 0) {
 		if (window.Worker) {
 			showOutput(`
-				Find prime number in <b>${formatNumber(max)}</b> numbers...
+				${header}
+				${loading} Find prime number in <b>${formatNumber(max)}</b> numbers...
 			`);
 
 			setTimeout(function () {
@@ -89,39 +106,41 @@ function startCalc() {
 						let processTime = window.performance.now() - start;
 
 						showOutput(`
+						${header}
 						We found <b>${formatNumber(primeFound)} prime</b> inside <b>${formatNumber(max)} numbers</b> in <b>${formatTime(
 							processTime
 						)}</b>.<br/>${btnShowResult} ${btnTryAgain}
 					`);
 					} else {
-						showOutput(`Fail to find prime number<br/>${btnTryAgain}`);
+						showOutput(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
 					}
 				};
 			}, 0);
 		} else {
-			showOutput(`Web Worker not available<br/>${btnTryAgain}`);
+			showOutput(`${errorHeader}Web Worker not available<br/>${btnTryAgain}`);
 		}
 	} else {
-		showOutput(`Max and Col must be a positive integer<br/>${btnTryAgain}`);
+		showOutput(`${errorHeader}Max and Col must be a positive integer<br/>${btnTryAgain}`);
 	}
 }
 
 let render_start = 0;
 
 function showResult() {
-	showOutput(`Please wait. Generating <b>${formatNumber(max)}</b> result into your browser...`);
+	showOutput(`${header}${loading} Generating <b>${formatNumber(max)}</b> result into your browser...`);
 
-	render_start = window.performance.now();
-	let root = document.getElementById("root");
-	addResizeListener(root, function () {
-		let renderEnd = window.performance.now() - render_start;
-		let genLength = formatTime(renderEnd);
+	setTimeout(function () {
+		render_start = window.performance.now();
+		let root = document.getElementById("root");
+		addResizeListener(root, function () {
+			let renderEnd = window.performance.now() - render_start;
+			let genLength = formatTime(renderEnd);
 
-		showOutput(`speed_label1`, `This list generated in ${genLength}`);
-		showOutput(`speed_label2`, `This list generated in ${genLength}`);
-	});
+			showOutput(`speed_label1`, `This list generated in ${genLength}`);
+			showOutput(`speed_label2`, `This list generated in ${genLength}`);
+		});
 
-	showOutput(`${btnTryAgain}<br/><br/>
+		showOutput(`${header}${btnTryAgain}<br/><br/>
 				<div id="speed_label1"></div><br/>
 				<div class="result_container">
 					<div class="result" onclick="showInfo(event)">
@@ -130,50 +149,44 @@ function showResult() {
 				</div><br/>
 				<div id="speed_label2"></div><br/>
 				${btnTryAgain}`);
+	}, 0);
 }
 
 function showInfo(e) {
-	if (
-		e.path &&
-		e.path.length >= 3 &&
-		e.path[1].classList.contains("d-flex") &&
-		e.path[2].classList.contains("result")
-	) {
-		const target = e.path[0];
-		let rect = target.getBoundingClientRect();
+	if (e.target && e.target.parentNode.classList.contains("d-flex")) {
+		const target = e.target;
+		const num = parseInt(target.innerText, 10);
+
+		showTooltip(target, `<h3>${num}</h3> ${loading} Checking...`);
 
 		setTimeout(function () {
-			let num = parseInt(e.path[0].innerText, 10);
 			let wk = new Worker("singleprime.js");
 			wk.postMessage([num]);
 			wk.onmessage = function (e) {
 				if (e.data) {
 					result = e.data;
-					console.log(result);
 					if (result) {
-						if (result.length > 2) {
+						if (result.length === 2) {
 							showTooltip(
-								`<b>${num}</b><br/>Is NOT a prime<br/><small>${num} can be divided with <br/>${result.join(
-									", "
+								target,
+								`<h3>${num}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
+									result
 								)}</small>`
 							);
 						} else {
 							showTooltip(
-								`<b>${num}</b><br/>Is a prime<br/><small>${num} can only be divided with <br/>${result.join(
-									", "
+								target,
+								`<h3>${num}</h3><b>Is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can be divided with <br/>${formatList(
+									result
 								)}</small>`
 							);
 						}
 					} else {
-						showTooltip(`Fail to find prime number`);
+						showTooltip(target, `Fail to find prime number`);
 					}
 				} else {
-					showTooltip(`Fail to find prime number`);
+					showTooltip(target, `Fail to find prime number`);
 				}
-				const tooltip = document.getElementById("tooltip");
-				tooltip.style.top = `${rect.top - 90 + window.scrollY}px`;
-				tooltip.style.left = `${rect.left + +window.scrollX}px`;
-				// tooltip.style.display = "block";
 			};
 		}, 0);
 	}
