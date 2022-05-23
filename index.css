@@ -100,6 +100,13 @@ label{
     font-size: x-small;
     display: inline-block;
     
+    cursor: pointer;
+    
+}
+
+.d-flex div:hover,
+.d-flex span:hover {
+    border: 1px solid #0d6efd;
 }
 
 .d-flex div {
@@ -109,4 +116,13 @@ label{
 
 .d-flex span{
     color:red;
+}
+
+#tooltip {
+    background-color: #212529;
+    color: #fff;
+    padding: 0.25rem 0.75rem;
+    border-radius: 5px;
+    position: absolute;
+    font-size: small;
 }
