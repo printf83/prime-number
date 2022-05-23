@@ -1,6 +1,6 @@
 // var totalLoop = 0;
 let result = [];
-let max = 99;
+let max = 99999;
 let col = 6;
 
 function addResizeListener(elem, fun) {
