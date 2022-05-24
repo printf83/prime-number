@@ -3,6 +3,7 @@ let result = [];
 let min = 1;
 let max = 99999;
 let col = 6;
+let output_style = 1;
 
 function addResizeListener(elem, fun) {
 	let id;
@@ -99,23 +100,57 @@ function showStart() {
 		tooltip_container.style.display = "none";
 	}
 
-	showOutput(`
+	showOutput(
+		`
 		${header}
 		
 		<div class="form-group"><label for="min">Min : </label><input type="number" id="min" value="${min}"/></div>
 		<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
-		<div class="form-group"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
+		<div class="form-group"><label for="output_style_1" class="radio"><input type="radio" id="output_style_1" name="output_style" value="0" onchange="output_style_onchange()" ${
+			output_style === 0 ? ` checked="checked"` : ""
+		}/> Show All</label></div>
+		<div class="form-group"><label for="output_style_2" class="radio"><input type="radio" id="output_style_2" name="output_style" value="1" onchange="output_style_onchange()" ${
+			output_style === 1 ? ` checked="checked"` : ""
+		}/> Prime Only</label></div>
+		<div class="form-group" id="col_container"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
 		<button onclick="startCalc()">Start Calculate Prime</button><br/><br/>
-		<div>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your <b>device memory</b></div>
-		<div>View on <a href="https://github.com/printf83/factor">GitHub</a></div>
+		<div><small>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your <b>device memory</b></small></div>
+		<div><small>View on <a href="https://github.com/printf83/factor">GitHub</a></small></div>
 		
-	`);
+	`,
+		function () {
+			output_style_onchange();
+		}
+	);
+}
+
+function output_style_onchange() {
+	let val = parseInt(getRadioValue("output_style"), 10);
+	if (val === 0) {
+		document.getElementById("col_container").style.display = "flex";
+	} else {
+		document.getElementById("col_container").style.display = "none";
+	}
+}
+
+function getRadioValue(name) {
+	var ele = document.getElementsByName(name);
+
+	for (i = 0; i < ele.length; i++) {
+		if (ele[i].checked) {
+			return ele[i].value;
+			break;
+		}
+	}
+
+	return null;
 }
 
 function startCalc() {
-	min = parseInt(document.getElementById("min").value);
-	max = parseInt(document.getElementById("max").value);
-	col = parseInt(document.getElementById("col").value);
+	min = parseInt(document.getElementById("min").value, 10);
+	max = parseInt(document.getElementById("max").value, 10);
+	col = parseInt(document.getElementById("col").value, 10);
+	output_style = parseInt(getRadioValue("output_style"), 10);
 
 	if (max > 0 && col > 0) {
 		if (min > 0 && min <= max) {
@@ -129,7 +164,7 @@ function startCalc() {
 						let start = window.performance.now();
 
 						let wk = new Worker("prime.js");
-						wk.postMessage([min, max, col]);
+						wk.postMessage([min, max, col, output_style]);
 						wk.onmessage = function (e) {
 							if (e.data) {
 								result = e.data.result;
@@ -174,11 +209,12 @@ function showResult() {
 				showOutputLabel(`This list generated in ${render_length}`);
 			});
 
-			let wk = new Worker("joinresult.js");
-			wk.postMessage([result]);
-			wk.onmessage = function (e) {
-				if (e.data) {
-					showOutput(`
+			if (output_style === 0) {
+				let wk = new Worker("joinresult.js");
+				wk.postMessage([result]);
+				wk.onmessage = function (e) {
+					if (e.data) {
+						showOutput(`
 							${header}${btnTryAgain}<br/><br/>
 							<div id="speed_label1"></div><br/>
 							<div class="result_container">
@@ -189,10 +225,23 @@ function showResult() {
 							<div id="speed_label2"></div><br/>
 							${btnTryAgain}
 							`);
-				} else {
-					showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
-				}
-			};
+					} else {
+						showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
+					}
+				};
+			} else {
+				showOutput(`
+					${header}${btnTryAgain}<br/><br/>
+					<div id="speed_label1"></div><br/>
+					<div class="result_container">
+						<div class="result">
+							<small>${result}</small>
+						</div>
+					</div><br/>
+					<div id="speed_label2"></div><br/>
+					${btnTryAgain}
+					`);
+			}
 		}
 	);
 }

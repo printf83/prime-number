@@ -99,6 +99,8 @@ onmessage = function (e) {
 		let min = e.data[0];
 		let max = e.data[1];
 		let col = e.data[2];
+		let output_style = e.data[3];
+
 		let colIndex = 0;
 
 		let item = [];
@@ -107,38 +109,54 @@ onmessage = function (e) {
 		let arrayOfPrimeMin = [];
 		let result = [];
 
-		for (let x = 1; x <= max; x++) {
-			// totalLoop++;
-			itsPrime = isPrime(x, arrayOfPrime);
-			if (itsPrime) {
-				arrayOfPrime.push(x);
-				if (x >= min) {
-					arrayOfPrimeMin.push(x);
-					item.push(`<span>${x}</span>`);
-					colIndex++;
+		if (output_style === 0) {
+			for (let x = 1; x <= max; x++) {
+				itsPrime = isPrime(x, arrayOfPrime);
+				if (itsPrime) {
+					arrayOfPrime.push(x);
+					if (x >= min) {
+						arrayOfPrimeMin.push(x);
+						item.push(`<span>${x}</span>`);
+						colIndex++;
+					}
+				} else {
+					if (x >= min) {
+						item.push(`<div>${x}</div>`);
+						colIndex++;
+					}
 				}
-			} else {
-				if (x >= min) {
-					item.push(`<div>${x}</div>`);
-					colIndex++;
+
+				if (colIndex % col === 0) {
+					result.push(item.join(""));
+					item = [];
+					colIndex = 0;
 				}
 			}
 
-			if (colIndex % col === 0) {
+			if (item.length > 0) {
 				result.push(item.join(""));
-				item = [];
-				colIndex = 0;
 			}
-		}
 
-		if (item.length > 0) {
-			result.push(item.join(""));
-		}
+			postMessage({
+				result: result,
+				count: arrayOfPrimeMin.length,
+			});
+		} else {
+			for (let x = 1; x <= max; x++) {
+				itsPrime = isPrime(x, arrayOfPrime);
+				if (itsPrime) {
+					arrayOfPrime.push(x);
+					if (x >= min) {
+						arrayOfPrimeMin.push(x);
+					}
+				}
+			}
 
-		postMessage({
-			result: result,
-			count: arrayOfPrimeMin.length,
-		});
+			postMessage({
+				result: arrayOfPrimeMin.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1"),
+				count: arrayOfPrimeMin.length,
+			});
+		}
 	} catch (err) {
 		postMessage(null);
 	}

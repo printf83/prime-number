@@ -31,7 +31,7 @@ body{
     color:#555;
 }
 
-input{
+input[type="number"]{
     padding:0.5rem 1rem;
     border:1px solid #d1d1d1;
     border-radius: 5px;
@@ -59,6 +59,13 @@ label{
     text-align: right;
 }
 
+label.radio {
+    min-width: 10rem;
+    padding: 0 0 0 7rem;
+    text-align: left;
+    cursor: pointer;
+}
+
 h2{
     margin: 0 0 0.75rem 0;
     border-bottom: 1px solid #ccc;
@@ -66,25 +73,25 @@ h2{
 
 }
 
-/* #speed_label1,#speed_label2,small {
-    font-size: x-small;
-    color:#777;
-} */
+#speed_label1,#speed_label2,small {
+    font-size: small;
+    color:#555;
+}
 
 .form-group{
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .d-flex {
-    display: flex !important;
-    justify-content: start !important;
+    display: flex;
+    justify-content: start;
 }
 
 .d-row{
-    display: flex !important;
-    justify-content: center !important;
+    display: flex;
+    justify-content: center;
 }
 
 .result_container{
@@ -112,7 +119,6 @@ h2{
     padding:0.05rem;
     font-size: x-small;
     display: inline-block;
-    
     cursor: pointer;
     
 }
@@ -120,7 +126,7 @@ h2{
 .d-flex div:hover,
 .d-flex span:hover {
     border: 1px solid #0d6efd;
-    color:#0d6efd !important;
+    color:#0d6efd;
 }
 
 .d-flex div {
