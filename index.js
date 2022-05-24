@@ -27,7 +27,7 @@ function showOutput(html, callback) {
 	setTimeout(function () {
 		let frag = document.createElement("div");
 		frag.id = "root";
-		frag.innerHTML = html;
+		frag.innerHTML = `${html}${memoryLabel}`;
 
 		let dom = document.getElementById("root");
 		if (dom) {
@@ -75,6 +75,7 @@ const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
 const btnShowResult = `<button onclick="showResult()">Show Result</button>`;
 const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
 const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
+const memoryLabel = ""; //`<div><small id="mem"></small></div>`;
 
 function formatNumber(num) {
 	return num.toLocaleString("en-US");
@@ -107,6 +108,7 @@ function showStart() {
 		<button onclick="startCalc()">Start Calculate Prime</button><br/><br/>
 		<div>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your <b>device memory</b></div>
 		<div>View on <a href="https://github.com/printf83/factor">GitHub</a></div>
+		
 	`);
 }
 
@@ -235,4 +237,16 @@ function showInfo(e) {
 	}
 }
 
+function updateMem() {
+	// setTimeout(function () {
+	// 	let mem = document.getElementById("mem");
+	// 	if (mem) {
+	// 		let m = window.performance.memory;
+	// 		mem.innerHTML = `${((m.usedJSHeapSize / m.jsHeapSizeLimit) * 100).toFixed(3)}% Memory Usage`;
+	// 		updateMem();
+	// 	}
+	// }, 100);
+}
+
+updateMem();
 showStart();
