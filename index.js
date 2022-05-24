@@ -53,7 +53,8 @@ const header = `<h2>Prime Calculator</h2>`;
 const errorHeader = `<h2 class="font-danger">Error!</h2>`;
 const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
 const btnShowResult = `<button onclick="showResult()">Show Result</button>`;
-const loading = `<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
+const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
+const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
 
 function formatNumber(num) {
 	return num.toLocaleString("en-US");
@@ -84,7 +85,7 @@ function showStart() {
 		<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
 		<div class="form-group"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
 		<button onclick="startCalc()">Start Calculate Prime</button><br/><br/>
-		<small>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your device memory.</small>
+		<div>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your device memory</div>
 	`);
 }
 
@@ -98,7 +99,7 @@ function startCalc() {
 			if (window.Worker) {
 				showOutput(`
 				${header}
-				${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers...
+				${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers${loading2}
 			`);
 
 				setTimeout(function () {
@@ -138,7 +139,9 @@ function startCalc() {
 let render_start = 0;
 
 function showResult() {
-	showOutput(`${header}${loading} Generating <b>${formatNumber(max - min + 1)}</b> result into your browser...`);
+	showOutput(
+		`${header}${loading} Generating <b>${formatNumber(max - min + 1)}</b> result into your browser${loading2}`
+	);
 
 	render_start = window.performance.now();
 	setTimeout(function () {
@@ -178,7 +181,7 @@ function showInfo(e) {
 		const target = e.target;
 		const num = parseInt(target.innerText, 10);
 
-		showTooltip(target, `<h3>${num}</h3> ${loading} Checking...`);
+		showTooltip(target, `<h3>${num}</h3> ${loading} Checking${loading2}`);
 
 		setTimeout(function () {
 			let wk = new Worker("singleprime.js");
