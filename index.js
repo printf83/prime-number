@@ -11,25 +11,45 @@ function addResizeListener(elem, fun) {
 	let hei = style.height;
 	id = requestAnimationFrame(test);
 	function test() {
-		let newStyle = getComputedStyle(elem);
-		if (wid !== newStyle.width || hei !== newStyle.height) {
-			fun();
-			wid = newStyle.width;
-			hei = newStyle.height;
-		}
-		id = requestAnimationFrame(test);
+		setTimeout(function () {
+			let newStyle = getComputedStyle(elem);
+			if (wid !== newStyle.width || hei !== newStyle.height) {
+				fun();
+				wid = newStyle.width;
+				hei = newStyle.height;
+			}
+			id = requestAnimationFrame(test);
+		}, 0);
 	}
 }
 
-function showOutput(id, html) {
+function showOutput(html, callback) {
 	setTimeout(function () {
 		let frag = document.createElement("div");
-		frag.id = html ? id : "root";
-		frag.innerHTML = `${html ? html : id}`;
+		frag.id = "root";
+		frag.innerHTML = html;
 
-		let dom = document.getElementById(html ? id : "root");
+		let dom = document.getElementById("root");
 		if (dom) {
 			dom.replaceWith(frag);
+		}
+
+		if (typeof callback === "function") {
+			setTimeout(function () {
+				callback();
+			}, 0);
+		}
+	}, 0);
+}
+
+function showOutputLabel(html, callback) {
+	setTimeout(function () {
+		document.getElementById("speed_label1").innerHTML = html;
+		document.getElementById("speed_label2").innerHTML = html;
+		if (typeof callback === "function") {
+			setTimeout(function () {
+				callback();
+			}, 0);
 		}
 	}, 0);
 }
@@ -85,7 +105,8 @@ function showStart() {
 		<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
 		<div class="form-group"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
 		<button onclick="startCalc()">Start Calculate Prime</button><br/><br/>
-		<div>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your device memory</div>
+		<div>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your <b>device memory</b></div>
+		<div>View on <a href="https://github.com/printf83/factor">GitHub</a></div>
 	`);
 }
 
@@ -97,34 +118,35 @@ function startCalc() {
 	if (max > 0 && col > 0) {
 		if (min > 0 && min <= max) {
 			if (window.Worker) {
-				showOutput(`
-				${header}
-				${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers${loading2}
-			`);
+				showOutput(
+					`
+						${header}
+						${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers${loading2}
+					`,
+					function () {
+						let start = window.performance.now();
 
-				setTimeout(function () {
-					let start = window.performance.now();
+						let wk = new Worker("prime.js");
+						wk.postMessage([min, max, col]);
+						wk.onmessage = function (e) {
+							if (e.data) {
+								result = e.data.result;
+								primeFound = e.data.count;
 
-					let wk = new Worker("prime.js");
-					wk.postMessage([min, max, col]);
-					wk.onmessage = function (e) {
-						if (e.data) {
-							result = e.data.result;
-							primeFound = e.data.count;
+								let processTime = window.performance.now() - start;
 
-							let processTime = window.performance.now() - start;
-
-							showOutput(`
+								showOutput(`
 								${header}
 								We found <b>${formatNumber(primeFound)} prime</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
-								max
-							)}</b> in <b>${formatTime(processTime)}</b>.<br/>${btnShowResult} ${btnTryAgain}
+									max
+								)}</b> in <b>${formatTime(processTime)}</b>.<br/>${btnShowResult} ${btnTryAgain}
 							`);
-						} else {
-							showOutput(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
-						}
-					};
-				}, 0);
+							} else {
+								showOutput(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
+							}
+						};
+					}
+				);
 			} else {
 				showOutput(`${errorHeader}Web Worker not available<br/>${btnTryAgain}`);
 			}
@@ -140,25 +162,21 @@ let render_start = 0;
 
 function showResult() {
 	showOutput(
-		`${header}${loading} Generating <b>${formatNumber(max - min + 1)}</b> result into your browser${loading2}`
-	);
+		`${header}${loading} Generating <b>${formatNumber(max - min + 1)}</b> result into your browser${loading2}`,
+		function () {
+			render_start = window.performance.now();
+			let root = document.getElementById("root");
+			addResizeListener(root, function () {
+				let render_end = window.performance.now() - render_start;
+				let render_length = formatTime(render_end);
+				showOutputLabel(`This list generated in ${render_length}`);
+			});
 
-	render_start = window.performance.now();
-	setTimeout(function () {
-		let wk = new Worker("joinresult.js");
-		wk.postMessage([result]);
-		wk.onmessage = function (e) {
-			if (e.data) {
-				let root = document.getElementById("root");
-				addResizeListener(root, function () {
-					let render_end = window.performance.now() - render_start;
-					let render_length = formatTime(render_end);
-
-					showOutput(`speed_label1`, `This list generated in ${render_length}`);
-					showOutput(`speed_label2`, `This list generated in ${render_length}`);
-				});
-
-				showOutput(`
+			let wk = new Worker("joinresult.js");
+			wk.postMessage([result]);
+			wk.onmessage = function (e) {
+				if (e.data) {
+					showOutput(`
 							${header}${btnTryAgain}<br/><br/>
 							<div id="speed_label1"></div><br/>
 							<div class="result_container">
@@ -169,11 +187,12 @@ function showResult() {
 							<div id="speed_label2"></div><br/>
 							${btnTryAgain}
 							`);
-			} else {
-				showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
-			}
-		};
-	}, 0);
+				} else {
+					showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
+				}
+			};
+		}
+	);
 }
 
 function showInfo(e) {
