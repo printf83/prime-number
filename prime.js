@@ -1,73 +1,72 @@
-function factor(num, arrayOfPrime) {
-	//return factor1(num);
-	return factor4(num, arrayOfPrime);
-}
+// function factor(num, arrayOfPrime) {
+// 	//return factor1(num);
+// 	return factor4(num, arrayOfPrime);
+// }
 
-//99999 number -> 1966ms (455,239,139 Loop)
-function factor1(num) {
-	if (num % 2 === 0) {
-		return false;
-	} else {
-		let result = true;
-		for (let x = 2; x < num; x++) {
-			// totalLoop++;
+// //99999 number -> 1966ms (455,239,139 Loop)
+// function factor1(num) {
+// 	if (num % 2 === 0) {
+// 		return false;
+// 	} else {
+// 		let result = true;
+// 		for (let x = 2; x < num; x++) {
+// 			// totalLoop++;
 
-			if (num % x === 0) {
-				result = false;
-				break;
-			}
-		}
-		return result;
-	}
-}
+// 			if (num % x === 0) {
+// 				result = false;
+// 				break;
+// 			}
+// 		}
+// 		return result;
+// 	}
+// }
 
-//99999 number -> 1102ms (227,664,775 Loop)
-function factor2(num) {
-	if (num % 2 === 0) {
-		return false;
-	} else {
-		let result = true;
-		for (let x = 3; x < num; x++) {
-			if (x % 2 !== 0) {
-				// totalLoop++;
-				if (num % x === 0) {
-					result = false;
-					// console.log(`${x} is factor for ${num}`);
-					break;
-				}
-			}
-		}
-		return result;
-	}
-}
+// //99999 number -> 1102ms (227,664,775 Loop)
+// function factor2(num) {
+// 	if (num % 2 === 0) {
+// 		return false;
+// 	} else {
+// 		let result = true;
+// 		for (let x = 3; x < num; x++) {
+// 			if (x % 2 !== 0) {
+// 				// totalLoop++;
+// 				if (num % x === 0) {
+// 					result = false;
+// 					// console.log(`${x} is factor for ${num}`);
+// 					break;
+// 				}
+// 			}
+// 		}
+// 		return result;
+// 	}
+// }
 
-//99999 number -> 1029ms (227,648,110 Loop)
-function factor3(num) {
-	if (!((num + 1) % 6 === 0 || (num - 1) % 6 === 0)) {
-		return false;
-	} else {
-		let result = true;
-		for (let x = 3; x < num; x++) {
-			if (x % 2 !== 0) {
-				// totalLoop++;
-				if (num % x === 0) {
-					result = false;
-					// console.log(`${x} is factor for ${num}`);
-					break;
-				}
-			}
-		}
+// //99999 number -> 1029ms (227,648,110 Loop)
+// function factor3(num) {
+// 	if (!((num + 1) % 6 === 0 || (num - 1) % 6 === 0)) {
+// 		return false;
+// 	} else {
+// 		let result = true;
+// 		for (let x = 3; x < num; x++) {
+// 			if (x % 2 !== 0) {
+// 				// totalLoop++;
+// 				if (num % x === 0) {
+// 					result = false;
+// 					// console.log(`${x} is factor for ${num}`);
+// 					break;
+// 				}
+// 			}
+// 		}
 
-		return result;
-	}
-}
+// 		return result;
+// 	}
+// }
 
 //99999 number -> 272ms (46,414,463 Loop)
-function factor4(num, arrayOfPrime) {
+function factor(num, arrayOfPrime) {
 	let result = true;
 	let arrayOfPrimeLength = arrayOfPrime.length;
 	for (let x = 0; x < arrayOfPrimeLength; x++) {
-		// totalLoop++;
 		if (num % arrayOfPrime[x] === 0) {
 			result = false;
 			break;
@@ -153,7 +152,7 @@ onmessage = function (e) {
 			}
 
 			postMessage({
-				result: arrayOfPrimeMin.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1"),
+				result: arrayOfPrimeMin,
 				count: arrayOfPrimeMin.length,
 			});
 		}

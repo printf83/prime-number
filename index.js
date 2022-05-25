@@ -4,6 +4,7 @@ let min = 1;
 let max = 99999;
 let col = 6;
 let output_style = 1;
+let singleNum = 1;
 
 function addResizeListener(elem, fun) {
 	let id;
@@ -55,6 +56,17 @@ function showOutputLabel(html, callback) {
 	}, 0);
 }
 
+function showOutputNum(html, callback) {
+	setTimeout(function () {
+		document.getElementById("num_result").innerHTML = html;
+		if (typeof callback === "function") {
+			setTimeout(function () {
+				callback();
+			}, 0);
+		}
+	}, 0);
+}
+
 function showTooltip(target, html) {
 	let frag = document.createElement("div");
 	frag.id = "tooltip";
@@ -70,13 +82,14 @@ function showTooltip(target, html) {
 	tooltip_container.style.display = "block";
 }
 
-const header = `<h2>Prime Calculator</h2>`;
+const header = `<h2>Prime Number Checker</h2>`;
+const header2 = `<h2>Prime Number List</h2>`;
 const errorHeader = `<h2 class="font-danger">Error!</h2>`;
 const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
 const btnShowResult = `<button onclick="showResult()">Show Result</button>`;
 const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
 const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
-const memoryLabel = ""; //`<div><small id="mem"></small></div>`;
+const memoryLabel = ``; //`<div><small id="mem"></small></div>`;
 
 function formatNumber(num) {
 	return num.toLocaleString("en-US");
@@ -94,6 +107,43 @@ function formatList(num) {
 	return num.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1");
 }
 
+function checkSingleNumber() {
+	let currentNum = parseInt(document.getElementById("num").value);
+	if (currentNum !== singleNum) {
+		showOutputNum(`${loading}Checking${loading2}`);
+		singleNum = currentNum;
+
+		setTimeout(function () {
+			let wk = new Worker("singleprime.js");
+			wk.postMessage([singleNum]);
+			wk.onmessage = function (e) {
+				if (e.data) {
+					result = e.data;
+					if (result) {
+						if (result.length === 2) {
+							showOutputNum(
+								`<span class="font-success">${singleNum} is a prime number</span><br/><small>It can only be divided with <br/>${formatList(
+									result
+								)}</small>`
+							);
+						} else {
+							showOutputNum(
+								`<span>${singleNum} is <u class="font-danger">NOT</u> a prime number</span><br/><small>It can be divided with <br/>${formatList(
+									result
+								)}</small>`
+							);
+						}
+					} else {
+						showOutputNum(`Fail to find prime number`);
+					}
+				} else {
+					showOutputNum(`Fail to find prime number`);
+				}
+			};
+		}, 0);
+	}
+}
+
 function showStart() {
 	const tooltip_container = document.getElementById("tooltip_container");
 	if (tooltip_container) {
@@ -103,7 +153,11 @@ function showStart() {
 	showOutput(
 		`
 		${header}
-		
+		<div class="form-group"><label for="num">Number : </label><input type="number" id="num" value="${singleNum}" onchange="checkSingleNumber()" onkeyup="checkSingleNumber()"/></div>
+		<div class="form-group"><div id="num_result"></div></div>
+
+		${header2}
+
 		<div class="form-group"><label for="min">Min : </label><input type="number" id="min" value="${min}"/></div>
 		<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
 		<div class="form-group"><label for="output_style_1" class="radio"><input type="radio" id="output_style_1" name="output_style" value="0" onchange="output_style_onchange()" ${
@@ -119,7 +173,9 @@ function showStart() {
 		
 	`,
 		function () {
+			singleNum = 0;
 			output_style_onchange();
+			checkSingleNumber();
 		}
 	);
 }
@@ -174,7 +230,7 @@ function startCalc() {
 
 								showOutput(`
 								${header}
-								We found <b>${formatNumber(primeFound)} prime</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
+								We found <b>${formatNumber(primeFound)} prime number</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
 									max
 								)}</b> in <b>${formatTime(processTime)}</b>.<br/>${btnShowResult} ${btnTryAgain}
 							`);
@@ -199,7 +255,7 @@ let render_start = 0;
 
 function showResult() {
 	showOutput(
-		`${header}${loading} Generating <b>${formatNumber(max - min + 1)}</b> result into your browser${loading2}`,
+		`${header}${loading} Generating <b>${formatNumber(max - min + 1)} number</b> into your browser${loading2}`,
 		function () {
 			render_start = window.performance.now();
 			let root = document.getElementById("root");
@@ -209,39 +265,39 @@ function showResult() {
 				showOutputLabel(`This list generated in ${render_length}`);
 			});
 
-			if (output_style === 0) {
-				let wk = new Worker("joinresult.js");
-				wk.postMessage([result]);
-				wk.onmessage = function (e) {
-					if (e.data) {
+			let wk = new Worker("joinresult.js");
+			wk.postMessage([result, output_style]);
+			wk.onmessage = function (e) {
+				if (e.data) {
+					if (output_style === 0) {
 						showOutput(`
-							${header}${btnTryAgain}<br/><br/>
-							<div id="speed_label1"></div><br/>
-							<div class="result_container">
-								<div class="result" onclick="showInfo(event)">
-									<div class="d-flex">${e.data}</div></div>
-								</div>
-							</div><br/>
-							<div id="speed_label2"></div><br/>
-							${btnTryAgain}
-							`);
+									${header}${btnTryAgain}<br/><br/>
+									<div id="speed_label1"></div><br/>
+									<div class="result_container">
+										<div class="result" onclick="showInfo(event)">
+											<div class="d-flex">${e.data}</div></div>
+										</div>
+									</div><br/>
+									<div id="speed_label2"></div><br/>
+									${btnTryAgain}
+									`);
 					} else {
-						showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
+						showOutput(`
+									${header}${btnTryAgain}<br/><br/>
+									<div id="speed_label1"></div><br/>
+									<div class="result_container">
+										<div class="result">
+											<small>${e.data}</small>
+										</div>
+									</div><br/>
+									<div id="speed_label2"></div><br/>
+									${btnTryAgain}
+									`);
 					}
-				};
-			} else {
-				showOutput(`
-					${header}${btnTryAgain}<br/><br/>
-					<div id="speed_label1"></div><br/>
-					<div class="result_container">
-						<div class="result">
-							<small>${result}</small>
-						</div>
-					</div><br/>
-					<div id="speed_label2"></div><br/>
-					${btnTryAgain}
-					`);
-			}
+				} else {
+					showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
+				}
+			};
 		}
 	);
 }
