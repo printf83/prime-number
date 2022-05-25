@@ -98,7 +98,7 @@ onmessage = function (e) {
 		let min = e.data[0];
 		let max = e.data[1];
 		let col = e.data[2];
-		let output_style = e.data[3];
+		let os = e.data[3];
 
 		let colIndex = 0;
 
@@ -108,7 +108,7 @@ onmessage = function (e) {
 		let arrayOfPrimeMin = [];
 		let result = [];
 
-		if (output_style === 0) {
+		if (os === 0) {
 			for (let x = 1; x <= max; x++) {
 				itsPrime = isPrime(x, arrayOfPrime);
 				if (itsPrime) {

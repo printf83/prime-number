@@ -3,8 +3,8 @@ let result = [];
 let min = 1;
 let max = 99999;
 let col = 6;
-let output_style = 1;
-let singleNum = 1;
+let os = 1;
+let snum = 1;
 
 function addResizeListener(elem, fun) {
 	let id;
@@ -36,18 +36,6 @@ function showOutput(html, callback) {
 			dom.replaceWith(frag);
 		}
 
-		if (typeof callback === "function") {
-			setTimeout(function () {
-				callback();
-			}, 0);
-		}
-	}, 0);
-}
-
-function showOutputLabel(html, callback) {
-	setTimeout(function () {
-		document.getElementById("speed_label1").innerHTML = html;
-		document.getElementById("speed_label2").innerHTML = html;
 		if (typeof callback === "function") {
 			setTimeout(function () {
 				callback();
@@ -107,40 +95,76 @@ function formatList(num) {
 	return num.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1");
 }
 
+function monitorTime(target, outputid1, outputid2) {
+	let monitor_start = window.performance.now();
+	addResizeListener(target, function () {
+		let monitor_end = window.performance.now() - monitor_start;
+		let monitor_length = formatTime(monitor_end);
+
+		if (outputid1) {
+			let elem = document.getElementById(outputid1);
+			if (elem) {
+				elem.innerHTML = `Complete in ${monitor_length}`;
+			}
+		}
+
+		if (outputid2) {
+			let elem = document.getElementById(outputid2);
+			if (elem) {
+				elem.innerHTML = `Complete in ${monitor_length}`;
+			}
+		}
+	});
+}
+
 function checkSingleNumber() {
 	let currentNum = parseInt(document.getElementById("num").value);
-	if (currentNum !== singleNum) {
-		showOutputNum(`${loading}Checking${loading2}`);
-		singleNum = currentNum;
+	if (currentNum > 0) {
+		if (currentNum !== snum) {
+			showOutputNum(`${loading}Checking${loading2}`);
+			snum = currentNum;
 
-		setTimeout(function () {
-			let wk = new Worker("singleprime.js");
-			wk.postMessage([singleNum]);
-			wk.onmessage = function (e) {
-				if (e.data) {
-					result = e.data;
-					if (result) {
-						if (result.length === 2) {
-							showOutputNum(
-								`<span class="font-success">${singleNum} is a prime number</span><br/><small>It can only be divided with <br/>${formatList(
-									result
-								)}</small>`
-							);
+			setTimeout(function () {
+				monitorTime(document.getElementById("root"), "single_time_1", "single_time_2");
+
+				let wk = new Worker("singleprime.js");
+				wk.postMessage([snum]);
+				wk.onmessage = function (e) {
+					if (e.data) {
+						result = e.data;
+						if (result) {
+							if (result.length === 2) {
+								showOutputNum(
+									`<span class="font-success">${snum} is a prime number</span><br/><small>It can only be divided with <br/>${formatList(
+										result
+									)}</small><br/><br/><small id="single_time_2"></small>`
+								);
+							} else {
+								if (result.length > 30) {
+									showOutputNum(
+										`<small id="single_time_1"></small><br/><br/><span>${snum} is <u class="font-danger">NOT</u> a prime number</span><br/><small>It can only be divided with <br/>${formatList(
+											result
+										)}</small><br/><br/><small id="single_time_2"></small>`
+									);
+								} else {
+									showOutputNum(
+										`<span>${snum} is <u class="font-danger">NOT</u> a prime number</span><br/><small>It can only be divided with <br/>${formatList(
+											result
+										)}</small><br/><br/><small id="single_time_2"></small>`
+									);
+								}
+							}
 						} else {
-							showOutputNum(
-								`<span>${singleNum} is <u class="font-danger">NOT</u> a prime number</span><br/><small>It can be divided with <br/>${formatList(
-									result
-								)}</small>`
-							);
+							showOutputNum(`Fail to find prime number`);
 						}
 					} else {
 						showOutputNum(`Fail to find prime number`);
 					}
-				} else {
-					showOutputNum(`Fail to find prime number`);
-				}
-			};
-		}, 0);
+				};
+			}, 0);
+		}
+	} else {
+		showOutputNum(`Number must more than 0`);
 	}
 }
 
@@ -153,18 +177,18 @@ function showStart() {
 	showOutput(
 		`
 		${header}
-		<div class="form-group"><label for="num">Number : </label><input type="number" id="num" value="${singleNum}" onchange="checkSingleNumber()" onkeyup="checkSingleNumber()"/></div>
+		<div class="form-group"><label for="num">Number : </label><input type="number" id="num" value="${snum}" onchange="checkSingleNumber()" onkeyup="checkSingleNumber()"/></div>
 		<div class="form-group"><div id="num_result"></div></div>
 
 		${header2}
 
 		<div class="form-group"><label for="min">Min : </label><input type="number" id="min" value="${min}"/></div>
 		<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
-		<div class="form-group"><label for="output_style_1" class="radio"><input type="radio" id="output_style_1" name="output_style" value="0" onchange="output_style_onchange()" ${
-			output_style === 0 ? ` checked="checked"` : ""
+		<div class="form-group"><label for="os_1" class="radio"><input type="radio" id="os_1" name="os" value="0" onchange="output_style_onchange()" ${
+			os === 0 ? ` checked="checked"` : ""
 		}/> Show All</label></div>
-		<div class="form-group"><label for="output_style_2" class="radio"><input type="radio" id="output_style_2" name="output_style" value="1" onchange="output_style_onchange()" ${
-			output_style === 1 ? ` checked="checked"` : ""
+		<div class="form-group"><label for="os_2" class="radio"><input type="radio" id="os_2" name="os" value="1" onchange="output_style_onchange()" ${
+			os !== 0 ? ` checked="checked"` : ""
 		}/> Prime Only</label></div>
 		<div class="form-group" id="col_container"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
 		<button onclick="startCalc()">Start Calculate Prime</button><br/><br/>
@@ -173,7 +197,7 @@ function showStart() {
 		
 	`,
 		function () {
-			singleNum = 0;
+			snum = 0;
 			output_style_onchange();
 			checkSingleNumber();
 		}
@@ -181,7 +205,7 @@ function showStart() {
 }
 
 function output_style_onchange() {
-	let val = parseInt(getRadioValue("output_style"), 10);
+	let val = parseInt(getRadioValue("os"), 10);
 	if (val === 0) {
 		document.getElementById("col_container").style.display = "flex";
 	} else {
@@ -206,7 +230,7 @@ function startCalc() {
 	min = parseInt(document.getElementById("min").value, 10);
 	max = parseInt(document.getElementById("max").value, 10);
 	col = parseInt(document.getElementById("col").value, 10);
-	output_style = parseInt(getRadioValue("output_style"), 10);
+	os = parseInt(getRadioValue("os"), 10);
 
 	if (max > 0 && col > 0) {
 		if (min > 0 && min <= max) {
@@ -220,7 +244,7 @@ function startCalc() {
 						let start = window.performance.now();
 
 						let wk = new Worker("prime.js");
-						wk.postMessage([min, max, col, output_style]);
+						wk.postMessage([min, max, col, os]);
 						wk.onmessage = function (e) {
 							if (e.data) {
 								result = e.data.result;
@@ -257,40 +281,34 @@ function showResult() {
 	showOutput(
 		`${header}${loading} Generating <b>${formatNumber(max - min + 1)} number</b> into your browser${loading2}`,
 		function () {
-			render_start = window.performance.now();
-			let root = document.getElementById("root");
-			addResizeListener(root, function () {
-				let render_end = window.performance.now() - render_start;
-				let render_length = formatTime(render_end);
-				showOutputLabel(`This list generated in ${render_length}`);
-			});
+			monitorTime(document.getElementById("root"), "multiple_time_1", "multiple_time_2");
 
 			let wk = new Worker("joinresult.js");
-			wk.postMessage([result, output_style]);
+			wk.postMessage([result, os]);
 			wk.onmessage = function (e) {
 				if (e.data) {
-					if (output_style === 0) {
+					if (os === 0) {
 						showOutput(`
 									${header}${btnTryAgain}<br/><br/>
-									<div id="speed_label1"></div><br/>
+									${e.data.length > 1000 ? `<small id="multiple_time_1"></small><br/><br/>` : ``}
 									<div class="result_container">
 										<div class="result" onclick="showInfo(event)">
 											<div class="d-flex">${e.data}</div></div>
 										</div>
 									</div><br/>
-									<div id="speed_label2"></div><br/>
+									<small id="multiple_time_2"></small><br/><br/>
 									${btnTryAgain}
 									`);
 					} else {
 						showOutput(`
 									${header}${btnTryAgain}<br/><br/>
-									<div id="speed_label1"></div><br/>
+									${e.data.length > 1000 ? `<small id="multiple_time_1"></small><br/><br/>` : ``}
 									<div class="result_container">
 										<div class="result">
 											<small>${e.data}</small>
 										</div>
 									</div><br/>
-									<div id="speed_label2"></div><br/>
+									<small id="multiple_time_2"></small><br/><br/>
 									${btnTryAgain}
 									`);
 					}
@@ -342,16 +360,35 @@ function showInfo(e) {
 	}
 }
 
-function updateMem() {
-	// setTimeout(function () {
-	// 	let mem = document.getElementById("mem");
-	// 	if (mem) {
-	// 		let m = window.performance.memory;
-	// 		mem.innerHTML = `${((m.usedJSHeapSize / m.jsHeapSizeLimit) * 100).toFixed(3)}% Memory Usage`;
-	// 		updateMem();
-	// 	}
-	// }, 100);
+function getParam() {
+	const queryString = window.location.search;
+	const urlParams = new URLSearchParams(queryString);
+	const u_num = urlParams.get("num");
+	const u_min = urlParams.get("min");
+	const u_max = urlParams.get("max");
+	const u_col = urlParams.get("col");
+	const u_os = urlParams.get("os");
+
+	if (u_num) {
+		snum = parseInt(u_num, 10);
+	}
+
+	if (u_min) {
+		min = parseInt(u_min, 10);
+	}
+
+	if (u_max) {
+		max = parseInt(u_max, 10);
+	}
+
+	if (u_col) {
+		col = parseInt(u_col, 10);
+	}
+
+	if (u_os) {
+		os = parseInt(u_os, 10);
+	}
 }
 
-updateMem();
+getParam();
 showStart();

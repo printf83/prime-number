@@ -19,6 +19,17 @@ body{
         background-color: #fff;
         -webkit-text-size-adjust: 100%;
         -webkit-tap-highlight-color: transparent;
+
+        user-select: none;
+            /* supported by Chrome and Opera */
+            -webkit-user-select: none;
+            /* Safari */
+            -khtml-user-select: none;
+            /* Konqueror HTML */
+            -moz-user-select: none;
+            /* Firefox */
+            -ms-user-select: none;
+            /* Internet Explorer/Edge */
         
 }
 #root{
@@ -73,9 +84,18 @@ h2{
 
 }
 
-#speed_label1,#speed_label2,small {
+#multiple_time_1,#multiple_time_2,#single_time_1,
+#single_time_2 {
+    font-size: x-small;
+    color:#fff;
+    background-color: #777;
+    border-radius: 5px;
+    padding:0.25rem 0.75rem;
+}
+
+small {
     font-size: small;
-    color:#555;
+    color: #555;
 }
 
 .form-group{
