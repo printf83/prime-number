@@ -319,6 +319,14 @@ h3{
     background: #fff;
 }
 
+
+#multiple_time_1 .lds-ellipsis div,
+#multiple_time_2 .lds-ellipsis div,
+#single_time_1 .lds-ellipsis div,
+#single_time_2 .lds-ellipsis div{
+    background: #fff;
+}
+
 .lds-ellipsis div:nth-child(1) {
     left: 2px;
     animation: lds-ellipsis1 0.6s infinite;
