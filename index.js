@@ -19,8 +19,9 @@ function addResizeListener(elem, fun) {
 				fun();
 				wid = newStyle.width;
 				hei = newStyle.height;
+			} else {
+				id = requestAnimationFrame(test);
 			}
-			id = requestAnimationFrame(test);
 		}, 0);
 	}
 }
