@@ -85,12 +85,19 @@ h2{
 }
 
 #multiple_time_1,#multiple_time_2,#single_time_1,
-#single_time_2 {
+#single_time_2,#tooltip_time {
     font-size: x-small;
     color:#fff;
     background-color: #777;
     border-radius: 5px;
     padding:0.25rem 0.75rem;
+}
+
+#tooltip_time{
+    color: #333;
+    background-color: #fff;
+    margin-top: 1rem;
+    display: inline-block;
 }
 
 small {

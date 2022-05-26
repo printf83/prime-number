@@ -47,7 +47,11 @@ function showOutput(html, callback) {
 
 function showOutputNum(html, callback) {
 	setTimeout(function () {
-		document.getElementById("num_result").innerHTML = html;
+		let elem = document.getElementById("num_result");
+		if (elem) {
+			elem.innerHTML = html;
+		}
+
 		if (typeof callback === "function") {
 			setTimeout(function () {
 				callback();
@@ -97,25 +101,29 @@ function formatList(num) {
 }
 
 function monitorTime(target, outputid1, outputid2) {
-	let monitor_start = window.performance.now();
-	addResizeListener(target, function () {
-		let monitor_end = window.performance.now() - monitor_start;
-		let monitor_length = formatTime(monitor_end);
+	let elem = document.getElementById(target);
 
-		if (outputid1) {
-			let elem = document.getElementById(outputid1);
-			if (elem) {
-				elem.innerHTML = `Complete in ${monitor_length}`;
-			}
-		}
+	if (elem) {
+		let monitor_start = window.performance.now();
+		addResizeListener(elem, function () {
+			let monitor_end = window.performance.now() - monitor_start;
+			let monitor_length = formatTime(monitor_end);
 
-		if (outputid2) {
-			let elem = document.getElementById(outputid2);
-			if (elem) {
-				elem.innerHTML = `Complete in ${monitor_length}`;
+			if (outputid1) {
+				let elem = document.getElementById(outputid1);
+				if (elem) {
+					elem.innerHTML = `Complete in ${monitor_length}`;
+				}
 			}
-		}
-	});
+
+			if (outputid2) {
+				let elem = document.getElementById(outputid2);
+				if (elem) {
+					elem.innerHTML = `Complete in ${monitor_length}`;
+				}
+			}
+		});
+	}
 }
 
 function checkSingleNumber() {
@@ -126,7 +134,7 @@ function checkSingleNumber() {
 			snum = currentNum;
 
 			setTimeout(function () {
-				monitorTime(document.getElementById("root"), "single_time_1", "single_time_2");
+				monitorTime("root", "single_time_1", "single_time_2");
 
 				let wk = new Worker("singleprime.js");
 				wk.postMessage([snum]);
@@ -136,22 +144,28 @@ function checkSingleNumber() {
 						if (result) {
 							if (result.length === 2) {
 								showOutputNum(
-									`<span class="font-success">${snum} is a prime number</span><br/><small>It can only be divided with <br/>${formatList(
+									`<b class="font-success">${
+										result[result.length - 1]
+									} is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
 										result
 									)}</small><br/><br/><small id="single_time_2"></small>`
 								);
 							} else {
 								if (result.length > 30) {
 									showOutputNum(
-										`<small id="single_time_1"></small><br/><br/><span>${snum} is <u class="font-danger">NOT</u> a prime number</span><br/><small>It can only be divided with <br/>${formatList(
+										`<small id="single_time_1"></small><br/><br/><b>${
+											result[result.length - 1]
+										} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can only be divided with <br/>${formatList(
 											result
-										)}</small><br/><br/><small id="single_time_2"></small>`
+										)}</small><br/><br/><small id="single_time_2">${loading2}</small>`
 									);
 								} else {
 									showOutputNum(
-										`<span>${snum} is <u class="font-danger">NOT</u> a prime number</span><br/><small>It can only be divided with <br/>${formatList(
+										`<b>${
+											result[result.length - 1]
+										} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can only be divided with <br/>${formatList(
 											result
-										)}</small><br/><br/><small id="single_time_2"></small>`
+										)}</small><br/><br/><small id="single_time_2">${loading2}</small>`
 									);
 								}
 							}
@@ -276,13 +290,11 @@ function startCalc() {
 	}
 }
 
-let render_start = 0;
-
 function showResult() {
 	showOutput(
 		`${header}${loading} Generating <b>${formatNumber(max - min + 1)} number</b> into your browser${loading2}`,
 		function () {
-			monitorTime(document.getElementById("root"), "multiple_time_1", "multiple_time_2");
+			monitorTime("root", "multiple_time_1", "multiple_time_2");
 
 			let wk = new Worker("joinresult.js");
 			wk.postMessage([result, os]);
@@ -291,25 +303,25 @@ function showResult() {
 					if (os === 0) {
 						showOutput(`
 									${header}${btnTryAgain}<br/><br/>
-									${e.data.length > 1000 ? `<small id="multiple_time_1"></small><br/><br/>` : ``}
+									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 									<div class="result_container">
 										<div class="result" onclick="showInfo(event)">
 											<div class="d-flex">${e.data}</div></div>
 										</div>
 									</div><br/>
-									<small id="multiple_time_2"></small><br/><br/>
+									<small id="multiple_time_2">${loading2}</small><br/><br/>
 									${btnTryAgain}
 									`);
 					} else {
 						showOutput(`
 									${header}${btnTryAgain}<br/><br/>
-									${e.data.length > 1000 ? `<small id="multiple_time_1"></small><br/><br/>` : ``}
+									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 									<div class="result_container">
 										<div class="result">
 											<small>${e.data}</small>
 										</div>
 									</div><br/>
-									<small id="multiple_time_2"></small><br/><br/>
+									<small id="multiple_time_2">${loading2}</small><br/><br/>
 									${btnTryAgain}
 									`);
 					}
@@ -329,6 +341,8 @@ function showInfo(e) {
 		showTooltip(target, `<h3>${num}</h3> ${loading} Checking${loading2}`);
 
 		setTimeout(function () {
+			monitorTime("tooltip", "tooltip_time");
+
 			let wk = new Worker("singleprime.js");
 			wk.postMessage([num]);
 			wk.onmessage = function (e) {
@@ -338,16 +352,20 @@ function showInfo(e) {
 						if (result.length === 2) {
 							showTooltip(
 								target,
-								`<h3>${num}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
+								`<h3>${
+									result[result.length - 1]
+								}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
 									result
-								)}</small>`
+								)}</small><br/><span id="tooltip_time">${loading2}</span>`
 							);
 						} else {
 							showTooltip(
 								target,
-								`<h3>${num}</h3><b>Is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can be divided with <br/>${formatList(
+								`<h3>${
+									result[result.length - 1]
+								}</h3><b>Is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can be divided with <br/>${formatList(
 									result
-								)}</small>`
+								)}</small><br/><span id="tooltip_time">${loading2}</span>`
 							);
 						}
 					} else {
