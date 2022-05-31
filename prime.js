@@ -97,6 +97,7 @@ onmessage = function (e) {
 	try {
 		let min = e.data[0];
 		let max = e.data[1];
+		let max2 = parseInt(max / 2, 10);
 		let col = e.data[2];
 		let os = e.data[3];
 
@@ -109,7 +110,7 @@ onmessage = function (e) {
 		let result = [];
 
 		if (os === 0) {
-			for (let x = 1; x <= max; x++) {
+			for (let x = 1; x < max2; x++) {
 				itsPrime = isPrime(x, arrayOfPrime);
 				if (itsPrime) {
 					arrayOfPrime.push(x);
@@ -141,7 +142,7 @@ onmessage = function (e) {
 				count: arrayOfPrimeMin.length,
 			});
 		} else {
-			for (let x = 1; x <= max; x++) {
+			for (let x = 1; x < max2; x++) {
 				itsPrime = isPrime(x, arrayOfPrime);
 				if (itsPrime) {
 					arrayOfPrime.push(x);
