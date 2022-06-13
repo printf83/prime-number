@@ -97,7 +97,7 @@ onmessage = function (e) {
 	try {
 		let min = e.data[0];
 		let max = e.data[1];
-		let max2 = parseInt(max / 2, 10);
+		let max2 = max; //parseInt(max / 2, 10);
 		let col = e.data[2];
 		let os = e.data[3];
 

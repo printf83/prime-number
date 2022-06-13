@@ -26,7 +26,15 @@ function addResizeListener(elem, fun) {
 	}
 }
 
-function showOutput(html, callback) {
+function runCallback(callback) {
+	if (typeof callback === "function") {
+		setTimeout(function () {
+			callback();
+		}, 0);
+	}
+}
+
+function genUI(html, callback) {
 	setTimeout(function () {
 		let frag = document.createElement("div");
 		frag.id = "root";
@@ -37,30 +45,22 @@ function showOutput(html, callback) {
 			dom.replaceWith(frag);
 		}
 
-		if (typeof callback === "function") {
-			setTimeout(function () {
-				callback();
-			}, 0);
-		}
+		runCallback(callback);
 	}, 0);
 }
 
-function showOutputNum(html, callback) {
+function showSinglePrimeOutput(html, callback) {
 	setTimeout(function () {
 		let elem = document.getElementById("num_result");
 		if (elem) {
 			elem.innerHTML = html;
 		}
 
-		if (typeof callback === "function") {
-			setTimeout(function () {
-				callback();
-			}, 0);
-		}
+		runCallback(callback);
 	}, 0);
 }
 
-function showTooltip(target, html) {
+function genTooltip(target, html) {
 	let frag = document.createElement("div");
 	frag.id = "tooltip";
 	frag.innerHTML = html;
@@ -79,7 +79,7 @@ const header = `<h2>Prime Number Checker</h2>`;
 const header2 = `<h2>Prime Number List</h2>`;
 const errorHeader = `<h2 class="font-danger">Error!</h2>`;
 const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
-const btnShowResult = `<button onclick="showResult()">Show Result</button>`;
+const btnShowResult = `<button onclick="showRangePrimeOutput()">Show Result</button>`;
 const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
 const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
 const memoryLabel = ``; //`<div><small id="mem"></small></div>`;
@@ -100,50 +100,46 @@ function formatList(num) {
 	return num.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1");
 }
 
-function monitorTime(target, outputid1, outputid2) {
+function setInnerHtml(id, html) {
+	if (id) {
+		let elem = document.getElementById(id);
+		if (elem) {
+			elem.innerHTML = html;
+		}
+	}
+}
+
+function monitorRenderTime(target, outputid1, outputid2) {
 	let elem = document.getElementById(target);
 
 	if (elem) {
-		let monitor_start = window.performance.now();
+		let start = window.performance.now();
 		addResizeListener(elem, function () {
-			let monitor_end = window.performance.now() - monitor_start;
-			let monitor_length = formatTime(monitor_end);
+			let duration = window.performance.now() - start;
+			let sduration = formatTime(duration);
 
-			if (outputid1) {
-				let elem = document.getElementById(outputid1);
-				if (elem) {
-					elem.innerHTML = `Complete in ${monitor_length}`;
-				}
-			}
-
-			if (outputid2) {
-				let elem = document.getElementById(outputid2);
-				if (elem) {
-					elem.innerHTML = `Complete in ${monitor_length}`;
-				}
-			}
+			setInnerHtml(outputid1, `Complete in ${sduration}`);
+			setInnerHtml(outputid2, `Complete in ${sduration}`);
 		});
 	}
 }
 
-function checkSingleNumber() {
+function calcSinglePrime() {
 	let currentNum = parseInt(document.getElementById("num").value);
 	if (currentNum > 0) {
 		if (currentNum !== snum) {
-			showOutputNum(`${loading}Checking${loading2}`);
+			showSinglePrimeOutput(`${loading}Checking${loading2}`);
 			snum = currentNum;
 
 			setTimeout(function () {
-				monitorTime("root", "single_time_1", "single_time_2");
+				monitorRenderTime("root", "single_time_1", "single_time_2");
 
-				let wk = new Worker("singleprime.js");
-				wk.postMessage([snum]);
-				wk.onmessage = function (e) {
+				runWorker("singleprime", [snum], function (e) {
 					if (e.data) {
 						result = e.data;
 						if (result) {
 							if (result.length === 2) {
-								showOutputNum(
+								showSinglePrimeOutput(
 									`<b class="font-success">${
 										result[result.length - 1]
 									} is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
@@ -152,7 +148,7 @@ function checkSingleNumber() {
 								);
 							} else {
 								if (result.length > 30) {
-									showOutputNum(
+									showSinglePrimeOutput(
 										`<small id="single_time_1"></small><br/><br/><b>${
 											result[result.length - 1]
 										} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can only be divided with <br/>${formatList(
@@ -160,7 +156,7 @@ function checkSingleNumber() {
 										)}</small><br/><br/><small id="single_time_2">${loading2}</small>`
 									);
 								} else {
-									showOutputNum(
+									showSinglePrimeOutput(
 										`<b>${
 											result[result.length - 1]
 										} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can only be divided with <br/>${formatList(
@@ -170,16 +166,16 @@ function checkSingleNumber() {
 								}
 							}
 						} else {
-							showOutputNum(`Fail to find prime number`);
+							showSinglePrimeOutput(`Fail to find prime number`);
 						}
 					} else {
-						showOutputNum(`Fail to find prime number`);
+						showSinglePrimeOutput(`Fail to find prime number`);
 					}
-				};
+				});
 			}, 0);
 		}
 	} else {
-		showOutputNum(`Number must more than 0`);
+		showSinglePrimeOutput(`Number must more than 0`);
 	}
 }
 
@@ -189,37 +185,37 @@ function showStart() {
 		tooltip_container.style.display = "none";
 	}
 
-	showOutput(
+	genUI(
 		`
 		${header}
-		<div class="form-group"><label for="num">Number : </label><input type="number" id="num" value="${snum}" onchange="checkSingleNumber()" onkeyup="checkSingleNumber()"/></div>
+		<div class="form-group"><label for="num">Number : </label><input type="number" id="num" value="${snum}" onchange="calcSinglePrime()" onkeyup="calcSinglePrime()"/></div>
 		<div class="form-group"><div id="num_result"></div></div>
 
 		${header2}
 
 		<div class="form-group"><label for="min">Min : </label><input type="number" id="min" value="${min}"/></div>
 		<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
-		<div class="form-group"><label for="os_1" class="radio"><input type="radio" id="os_1" name="os" value="0" onchange="output_style_onchange()" ${
+		<div class="form-group"><label for="os_1" class="radio"><input type="radio" id="os_1" name="os" value="0" onchange="os_onchange()" ${
 			os === 0 ? ` checked="checked"` : ""
 		}/> Show All</label></div>
-		<div class="form-group"><label for="os_2" class="radio"><input type="radio" id="os_2" name="os" value="1" onchange="output_style_onchange()" ${
+		<div class="form-group"><label for="os_2" class="radio"><input type="radio" id="os_2" name="os" value="1" onchange="os_onchange()" ${
 			os !== 0 ? ` checked="checked"` : ""
 		}/> Prime Only</label></div>
 		<div class="form-group" id="col_container"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
-		<button onclick="startCalc()">Start Calculate Prime</button><br/><br/>
+		<button onclick="calcRangePrime()">Start Calculate Prime</button><br/><br/>
 		<div><small>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your <b>device memory</b></small></div>
 		<div><small>View on <a href="https://github.com/printf83/factor">GitHub</a></small></div>
 		
 	`,
 		function () {
 			snum = 0;
-			output_style_onchange();
-			checkSingleNumber();
+			os_onchange();
+			calcSinglePrime();
 		}
 	);
 }
 
-function output_style_onchange() {
+function os_onchange() {
 	let val = parseInt(getRadioValue("os"), 10);
 	if (val === 0) {
 		document.getElementById("col_container").style.display = "flex";
@@ -241,7 +237,7 @@ function getRadioValue(name) {
 	return null;
 }
 
-function startCalc() {
+function calcRangePrime() {
 	min = parseInt(document.getElementById("min").value, 10);
 	max = parseInt(document.getElementById("max").value, 10);
 	col = parseInt(document.getElementById("col").value, 10);
@@ -250,7 +246,7 @@ function startCalc() {
 	if (max > 0 && col > 0) {
 		if (min > 0 && min <= max) {
 			if (window.Worker) {
-				showOutput(
+				genUI(
 					`
 						${header}
 						${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers${loading2}
@@ -258,54 +254,50 @@ function startCalc() {
 					function () {
 						let start = window.performance.now();
 
-						let wk = new Worker("prime.js");
-						wk.postMessage([min, max, col, os]);
-						wk.onmessage = function (e) {
+						runWorker("prime", [min, max, col, os], function (e) {
 							if (e.data) {
 								result = e.data.result;
 								primeFound = e.data.count;
 
 								let processTime = window.performance.now() - start;
 
-								showOutput(`
+								genUI(`
 								${header}
 								We found <b>${formatNumber(primeFound)} prime number</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
 									max
 								)}</b> in <b>${formatTime(processTime)}</b>.<br/>${btnShowResult} ${btnTryAgain}
 							`);
 							} else {
-								showOutput(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
+								genUI(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
 							}
-						};
+						});
 					}
 				);
 			} else {
-				showOutput(`${errorHeader}Web Worker not available<br/>${btnTryAgain}`);
+				genUI(`${errorHeader}Web Worker not available<br/>${btnTryAgain}`);
 			}
 		} else {
-			showOutput(`${errorHeader}Min must be a positive integer and less or equal with Max<br/>${btnTryAgain}`);
+			genUI(`${errorHeader}Min must be a positive integer and less or equal with Max<br/>${btnTryAgain}`);
 		}
 	} else {
-		showOutput(`${errorHeader}Max and Col must be a positive integer<br/>${btnTryAgain}`);
+		genUI(`${errorHeader}Max and Col must be a positive integer<br/>${btnTryAgain}`);
 	}
 }
 
-function showResult() {
-	showOutput(
+function showRangePrimeOutput() {
+	genUI(
 		`${header}${loading} Generating <b>${formatNumber(max - min + 1)} number</b> into your browser${loading2}`,
 		function () {
-			monitorTime("root", "multiple_time_1", "multiple_time_2");
+			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
 
-			let wk = new Worker("joinresult.js");
-			wk.postMessage([result, os]);
-			wk.onmessage = function (e) {
+			runWorker("joinresult", [result, os], function (e) {
 				if (e.data) {
 					if (os === 0) {
-						showOutput(`
+						genUI(`
 									${header}${btnTryAgain}<br/><br/>
 									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 									<div class="result_container">
-										<div class="result" onclick="showInfo(event)">
+										<div class="result" onclick="showTooltip(event)">
 											<div class="d-flex">${e.data}</div></div>
 										</div>
 									</div><br/>
@@ -313,7 +305,7 @@ function showResult() {
 									${btnTryAgain}
 									`);
 					} else {
-						showOutput(`
+						genUI(`
 									${header}${btnTryAgain}<br/><br/>
 									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 									<div class="result_container">
@@ -326,31 +318,28 @@ function showResult() {
 									`);
 					}
 				} else {
-					showOutput(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
+					genUI(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
 				}
-			};
+			});
 		}
 	);
 }
 
-function showInfo(e) {
+function showTooltip(e) {
 	if (e.target && e.target.parentNode.classList.contains("d-flex")) {
 		const target = e.target;
 		const num = parseInt(target.innerText, 10);
 
-		showTooltip(target, `<h3>${num}</h3> ${loading} Checking${loading2}`);
+		genTooltip(target, `<h3>${num}</h3> ${loading} Checking${loading2}`);
 
 		setTimeout(function () {
-			monitorTime("tooltip", "tooltip_time");
-
-			let wk = new Worker("singleprime.js");
-			wk.postMessage([num]);
-			wk.onmessage = function (e) {
+			monitorRenderTime("tooltip", "tooltip_time");
+			runWorker("singleprime", [num], function (e) {
 				if (e.data) {
 					result = e.data;
 					if (result) {
 						if (result.length === 2) {
-							showTooltip(
+							genTooltip(
 								target,
 								`<h3>${
 									result[result.length - 1]
@@ -359,7 +348,7 @@ function showInfo(e) {
 								)}</small><br/><span id="tooltip_time">${loading2}</span>`
 							);
 						} else {
-							showTooltip(
+							genTooltip(
 								target,
 								`<h3>${
 									result[result.length - 1]
@@ -369,14 +358,20 @@ function showInfo(e) {
 							);
 						}
 					} else {
-						showTooltip(target, `Fail to find prime number`);
+						genTooltip(target, `Fail to find prime number`);
 					}
 				} else {
-					showTooltip(target, `Fail to find prime number`);
+					genTooltip(target, `Fail to find prime number`);
 				}
-			};
+			});
 		}, 0);
 	}
+}
+
+function runWorker(script, params, callback) {
+	let wk = new Worker(`${script}.js`);
+	wk.postMessage(params);
+	wk.onmessage = callback;
 }
 
 function getParam() {
