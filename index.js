@@ -250,13 +250,20 @@ function calcRangePrime() {
 								result = e.data.result;
 								primeFound = e.data.count;
 
+								let hl_count = e.data.hl_count;
+								let hl_num = e.data.hl_num;
+
 								let processTime = window.performance.now() - start;
 
 								genUI(`
 								${header}
 								We found <b>${formatNumber(primeFound)} prime number</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
 									max
-								)}</b> in <b>${formatTime(processTime)}</b>.<br/>${btnShowResult} ${btnTryAgain}
+								)}</b> in <b>${formatTime(
+									processTime
+								)}</b>.<br/>${btnShowResult} ${btnTryAgain} <br/><br/>
+								<small class="note">Higest Loop : <b>${formatNumber(hl_count)}</b></small><br/>
+								<small class="note">Higest Number : <b>${formatNumber(hl_num)}</b></small><br/>
 							`);
 							} else {
 								genUI(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);

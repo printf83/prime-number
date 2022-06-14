@@ -85,7 +85,7 @@ h2{
 }
 
 #multiple_time_1,#multiple_time_2,#single_time_1,
-#single_time_2,#tooltip_time {
+#single_time_2,#tooltip_time,.note {
     font-size: x-small;
     color:#fff;
     background-color: #777;

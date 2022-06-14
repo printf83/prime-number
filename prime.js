@@ -75,12 +75,21 @@
 // 	return result;
 // }
 
+let hl_count = 0;
+let hl_num = 0;
+
 function factor(num) {
 	let max = Math.sqrt(num);
 	let result = true;
 	for (let x = 2; x <= max; x++) {
 		if (num % x === 0) {
 			result = false;
+
+			if (hl_count <= x) {
+				hl_count = x;
+				hl_num = num;
+			}
+
 			break;
 		}
 	}
@@ -127,6 +136,8 @@ onmessage = function (e) {
 		postMessage({
 			result: result,
 			count: result.filter((x) => x === 1).length,
+			hl_count: hl_count,
+			hl_num: hl_num,
 		});
 	} catch (err) {
 		postMessage(null);
