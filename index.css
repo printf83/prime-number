@@ -134,10 +134,9 @@ small {
 }
 
 
-.d-flex div,.d-flex span{
+.d-flex b,.d-flex i{
     width: auto;
     border:1px solid;
-    
     min-width: 2rem;
     margin:0.05rem;
     text-align: center;
@@ -147,21 +146,22 @@ small {
     font-size: x-small;
     display: inline-block;
     cursor: pointer;
-    
+    font-weight: normal;
+    font-style: normal;
 }
 
-.d-flex div:hover,
-.d-flex span:hover {
+.d-flex b:hover,
+.d-flex i:hover {
     border: 1px solid #0d6efd;
     color:#0d6efd;
 }
 
-.d-flex div {
+.d-flex b {
     color: #ccc;
     
 }
 
-.d-flex span{
+.d-flex i{
     color:red;
 }
 

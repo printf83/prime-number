@@ -155,7 +155,11 @@ function calcSinglePrime() {
 								);
 							} else {
 								showSinglePrimeOutput(
-									`${result.length > 30 ? `<small id="single_time_1"></small><br/><br/>` : ``}
+									`${
+										result.length > 30
+											? `<small id="single_time_1">${loading2}</small><br/><br/>`
+											: ``
+									}
 									<b>${formatNumber(result[result.length - 1])} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can${
 										result.length === 1 ? ` only` : ``
 									} be divided with <br/>${formatList(

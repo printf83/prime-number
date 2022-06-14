@@ -11,7 +11,7 @@ onmessage = function (e) {
 			//gen array list
 			let row = [];
 			for (x = 0; x < data.length; x++) {
-				row.push(data[x] === 1 ? `<span>${x + min}</span>` : `<div>${x + min}</div>`);
+				row.push(data[x] === 1 ? `<i>${x + min}</i>` : `<b>${x + min}</b>`);
 
 				if ((x + 1) % col === 0) {
 					tmp.push(row.join(""));
