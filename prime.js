@@ -96,15 +96,34 @@ function factor(num) {
 	return result;
 }
 
+// function isPrimeRegex(num) {
+// 	if (num % 2 === 0) return false;
+// 	if (num % 3 === 0) return false;
+// 	if (num % 5 === 0) return false;
+// 	if (num % 7 === 0) return false;
+// 	if (num % 11 === 0) return false;
+
+// 	let t = new Array(num).fill(1).join("");
+// 	let m = t.match(/^1?$|^(11+?)\1+$/);
+// 	return !m;
+// }
+
 function isPrime(num) {
-	if (num > 10) {
+	if (num > 11) {
+		// if (isPrimeRegex(num)) {
 		return factor(num);
+		// }
+		// else {
+		// 	return false;
+		// }
+		// return isPrimeRegex(num);
 	} else {
 		switch (num) {
 			case 2:
 			case 3:
 			case 5:
 			case 7:
+			case 11:
 				return true;
 			default:
 				return false;

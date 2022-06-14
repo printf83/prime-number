@@ -17,8 +17,9 @@ function addResizeListener(elem, fun) {
 			let newStyle = getComputedStyle(elem);
 			if (wid !== newStyle.width || hei !== newStyle.height) {
 				fun();
-				wid = newStyle.width;
-				hei = newStyle.height;
+				// wid = newStyle.width;
+				// hei = newStyle.height;
+				console.log("end of size change monitor");
 			} else {
 				id = requestAnimationFrame(test);
 			}
@@ -87,8 +88,11 @@ const header2 = `<h2>Prime Number List</h2>`;
 const errorHeader = `<h2 class="font-danger">Error!</h2>`;
 const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
 const btnShowResult = `<button onclick="showRangePrimeOutput()">Show Result</button>`;
+const btnScrollBottom = `<button onclick="doScrollTo(1)">Bottom</button>`;
+const btnScrollTop = `<button onclick="doScrollTo(0)">Top</button>`;
 const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
 const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
+const loading3 = `<div class="lds-gif"></div>`;
 const memoryLabel = `<div><small id="mem"></small></div>`;
 
 function formatNumber(num) {
@@ -147,11 +151,11 @@ function calcSinglePrime() {
 						if (result) {
 							if (result.length === 2) {
 								showSinglePrimeOutput(
-									`<b class="font-success">${formatNumber(
+									`<h4>${formatNumber(
 										result[result.length - 1]
-									)} is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
+									)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
 										result
-									)}</small><br/><br/><small id="single_time_2"></small>`
+									)}</small><br/><br/><small id="single_time_1">${loading2}</small>`
 								);
 							} else {
 								showSinglePrimeOutput(
@@ -160,7 +164,9 @@ function calcSinglePrime() {
 											? `<small id="single_time_1">${loading2}</small><br/><br/>`
 											: ``
 									}
-									<b>${formatNumber(result[result.length - 1])} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can${
+									<h4>${formatNumber(
+										result[result.length - 1]
+									)}</h4><b>Is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can${
 										result.length === 1 ? ` only` : ``
 									} be divided with <br/>${formatList(
 										result
@@ -250,7 +256,8 @@ function calcRangePrime() {
 				genUI(
 					`
 						${header}
-						${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers${loading2}
+						${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers${loading2}<br/>
+						${loading3}
 					`,
 					function () {
 						let start = window.performance.now();
@@ -294,7 +301,8 @@ function calcRangePrime() {
 
 function showRangePrimeOutput() {
 	genUI(
-		`${header}${loading} Generating <b>${formatNumber(max - min + 1)} number</b> into your browser${loading2}`,
+		`${header}${loading} Generating <b>${formatNumber(max - min + 1)} number</b> into your browser${loading2}<br/>
+		${loading3}`,
 		function () {
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
 
@@ -302,7 +310,7 @@ function showRangePrimeOutput() {
 				if (e.data) {
 					if (os === 0) {
 						genUI(`
-									${header}${btnTryAgain}<br/><br/>
+									${header}${btnTryAgain} ${btnScrollBottom}<br/><br/>
 									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 									<div class="result_container">
 										<div class="result" onclick="showTooltip(event)">
@@ -310,11 +318,11 @@ function showRangePrimeOutput() {
 										</div>
 									</div><br/>
 									<small id="multiple_time_2">${loading2}</small><br/><br/>
-									${btnTryAgain}
+									${btnTryAgain} ${btnScrollTop}
 									`);
 					} else {
 						genUI(`
-									${header}${btnTryAgain}<br/><br/>
+									${header}${btnTryAgain} ${btnScrollBottom}<br/><br/>
 									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 									<div class="result_container">
 										<div class="result">
@@ -322,7 +330,7 @@ function showRangePrimeOutput() {
 										</div>
 									</div><br/>
 									<small id="multiple_time_2">${loading2}</small><br/><br/>
-									${btnTryAgain}
+									${btnTryAgain} ${btnScrollTop}
 									`);
 					}
 				} else {
@@ -376,10 +384,23 @@ function showTooltip(e) {
 	}
 }
 
+function doScrollTo(location) {
+	if (location === 1) {
+		window.scrollTo(0, document.body.scrollHeight);
+	} else {
+		window.scrollTo(0, 0);
+	}
+}
+
 function runWorker(script, params, callback) {
 	let wk = new Worker(`${script}.js`);
 	wk.postMessage(params);
-	wk.onmessage = callback;
+	wk.onmessage = function (e) {
+		if (typeof callback === "function") {
+			this.terminate();
+			callback(e);
+		}
+	};
 }
 
 function getParam() {
