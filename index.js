@@ -92,7 +92,7 @@ const btnScrollBottom = `<button onclick="doScrollTo(1)">Bottom</button>`;
 const btnScrollTop = `<button onclick="doScrollTo(0)">Top</button>`;
 const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
 const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
-const loading3 = `<div class="lds-gif"></div>`;
+const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;
 const memoryLabel = `<div><small id="mem"></small></div>`;
 
 function formatNumber(num) {
@@ -164,9 +164,7 @@ function calcSinglePrime() {
 											? `<small id="single_time_1">${loading2}</small><br/><br/>`
 											: ``
 									}
-									<h4>${formatNumber(
-										result[result.length - 1]
-									)}</h4><b>Is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can${
+									<h4>${formatNumber(result[result.length - 1])}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
 										result.length === 1 ? ` only` : ``
 									} be divided with <br/>${formatList(
 										result
@@ -299,6 +297,27 @@ function calcRangePrime() {
 	}
 }
 
+function mw(max) {
+	switch (true) {
+		case max <= 9:
+			return 0;
+		case max <= 99:
+			return 1;
+		case max <= 999:
+			return 2;
+		case max <= 9999:
+			return 3;
+		case max <= 99999:
+			return 4;
+		case max <= 999999:
+			return 5;
+		case max <= 9999999:
+			return 6;
+		default:
+			return 7;
+	}
+}
+
 function showRangePrimeOutput() {
 	genUI(
 		`${header}${loading} Generating <b>${formatNumber(max - min + 1)} number</b> into your browser${loading2}<br/>
@@ -313,7 +332,7 @@ function showRangePrimeOutput() {
 									${header}${btnTryAgain} ${btnScrollBottom}<br/><br/>
 									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 									<div class="result_container">
-										<div class="result" onclick="showTooltip(event)">
+										<div class="result mw-${mw(max)}" onclick="showTooltip(event)">
 											<div class="d-flex">${e.data}</div></div>
 										</div>
 									</div><br/>
@@ -357,18 +376,18 @@ function showTooltip(e) {
 						if (result.length === 2) {
 							genTooltip(
 								target,
-								`<h3>${
+								`<h3>${formatNumber(
 									result[result.length - 1]
-								}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
+								)}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
 									result
 								)}</small><br/><span id="tooltip_time">${loading2}</span>`
 							);
 						} else {
 							genTooltip(
 								target,
-								`<h3>${
+								`<h3>${formatNumber(
 									result[result.length - 1]
-								}</h3><b>Is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can be divided with <br/>${formatList(
+								)}</h3><b>Is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can be divided with <br/>${formatList(
 									result
 								)}</small><br/><span id="tooltip_time">${loading2}</span>`
 							);

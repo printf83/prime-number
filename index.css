@@ -137,7 +137,6 @@ small {
 .d-flex b,.d-flex i{
     width: auto;
     border:1px solid;
-    min-width: 2rem;
     margin:0.05rem;
     text-align: center;
     border-radius: 5px;
@@ -148,6 +147,46 @@ small {
     cursor: pointer;
     font-weight: normal;
     font-style: normal;
+}
+
+.mw-0 .d-flex b,
+.mw-0 .d-flex i{
+    min-width: 1rem;
+}
+
+.mw-1 .d-flex b,
+.mw-1 .d-flex i {
+    min-width: 1.5rem;
+}
+
+.mw-2 .d-flex b,
+.mw-2 .d-flex i {
+    min-width: 2rem;
+}
+
+.mw-3 .d-flex b,
+.mw-3 .d-flex i {
+    min-width: 2.5rem;
+}
+
+.mw-4 .d-flex b,
+.mw-4 .d-flex i {
+    min-width: 3rem;
+}
+
+.mw-5 .d-flex b,
+.mw-5 .d-flex i {
+    min-width: 3.5rem;
+}
+
+.mw-6 .d-flex b,
+.mw-6 .d-flex i {
+    min-width: 4rem;
+}
+
+.mw-7 .d-flex b,
+.mw-7 .d-flex i {
+    min-width: 4.5rem;
 }
 
 .d-flex b:hover,
@@ -170,7 +209,7 @@ small {
 }
 
 .font-success {
-    color: greenyellow;
+    color: green;
 }
 
 /* num_result */
@@ -253,15 +292,33 @@ h4 {
 }
 
 
-/* loading gif */
-.lds-gif{
-    margin-top:3rem;
-    background-image: url('loading.gif');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-    height: 200px;
-    width: 100%;
+/* loading big*/
+
+.lds-ring-big {
+    margin-top:1rem;
+    display: inline-block;
+    position: relative;
+    width: 64px;
+    height: 64px;
+    margin-right: 0.25rem;
+}
+
+.lds-ring-big div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    margin: 5px;
+    border: 5px solid #555;
+    border-radius: 50%;
+    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #555 transparent transparent transparent;
+}
+
+#tooltip .lds-ring-big div {
+    border: 5px solid #fff;
+    border-color: #fff transparent transparent transparent;
 }
 
 /* loading */
@@ -286,20 +343,21 @@ h4 {
     border-color: #555 transparent transparent transparent;
 }
 
+
 #tooltip .lds-ring div {
     border: 2px solid #fff;
     border-color: #fff transparent transparent transparent;
 }
 
-.lds-ring div:nth-child(1) {
+.lds-ring div:nth-child(1),.lds-ring-big div:nth-child(1) {
     animation-delay: -0.45s;
 }
 
-.lds-ring div:nth-child(2) {
+.lds-ring div:nth-child(2),.lds-ring-big div:nth-child(2) {
     animation-delay: -0.3s;
 }
 
-.lds-ring div:nth-child(3) {
+.lds-ring div:nth-child(3) ,.lds-ring-big div:nth-child(3){
     animation-delay: -0.15s;
 }
 
