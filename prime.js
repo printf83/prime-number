@@ -97,66 +97,31 @@ onmessage = function (e) {
 	try {
 		let min = e.data[0];
 		let max = e.data[1];
-		let max2 = max; //parseInt(max / 2, 10);
-		let col = e.data[2];
-		let os = e.data[3];
 
-		let colIndex = 0;
-
-		let item = [];
 		let itsPrime = false;
 		let arrayOfPrime = [];
-		let arrayOfPrimeMin = [];
 		let result = [];
 
-		if (os === 0) {
-			for (let x = 1; x < max2; x++) {
-				itsPrime = isPrime(x, arrayOfPrime);
-				if (itsPrime) {
-					arrayOfPrime.push(x);
-					if (x >= min) {
-						arrayOfPrimeMin.push(x);
-						item.push(`<span>${x}</span>`);
-						colIndex++;
-					}
-				} else {
-					if (x >= min) {
-						item.push(`<div>${x}</div>`);
-						colIndex++;
-					}
-				}
+		// create empty array
+		result = new Array(max - min + 1);
+		result.fill(0);
 
-				if (colIndex % col === 0) {
-					result.push(item.join(""));
-					item = [];
-					colIndex = 0;
+		// loop inside array
+		for (let x = 1; x <= max; x++) {
+			itsPrime = isPrime(x, arrayOfPrime);
+			if (itsPrime) {
+				arrayOfPrime.push(x);
+				if (x >= min) {
+					result[x - min] = 1;
 				}
 			}
-
-			if (item.length > 0) {
-				result.push(item.join(""));
-			}
-
-			postMessage({
-				result: result,
-				count: arrayOfPrimeMin.length,
-			});
-		} else {
-			for (let x = 1; x < max2; x++) {
-				itsPrime = isPrime(x, arrayOfPrime);
-				if (itsPrime) {
-					arrayOfPrime.push(x);
-					if (x >= min) {
-						arrayOfPrimeMin.push(x);
-					}
-				}
-			}
-
-			postMessage({
-				result: arrayOfPrimeMin,
-				count: arrayOfPrimeMin.length,
-			});
 		}
+
+		// return result
+		postMessage({
+			result: result,
+			count: result.filter((x) => x === 1).length,
+		});
 	} catch (err) {
 		postMessage(null);
 	}

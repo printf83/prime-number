@@ -147,23 +147,14 @@ function calcSinglePrime() {
 									)}</small><br/><br/><small id="single_time_2"></small>`
 								);
 							} else {
-								if (result.length > 30) {
-									showSinglePrimeOutput(
-										`<small id="single_time_1"></small><br/><br/><b>${
-											result[result.length - 1]
-										} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can only be divided with <br/>${formatList(
-											result
-										)}</small><br/><br/><small id="single_time_2">${loading2}</small>`
-									);
-								} else {
-									showSinglePrimeOutput(
-										`<b>${
-											result[result.length - 1]
-										} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can only be divided with <br/>${formatList(
-											result
-										)}</small><br/><br/><small id="single_time_2">${loading2}</small>`
-									);
-								}
+								showSinglePrimeOutput(
+									`${result.length > 30 ? `<small id="single_time_1"></small><br/><br/>` : ``}
+									<b>${result[result.length - 1]} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can${
+										result.length === 1 ? ` only` : ``
+									} be divided with <br/>${formatList(
+										result
+									)}</small><br/><br/><small id="single_time_2">${loading2}</small>`
+								);
 							}
 						} else {
 							showSinglePrimeOutput(`Fail to find prime number`);
@@ -254,7 +245,7 @@ function calcRangePrime() {
 					function () {
 						let start = window.performance.now();
 
-						runWorker("prime", [min, max, col, os], function (e) {
+						runWorker("prime", [min, max], function (e) {
 							if (e.data) {
 								result = e.data.result;
 								primeFound = e.data.count;
@@ -290,7 +281,7 @@ function showRangePrimeOutput() {
 		function () {
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
 
-			runWorker("joinresult", [result, os], function (e) {
+			runWorker("joinresult", [result, min, max, col, os], function (e) {
 				if (e.data) {
 					if (os === 0) {
 						genUI(`
