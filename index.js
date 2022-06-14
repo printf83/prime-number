@@ -140,16 +140,16 @@ function calcSinglePrime() {
 						if (result) {
 							if (result.length === 2) {
 								showSinglePrimeOutput(
-									`<b class="font-success">${
+									`<b class="font-success">${formatNumber(
 										result[result.length - 1]
-									} is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
+									)} is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
 										result
 									)}</small><br/><br/><small id="single_time_2"></small>`
 								);
 							} else {
 								showSinglePrimeOutput(
 									`${result.length > 30 ? `<small id="single_time_1"></small><br/><br/>` : ``}
-									<b>${result[result.length - 1]} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can${
+									<b>${formatNumber(result[result.length - 1])} is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can${
 										result.length === 1 ? ` only` : ``
 									} be divided with <br/>${formatList(
 										result

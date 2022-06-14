@@ -63,11 +63,23 @@
 // }
 
 //99999 number -> 272ms (46,414,463 Loop)
-function factor(num, arrayOfPrime) {
+// function factor(num, arrayOfPrime) {
+// 	let result = true;
+// 	let arrayOfPrimeLength = arrayOfPrime.length;
+// 	for (let x = 0; x < arrayOfPrimeLength; x++) {
+// 		if (num % arrayOfPrime[x] === 0) {
+// 			result = false;
+// 			break;
+// 		}
+// 	}
+// 	return result;
+// }
+
+function factor(num) {
+	let max = Math.sqrt(num);
 	let result = true;
-	let arrayOfPrimeLength = arrayOfPrime.length;
-	for (let x = 0; x < arrayOfPrimeLength; x++) {
-		if (num % arrayOfPrime[x] === 0) {
+	for (let x = 2; x <= max; x++) {
+		if (num % x === 0) {
 			result = false;
 			break;
 		}
@@ -75,9 +87,9 @@ function factor(num, arrayOfPrime) {
 	return result;
 }
 
-function isPrime(num, arrayOfPrime) {
+function isPrime(num) {
 	if (num > 10) {
-		return factor(num, arrayOfPrime);
+		return factor(num);
 	} else {
 		switch (num) {
 			case 2:
@@ -89,8 +101,6 @@ function isPrime(num, arrayOfPrime) {
 				return false;
 		}
 	}
-
-	// return factor(num, arrayOfPrime);
 }
 
 onmessage = function (e) {
@@ -99,7 +109,6 @@ onmessage = function (e) {
 		let max = e.data[1];
 
 		let itsPrime = false;
-		let arrayOfPrime = [];
 		let result = [];
 
 		// create empty array
@@ -107,13 +116,10 @@ onmessage = function (e) {
 		result.fill(0);
 
 		// loop inside array
-		for (let x = 1; x <= max; x++) {
-			itsPrime = isPrime(x, arrayOfPrime);
+		for (let x = min; x <= max; x++) {
+			itsPrime = isPrime(x);
 			if (itsPrime) {
-				arrayOfPrime.push(x);
-				if (x >= min) {
-					result[x - min] = 1;
-				}
+				result[x - min] = 1;
 			}
 		}
 
