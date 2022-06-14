@@ -108,27 +108,34 @@ function factor(num) {
 // 	return !m;
 // }
 
+// function isPrime(num) {
+// 	if (num > 11) {
+// 		// if (isPrimeRegex(num)) {
+// 		return factor(num);
+// 		// }
+// 		// else {
+// 		// 	return false;
+// 		// }
+// 		// return isPrimeRegex(num);
+// 	} else {
+// 		switch (num) {
+// 			case 2:
+// 			case 3:
+// 			case 5:
+// 			case 7:
+// 			case 11:
+// 				return true;
+// 			default:
+// 				return false;
+// 		}
+// 	}
+// }
+
 function isPrime(num) {
-	if (num > 11) {
-		// if (isPrimeRegex(num)) {
-		return factor(num);
-		// }
-		// else {
-		// 	return false;
-		// }
-		// return isPrimeRegex(num);
-	} else {
-		switch (num) {
-			case 2:
-			case 3:
-			case 5:
-			case 7:
-			case 11:
-				return true;
-			default:
-				return false;
-		}
-	}
+	if (num == 2 || num == 3) return true;
+	if (num <= 1 || num % 2 == 0 || num % 3 == 0) return false;
+	for (let i = 5; i * i <= num; i += 6) if (num % i == 0 || num % (i + 2) == 0) return false;
+	return true;
 }
 
 onmessage = function (e) {
