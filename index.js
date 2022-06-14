@@ -387,7 +387,7 @@ function showTooltip(e) {
 								target,
 								`<h3>${formatNumber(
 									result[result.length - 1]
-								)}</h3><b>Is <u class="font-danger">NOT</u> a prime number</b><br/><small>It can be divided with <br/>${formatList(
+								)}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${formatList(
 									result
 								)}</small><br/><span id="tooltip_time">${loading2}</span>`
 							);
