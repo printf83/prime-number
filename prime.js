@@ -113,6 +113,49 @@ function isPrime(num) {
 }
 
 onmessage = function (e) {
+	way1(e);
+};
+
+// function way2(e) {
+// 	try {
+// 		let max = e.data[1];
+// 		let numSqrt = Math.sqrt(max);
+
+// 		let result = [];
+
+// 		// create empty array
+// 		result = new Array(max + 1).fill(0);
+
+// 		result[0] = result[1] = 1;
+
+// 		for (let num = 4; num <= max; num += 2) {
+// 			result[num] = 1;
+// 		}
+
+// 		for (let num = 3; num <= Math.sqrt(max); num += 2) {
+// 			if (result[num] === 0) {
+// 				for (let mul = num * num; mul <= max; mul += num * 2) {
+// 					result[mul] = 1;
+// 				}
+// 			}
+// 		}
+
+// 		//invert result value
+// 		result = result.map((x) => (x === 0 ? 1 : 0));
+
+// 		// return result
+// 		postMessage({
+// 			result: result,
+// 			count: result.filter((x) => x === 1).length,
+// 			hl_count: 0,
+// 			hl_num: 0,
+// 		});
+// 	} catch (err) {
+// 		postMessage(null);
+// 	}
+// }
+
+function way1(e) {
 	try {
 		let min = e.data[0];
 		let max = e.data[1];
@@ -121,8 +164,7 @@ onmessage = function (e) {
 		let result = [];
 
 		// create empty array
-		result = new Array(max - min + 1);
-		result.fill(0);
+		result = new Array(max - min + 1).fill(0);
 
 		// loop inside array
 		for (let x = min; x <= max; x++) {
@@ -142,4 +184,4 @@ onmessage = function (e) {
 	} catch (err) {
 		postMessage(null);
 	}
-};
+}

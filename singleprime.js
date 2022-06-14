@@ -1,10 +1,10 @@
 onmessage = function (e) {
 	try {
 		let num = e.data[0];
+
+		let result = [1];
 		let max = Math.sqrt(num);
 		let min = 2;
-		let result = [1];
-
 		for (let x = min; x <= max; x++) {
 			if (num % x === 0) {
 				result.push(x);
