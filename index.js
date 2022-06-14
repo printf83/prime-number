@@ -38,7 +38,14 @@ function genUI(html, callback) {
 	setTimeout(function () {
 		let frag = document.createElement("div");
 		frag.id = "root";
-		frag.innerHTML = `${html}${memoryLabel}`;
+		frag.innerHTML = `
+		
+		${html}
+		<br/><br/>
+		<div><small>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your <b>device memory</b></small></div>
+		<div><small>View on <a href="https://github.com/printf83/factor">GitHub</a></small></div>${memoryLabel}
+		
+		`;
 
 		let dom = document.getElementById("root");
 		if (dom) {
@@ -82,7 +89,7 @@ const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
 const btnShowResult = `<button onclick="showRangePrimeOutput()">Show Result</button>`;
 const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
 const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
-const memoryLabel = ``; //`<div><small id="mem"></small></div>`;
+const memoryLabel = `<div><small id="mem"></small></div>`;
 
 function formatNumber(num) {
 	return num.toLocaleString("en-US");
@@ -193,9 +200,8 @@ function showStart() {
 			os !== 0 ? ` checked="checked"` : ""
 		}/> Prime Only</label></div>
 		<div class="form-group" id="col_container"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
-		<button onclick="calcRangePrime()">Start Calculate Prime</button><br/><br/>
-		<div><small>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your <b>device memory</b></small></div>
-		<div><small>View on <a href="https://github.com/printf83/factor">GitHub</a></small></div>
+		<button onclick="calcRangePrime()">Start Calculate Prime</button>
+		
 		
 	`,
 		function () {
@@ -263,7 +269,7 @@ function calcRangePrime() {
 									processTime
 								)}</b>.<br/>${btnShowResult} ${btnTryAgain} <br/><br/>
 								<small class="note">Higest Loop : <b>${formatNumber(hl_count)}</b></small><br/>
-								<small class="note">Higest Number : <b>${formatNumber(hl_num)}</b></small><br/>
+								<small class="note">Higest Number : <b>${formatNumber(hl_num)}</b></small>
 							`);
 							} else {
 								genUI(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
@@ -402,5 +408,22 @@ function getParam() {
 	}
 }
 
+function getMemory() {
+	setTimeout(function () {
+		let t = window.performance.memory;
+		let d = document.getElementById("mem");
+
+		d.innerHTML = `Memory usage <b>${parseInt((t.usedJSHeapSize / t.totalJSHeapSize) * 100, 10)}% | ${parseInt(
+			t.usedJSHeapSize / 1024 / 1024,
+			10
+		)}Mb</b>`;
+		getMemory();
+	}, 100);
+}
+
 getParam();
 showStart();
+
+if (window.performance && window.performance.memory) {
+	getMemory();
+}
