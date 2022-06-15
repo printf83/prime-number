@@ -6,24 +6,55 @@ let col = 6;
 let os = 1;
 let snum = 1;
 
+var monitorID = null;
 function addResizeListener(elem, fun) {
-	let id;
-	let style = getComputedStyle(elem);
-	let wid = style.width;
-	let hei = style.height;
-	id = requestAnimationFrame(test);
+	if (monitorID !== null) {
+		cancelAnimationFrame(monitorID);
+		monitorID = null;
+	}
+
 	function test() {
 		setTimeout(function () {
 			let newStyle = getComputedStyle(elem);
 			if (wid !== newStyle.width || hei !== newStyle.height) {
 				fun();
-				// wid = newStyle.width;
-				// hei = newStyle.height;
-				console.log("end of size change monitor");
+				wid = newStyle.width;
+				hei = newStyle.height;
+
+				if (monitorID !== null) {
+					cancelAnimationFrame(monitorID);
+					monitorID = null;
+				}
 			} else {
-				id = requestAnimationFrame(test);
+				if (monitorID !== null) {
+					cancelAnimationFrame(monitorID);
+					monitorID = null;
+				}
+
+				monitorID = requestAnimationFrame(test);
 			}
-		}, 0);
+		}, 1);
+	}
+
+	let style = getComputedStyle(elem);
+	let wid = style.width;
+	let hei = style.height;
+
+	monitorID = requestAnimationFrame(test);
+}
+
+function monitorRenderTime(target, outputid1, outputid2) {
+	let elem = document.getElementById(target);
+
+	if (elem) {
+		let start = window.performance.now();
+		addResizeListener(elem, function () {
+			let duration = window.performance.now() - start;
+			let sduration = formatTime(duration);
+
+			setInnerHtml(outputid1, `Complete in ${sduration}`);
+			setInnerHtml(outputid2, `Complete in ${sduration}`);
+		});
 	}
 }
 
@@ -120,21 +151,6 @@ function setInnerHtml(id, html) {
 	}
 }
 
-function monitorRenderTime(target, outputid1, outputid2) {
-	let elem = document.getElementById(target);
-
-	if (elem) {
-		let start = window.performance.now();
-		addResizeListener(elem, function () {
-			let duration = window.performance.now() - start;
-			let sduration = formatTime(duration);
-
-			setInnerHtml(outputid1, `Complete in ${sduration}`);
-			setInnerHtml(outputid2, `Complete in ${sduration}`);
-		});
-	}
-}
-
 function calcSinglePrime() {
 	let currentNum = parseInt(document.getElementById("num").value);
 	if (currentNum > 0) {
@@ -186,10 +202,7 @@ function calcSinglePrime() {
 }
 
 function showStart() {
-	const tooltip_container = document.getElementById("tooltip_container");
-	if (tooltip_container) {
-		tooltip_container.style.display = "none";
-	}
+	hideTooltip();
 
 	genUI(
 		`
@@ -265,20 +278,13 @@ function calcRangePrime() {
 								result = e.data.result;
 								primeFound = e.data.count;
 
-								let hl_count = e.data.hl_count;
-								let hl_num = e.data.hl_num;
-
 								let processTime = window.performance.now() - start;
 
 								genUI(`
 								${header}
 								We found <b>${formatNumber(primeFound)} prime number</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
 									max
-								)}</b> in <b>${formatTime(
-									processTime
-								)}</b>.<br/>${btnShowResult} ${btnTryAgain} <br/><br/>
-								<small class="note">Higest Loop : <b>${formatNumber(hl_count)}</b></small><br/>
-								<small class="note">Higest Number : <b>${formatNumber(hl_num)}</b></small>
+								)}</b> in <b>${formatTime(processTime)}</b>.<br/>${btnShowResult} ${btnTryAgain}
 							`);
 							} else {
 								genUI(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
@@ -299,19 +305,19 @@ function calcRangePrime() {
 
 function mw(max) {
 	switch (true) {
-		case max <= 9:
-			return 0;
 		case max <= 99:
-			return 1;
+			return 0;
 		case max <= 999:
-			return 2;
+			return 1;
 		case max <= 9999:
-			return 3;
+			return 2;
 		case max <= 99999:
-			return 4;
+			return 3;
 		case max <= 999999:
-			return 5;
+			return 4;
 		case max <= 9999999:
+			return 5;
+		case max <= 99999999:
 			return 6;
 		default:
 			return 7;
@@ -331,8 +337,8 @@ function showRangePrimeOutput() {
 						genUI(`
 									${header}${btnTryAgain} ${btnScrollBottom}<br/><br/>
 									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
-									<div class="result_container">
-										<div class="result mw-${mw(max)}" onclick="showTooltip(event)">
+									<div class="result_container" onclick="showTooltip(event)">
+										<div class="result mw-${mw(max)}">
 											<div class="d-flex">${e.data}</div></div>
 										</div>
 									</div><br/>
@@ -360,12 +366,18 @@ function showRangePrimeOutput() {
 	);
 }
 
+function hideTooltip() {
+	const tooltip_container = document.getElementById("tooltip_container");
+	if (tooltip_container) {
+		tooltip_container.style.display = "none";
+	}
+}
 function showTooltip(e) {
 	if (e.target && e.target.parentNode.classList.contains("d-flex")) {
 		const target = e.target;
 		const num = parseInt(target.innerText, 10);
 
-		genTooltip(target, `<h3>${num}</h3> ${loading} Checking${loading2}`);
+		genTooltip(target, `<h3>${formatNumber(num)}</h3> ${loading} Checking${loading2}`);
 
 		setTimeout(function () {
 			monitorRenderTime("tooltip", "tooltip_time");
@@ -400,6 +412,8 @@ function showTooltip(e) {
 				}
 			});
 		}, 0);
+	} else {
+		hideTooltip();
 	}
 }
 
@@ -411,8 +425,14 @@ function doScrollTo(location) {
 	}
 }
 
+var wk = null;
 function runWorker(script, params, callback) {
-	let wk = new Worker(`${script}.js`);
+	if (wk !== null) {
+		wk.terminate();
+		wk = null;
+	}
+
+	wk = new Worker(`${script}.js`);
 	wk.postMessage(params);
 	wk.onmessage = function (e) {
 		if (typeof callback === "function") {

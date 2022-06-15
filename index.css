@@ -46,7 +46,7 @@ input[type="number"]{
     padding:0.5rem 1rem;
     border:1px solid #d1d1d1;
     border-radius: 5px;
-    width: 10.5rem;
+    width: 12.5rem;
     margin:0.5rem 0;
     color:#555;
     font-size: 0.95rem;
@@ -65,7 +65,7 @@ button{
 }
 
 label{
-    min-width: 3rem ;
+    min-width: 4.5rem ;
     padding:0 1rem;
     text-align: right;
 }
@@ -218,7 +218,7 @@ small {
     padding: 1rem;
     border: 1px solid #d1d1d1;
     border-radius: 5px;
-    width: 16.5rem;
+    width: 19rem;
     min-height: 5.7rem;
     color: #555;
     font-size: 0.95rem;
