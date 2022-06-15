@@ -19,6 +19,7 @@ function addResizeListener(elem, fun) {
 	if (monitorID !== null) {
 		cancelAnimationFrame(monitorID);
 		monitorID = null;
+		fun();
 	}
 
 	function test() {
