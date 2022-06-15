@@ -61,25 +61,27 @@ function monitorRenderTime(target, outputid1, outputid2) {
 			let duration = window.performance.now() - start;
 			let sduration = formatTime(duration);
 
-			setInnerHtml(outputid1, `Complete in ${sduration}`);
-			setInnerHtml(outputid2, `Complete in ${sduration}`);
+			setTimeout(function () {
+				setInnerHtml(outputid1, `Complete in ${sduration}`);
+				setInnerHtml(outputid2, `Complete in ${sduration}`);
+			}, 100);
 		});
 	}
 }
 
 function runCallback(callback) {
 	if (typeof callback === "function") {
-		setTimeout(function () {
-			callback();
-		}, 0);
+		// setTimeout(function () {
+		callback();
+		// }, 0);
 	}
 }
 
 function genUI(html, callback) {
-	setTimeout(function () {
-		let frag = document.createElement("div");
-		frag.id = "root";
-		frag.innerHTML = `
+	// setTimeout(function () {
+	let frag = document.createElement("div");
+	frag.id = "root";
+	frag.innerHTML = `
 		
 		${html}
 		<br/><br/>
@@ -88,24 +90,24 @@ function genUI(html, callback) {
 		
 		`;
 
-		let dom = document.getElementById("root");
-		if (dom) {
-			dom.replaceWith(frag);
-		}
+	let dom = document.getElementById("root");
+	if (dom) {
+		dom.replaceWith(frag);
+	}
 
-		runCallback(callback);
-	}, 0);
+	runCallback(callback);
+	// }, 0);
 }
 
 function showSinglePrimeOutput(html, callback) {
-	setTimeout(function () {
-		let elem = document.getElementById("num_result");
-		if (elem) {
-			elem.innerHTML = html;
-		}
+	// setTimeout(function () {
+	let elem = document.getElementById("num_result");
+	if (elem) {
+		elem.innerHTML = html;
+	}
 
-		runCallback(callback);
-	}, 0);
+	runCallback(callback);
+	// }, 0);
 }
 
 function genTooltip(target, html) {
@@ -167,10 +169,13 @@ function calcSinglePrime() {
 			showSinglePrimeOutput(`${loading}Checking${loading2}`);
 			snum = currentNum;
 
-			setTimeout(function () {
-				monitorRenderTime("root", "single_time_1", "single_time_2");
+			// setTimeout(function () {
+			monitorRenderTime("root", "single_time_1", "single_time_2");
 
-				runWorker("singleprime", [snum], function (e) {
+			runWorker(
+				"singleprime",
+				[snum],
+				function (e) {
 					if (e.data) {
 						result = e.data;
 						if (result) {
@@ -202,8 +207,12 @@ function calcSinglePrime() {
 					} else {
 						showSinglePrimeOutput(`Fail to find prime number`);
 					}
-				});
-			}, 0);
+				},
+				function (e) {
+					showSinglePrimeOutput(`Fail to find prime number. ${e.message}`);
+				}
+			);
+			// }, 0);
 		}
 	} else {
 		showSinglePrimeOutput(`Number must more than 0`);
@@ -237,7 +246,9 @@ function showStart() {
 		function () {
 			snum = 0;
 			os_onchange();
-			calcSinglePrime();
+			setTimeout(function () {
+				calcSinglePrime();
+			}, 100);
 		}
 	);
 }
@@ -265,9 +276,9 @@ function getRadioValue(name) {
 }
 
 function calcRangePrime() {
-	min = parseInt(document.getElementById("min").value, 10);
-	max = parseInt(document.getElementById("max").value, 10);
-	col = parseInt(document.getElementById("col").value, 10);
+	min = parseInt(document.getElementById("min").value);
+	max = parseInt(document.getElementById("max").value);
+	col = parseInt(document.getElementById("col").value);
 	os = parseInt(getRadioValue("os"), 10);
 
 	if (max > 0 && col > 0) {
@@ -282,23 +293,30 @@ function calcRangePrime() {
 					function () {
 						let start = window.performance.now();
 
-						runWorker("prime", [min, max], function (e) {
-							if (e.data) {
-								result = e.data.result;
-								primeFound = e.data.count;
+						runWorker(
+							"prime",
+							[min, max],
+							function (e) {
+								if (e.data) {
+									result = e.data.result;
+									primeFound = e.data.count;
 
-								let processTime = window.performance.now() - start;
+									let processTime = window.performance.now() - start;
 
-								genUI(`
+									genUI(`
 								${header}
 								We found <b>${formatNumber(primeFound)} prime number</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
-									max
-								)}</b> in <b>${formatTime(processTime)}</b>.<br/>${btnShowResult} ${btnTryAgain}
+										max
+									)}</b> in <b>${formatTime(processTime)}</b>.<br/>${btnShowResult} ${btnTryAgain}
 							`);
-							} else {
-								genUI(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
+								} else {
+									genUI(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
+								}
+							},
+							function (e) {
+								genUI(`${errorHeader}Fail to find prime number. ${e.message}<br/>${btnTryAgain}`);
 							}
-						});
+						);
 					}
 				);
 			} else {
@@ -340,10 +358,13 @@ function showRangePrimeOutput() {
 		function () {
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
 
-			runWorker("joinresult", [result, min, max, col, os], function (e) {
-				if (e.data) {
-					if (os === 0) {
-						genUI(`
+			runWorker(
+				"joinresult",
+				[result, min, max, col, os],
+				function (e) {
+					if (e.data) {
+						if (os === 0) {
+							genUI(`
 									${header}${btnTryAgain} ${btnScrollBottom}<br/><br/>
 									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 									<div class="result_container" onclick="showTooltip(event)">
@@ -354,8 +375,8 @@ function showRangePrimeOutput() {
 									<small id="multiple_time_2">${loading2}</small><br/><br/>
 									${btnTryAgain} ${btnScrollTop}
 									`);
-					} else {
-						genUI(`
+						} else {
+							genUI(`
 									${header}${btnTryAgain} ${btnScrollBottom}<br/><br/>
 									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 									<div class="result_container">
@@ -366,11 +387,15 @@ function showRangePrimeOutput() {
 									<small id="multiple_time_2">${loading2}</small><br/><br/>
 									${btnTryAgain} ${btnScrollTop}
 									`);
+						}
+					} else {
+						genUI(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
 					}
-				} else {
-					genUI(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
+				},
+				function (e) {
+					genUI(`${errorHeader}Fail to combine result. ${e.message}<br/>${btnTryAgain}`);
 				}
-			});
+			);
 		}
 	);
 }
@@ -384,13 +409,16 @@ function hideTooltip() {
 function showTooltip(e) {
 	if (e.target && e.target.parentNode.classList.contains("d-flex")) {
 		const target = e.target;
-		const num = parseInt(target.innerText, 10);
+		const num = parseInt(target.innerText);
 
 		genTooltip(target, `<h3>${formatNumber(num)}</h3> ${loading} Checking${loading2}`);
 
-		setTimeout(function () {
-			monitorRenderTime("tooltip", "tooltip_time");
-			runWorker("singleprime", [num], function (e) {
+		// setTimeout(function () {
+		monitorRenderTime("tooltip", "tooltip_time");
+		runWorker(
+			"singleprime",
+			[num],
+			function (e) {
 				if (e.data) {
 					result = e.data;
 					if (result) {
@@ -419,8 +447,12 @@ function showTooltip(e) {
 				} else {
 					genTooltip(target, `Fail to find prime number`);
 				}
-			});
-		}, 0);
+			},
+			function (e) {
+				genTooltip(target, `Fail to find prime number. ${e.message}`);
+			}
+		);
+		// }, 0);
 	} else {
 		hideTooltip();
 	}
@@ -435,7 +467,7 @@ function doScrollTo(location) {
 }
 
 var wk = null;
-function runWorker(script, params, callback) {
+function runWorker(script, params, callback, errcallback) {
 	if (wk !== null) {
 		wk.terminate();
 		wk = null;
@@ -447,6 +479,12 @@ function runWorker(script, params, callback) {
 		if (typeof callback === "function") {
 			this.terminate();
 			callback(e);
+		}
+	};
+	wk.onerror = function (e) {
+		if (typeof errcallback === "function") {
+			this.terminate();
+			errcallback(e);
 		}
 	};
 }
@@ -461,19 +499,19 @@ function getParam() {
 	const u_os = urlParams.get("os");
 
 	if (u_num) {
-		snum = parseInt(u_num, 10);
+		snum = parseInt(u_num);
 	}
 
 	if (u_min) {
-		min = parseInt(u_min, 10);
+		min = parseInt(u_min);
 	}
 
 	if (u_max) {
-		max = parseInt(u_max, 10);
+		max = parseInt(u_max);
 	}
 
 	if (u_col) {
-		col = parseInt(u_col, 10);
+		col = parseInt(u_col);
 	}
 
 	if (u_os) {
