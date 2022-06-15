@@ -8,32 +8,40 @@ let snum = 1;
 
 var monitorID = null;
 function addResizeListener(elem, fun) {
+	var requestAnimationFrame =
+		window.requestAnimationFrame ||
+		window.mozRequestAnimationFrame ||
+		window.webkitRequestAnimationFrame ||
+		window.msRequestAnimationFrame;
+
+	var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame;
+
 	if (monitorID !== null) {
 		cancelAnimationFrame(monitorID);
 		monitorID = null;
 	}
 
 	function test() {
-		setTimeout(function () {
-			let newStyle = getComputedStyle(elem);
-			if (wid !== newStyle.width || hei !== newStyle.height) {
-				fun();
-				wid = newStyle.width;
-				hei = newStyle.height;
+		// setTimeout(function () {
+		let newStyle = getComputedStyle(elem);
+		if (wid !== newStyle.width || hei !== newStyle.height) {
+			fun();
+			wid = newStyle.width;
+			hei = newStyle.height;
 
-				if (monitorID !== null) {
-					cancelAnimationFrame(monitorID);
-					monitorID = null;
-				}
-			} else {
-				if (monitorID !== null) {
-					cancelAnimationFrame(monitorID);
-					monitorID = null;
-				}
-
-				monitorID = requestAnimationFrame(test);
+			if (monitorID !== null) {
+				cancelAnimationFrame(monitorID);
+				monitorID = null;
 			}
-		}, 1);
+		} else {
+			if (monitorID !== null) {
+				cancelAnimationFrame(monitorID);
+				monitorID = null;
+			}
+
+			monitorID = requestAnimationFrame(test);
+		}
+		// }, 100);
 	}
 
 	let style = getComputedStyle(elem);
