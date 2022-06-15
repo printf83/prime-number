@@ -143,7 +143,6 @@ onmessage = function (e) {
 		let min = e.data[0];
 		let max = e.data[1];
 
-		let itsPrime = false;
 		let result = [];
 
 		// create empty array
@@ -151,8 +150,7 @@ onmessage = function (e) {
 
 		// loop inside array
 		for (let x = min; x <= max; x++) {
-			itsPrime = isPrime(x);
-			if (itsPrime) {
+			if (isPrime(x)) {
 				result[x - min] = 1;
 			}
 		}
