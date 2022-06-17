@@ -6,6 +6,19 @@ let col = 6;
 let os = 1;
 let snum = 1;
 
+const header = `<h2>Prime Number Checker</h2>`;
+const header2 = `<h2>Prime Number List</h2>`;
+const errorHeader = `<h2 class="font-danger">Error!</h2>`;
+const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
+const btnShowResult = `<button onclick="showRangePrimeOutput()">Show Result</button>`;
+const btnScrollBottom = `<button onclick="doScrollTo(1)">Bottom</button>`;
+const btnScrollTop = `<button onclick="doScrollTo(0)">Top</button>`;
+const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
+const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
+const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;
+const memoryLabel = `<div><small id="mem"></small></div>`;
+const bg = `<ul class="bg-bubbles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul>`;
+
 var monitorID = null;
 function addResizeListener(elem, fun) {
 	var requestAnimationFrame =
@@ -87,7 +100,7 @@ function genUI(html, callback) {
 		<br/><br/>
 		<div><small>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your <b>device memory</b></small></div>
 		<div><small>View on <a href="https://github.com/printf83/factor">GitHub</a></small></div>${memoryLabel}
-		
+		${bg}
 		`;
 
 	let dom = document.getElementById("root");
@@ -124,18 +137,6 @@ function genTooltip(target, html) {
 	tooltip_container.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
 	tooltip_container.style.display = "block";
 }
-
-const header = `<h2>Prime Number Checker</h2>`;
-const header2 = `<h2>Prime Number List</h2>`;
-const errorHeader = `<h2 class="font-danger">Error!</h2>`;
-const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
-const btnShowResult = `<button onclick="showRangePrimeOutput()">Show Result</button>`;
-const btnScrollBottom = `<button onclick="doScrollTo(1)">Bottom</button>`;
-const btnScrollTop = `<button onclick="doScrollTo(0)">Top</button>`;
-const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
-const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
-const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;
-const memoryLabel = `<div><small id="mem"></small></div>`;
 
 function formatNumber(num) {
 	return num.toLocaleString("en-US");

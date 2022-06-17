@@ -1,5 +1,7 @@
 body {
-    font-family: system-ui,
+    font-family: 'Source Sans Pro', sans-serif;
+    /* font-family: "Source Sans Pro", 
+    system-ui,
         -apple-system,
         "Segoe UI",
         Roboto,
@@ -11,7 +13,7 @@ body {
         "Apple Color Emoji",
         "Segoe UI Emoji",
         "Segoe UI Symbol",
-        "Noto Color Emoji";
+        "Noto Color Emoji"; */
     font-size: 0.95rem;
     font-weight: 400;
     line-height: 1.5;
@@ -35,35 +37,66 @@ body {
 
 #root {
     padding: 1rem;
-    margin: 1.5rem 1rem;
+    margin: 0.5rem 0.15rem;
     border: 1px solid #d1d1d1;
     border-radius: 5px;
-    background-color: #fafafa;
+    background: linear-gradient(to bottom right, #50a3a2 0%, #53e3a6 100%);
     text-align: center;
-    color: #555;
+    color: #fff;
+    overflow: hidden;
 }
 
 input[type="number"] {
-    padding: 0.5rem 1rem;
-    border: 1px solid #d1d1d1;
-    border-radius: 5px;
+    /* padding: 0.5rem 1rem; */
+    /* border: 1px solid #d1d1d1; */
+    /* border-radius: 5px; */
     width: 8.5rem;
     margin: 0.5rem 0;
-    color: #555;
-    font-size: 0.95rem;
+    /* color: #555; */
+    /* font-size: 0.95rem; */
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: 0;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
+    /* width: 250px; */
+    border-radius: 3px;
+    padding: 10px 15px;
+    /* margin: 0 auto 10px auto; */
+    display: block;
+    text-align: center;
+    font-size: 18px;
+    color: white;
+    transition-duration: 0.25s;
+    font-weight: 300;
 }
 
 button {
     margin: 0.5rem 0 0 0;
-    padding: 0.5rem 1rem;
-    border: 1px solid #0d6efd;
-    border-radius: 5px;
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: #fff;
+    /* padding: 0.5rem 1rem; */
+    /* border: 1px solid #0d6efd; */
+    /* border-radius: 5px; */
+    /* background-color: #0d6efd; */
+    /* border-color: #0d6efd; */
+    /* color: #fff; */
     /* min-width: 18rem; */
-    font-size: 0.95rem;
+    /* font-size: 0.95rem; */
+    /* cursor: pointer; */
+
+
+    appearance: none;
+    outline: 0;
+    background-color: white;
+    border: 0;
+    padding: 10px 20px;
+    color: #239c6a;
+    border-radius: 3px;
+    /* width: 250px; */
     cursor: pointer;
+    font-size: 18px;
+    transition-duration: 0.25s;
 }
 
 label {
@@ -74,14 +107,14 @@ label {
 
 label.radio {
     min-width: 10rem;
-    padding: 0 0 0 2rem;
+    padding: 0 0 0 5rem;
     text-align: left;
     cursor: pointer;
 }
 
 h2 {
     margin: 0 0 0.75rem 0;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #eee;
     padding-bottom: 0.5rem;
 
 }
@@ -93,9 +126,11 @@ h2 {
 #tooltip_time,
 .note {
     font-size: x-small;
-    color: #fff;
-    background-color: #777;
+
+    /* color: #555; */
+    /* background-color: #777; */
     border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
     padding: 0.25rem 0.75rem;
 }
 
@@ -108,7 +143,7 @@ h2 {
 
 small {
     font-size: small;
-    color: #555;
+    color: #fff;
 }
 
 .form-group {
@@ -143,11 +178,12 @@ small {
 .d-flex b,
 .d-flex i {
     width: auto;
-    border: 1px solid;
+    /* border: 1px solid; */
+    border: 1px solid rgba(255, 255, 255, 0.4);
     margin: 0.05rem;
     text-align: center;
     border-radius: 5px;
-    background-color: #fff;
+    /* background-color: #fff; */
     padding: 0.05rem;
     font-size: x-small;
     display: inline-block;
@@ -198,39 +234,61 @@ small {
 
 .d-flex b:hover,
 .d-flex i:hover {
-    border: 1px solid #0d6efd;
-    color: #0d6efd;
+    border: 1px solid #c1daffc0;
+    color: #c1daffc0;
 }
 
 .d-flex b {
-    color: #ccc;
+    color: #fff;
 
 }
 
 .d-flex i {
-    color: red;
+    color: rgb(255, 249, 191);
 }
 
 .font-danger {
-    color: red;
+    color: rgb(255, 233, 250);
 }
 
 .font-success {
-    color: green;
+    color: rgb(231, 255, 233);
+}
+
+a{
+    text-decoration: none;
+    color:rgb(229, 228, 255);
 }
 
 /* num_result */
 #num_result {
     margin-bottom: 3rem;
-    padding: 1rem;
-    border: 1px solid #d1d1d1;
-    border-radius: 5px;
+    /* padding: 1rem; */
+    /* border: 1px solid #d1d1d1; */
+    /* border-radius: 5px; */
     width: 15rem;
     min-height: 5.7rem;
-    color: #555;
-    font-size: 0.95rem;
-    background-color: #fff;
+    /* color: #555; */
+    /* font-size: 0.95rem; */
+    /* background-color: #fff; */
     overflow: hidden;
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: 0;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
+    /* width: 250px; */
+    border-radius: 3px;
+    padding: 10px 15px;
+    /* margin: 0 auto 10px auto; */
+    display: block;
+    text-align: center;
+    font-size: 18px;
+    color: white;
+    transition-duration: 0.25s;
+    font-weight: 300;
 }
 
 /* tooltip */
@@ -319,15 +377,15 @@ h4 {
     width: 64px;
     height: 64px;
     margin: 5px;
-    border: 5px solid #555;
+    border: 5px solid #fff;
     border-radius: 50%;
     animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    border-color: #555 transparent transparent transparent;
+    border-color: #fff transparent transparent transparent;
 }
 
 #tooltip .lds-ring-big div {
-    border: 5px solid #fff;
-    border-color: #fff transparent transparent transparent;
+    border: 5px solid #555;
+    border-color: #555 transparent transparent transparent;
 }
 
 /* loading */
@@ -346,16 +404,16 @@ h4 {
     width: 16px;
     height: 16px;
     margin: 2px;
-    border: 2px solid #555;
+    border: 2px solid #fff;
     border-radius: 50%;
     animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    border-color: #555 transparent transparent transparent;
+    border-color: #fff transparent transparent transparent;
 }
 
 
 #tooltip .lds-ring div {
-    border: 2px solid #fff;
-    border-color: #fff transparent transparent transparent;
+    border: 2px solid #555;
+    border-color: #555 transparent transparent transparent;
 }
 
 .lds-ring div:nth-child(1),
@@ -398,12 +456,12 @@ h4 {
     width: 2px;
     height: 2px;
     border-radius: 50%;
-    background: #555;
+    background: #fff;
     animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
 
 #tooltip .lds-ellipsis div {
-    background: #fff;
+    background: #555;
 }
 
 
@@ -411,7 +469,7 @@ h4 {
 #multiple_time_2 .lds-ellipsis div,
 #single_time_1 .lds-ellipsis div,
 #single_time_2 .lds-ellipsis div {
-    background: #fff;
+    background: #555;
 }
 
 .lds-ellipsis div:nth-child(1) {
@@ -463,3 +521,6 @@ h4 {
         transform: translate(6px, 0);
     }
 }
+
+/*bg*/
+
