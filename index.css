@@ -14,11 +14,12 @@ body {
         "Segoe UI Emoji",
         "Segoe UI Symbol",
         "Noto Color Emoji"; */
-    font-size: 0.95rem;
+    /* font-size: 0.95rem;
     font-weight: 400;
-    line-height: 1.5;
-    color: #212529;
-    background-color: #fff;
+    line-height: 1.5; */
+    /* color: #212529;
+    background-color: #fff; */
+    padding: 0;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
 
@@ -33,38 +34,32 @@ body {
     -ms-user-select: none;
     /* Internet Explorer/Edge */
 
+    margin:0;
+    padding:0;
+    background: #5071a3;
+    /* background: linear-gradient(to bottom right, #50a3a2 0%, #53e3a6 100%); */
+    overflow-x: hidden;
 }
 
-#root {
+#container {
     padding: 1rem;
-    margin: 0.5rem 0.15rem;
-    border: 1px solid #d1d1d1;
-    border-radius: 5px;
-    background: linear-gradient(to bottom right, #50a3a2 0%, #53e3a6 100%);
+    
     text-align: center;
     color: #fff;
     overflow: hidden;
 }
 
 input[type="number"] {
-    /* padding: 0.5rem 1rem; */
-    /* border: 1px solid #d1d1d1; */
-    /* border-radius: 5px; */
     width: 8.5rem;
     margin: 0.5rem 0;
-    /* color: #555; */
-    /* font-size: 0.95rem; */
-
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
     outline: 0;
     border: 1px solid rgba(255, 255, 255, 0.4);
-    background-color: rgba(255, 255, 255, 0.2);
-    /* width: 250px; */
+    background-color: rgba(0, 0, 0, 0.1);
     border-radius: 3px;
     padding: 10px 15px;
-    /* margin: 0 auto 10px auto; */
     display: block;
     text-align: center;
     font-size: 18px;
@@ -75,25 +70,13 @@ input[type="number"] {
 
 button {
     margin: 0.5rem 0 0 0;
-    /* padding: 0.5rem 1rem; */
-    /* border: 1px solid #0d6efd; */
-    /* border-radius: 5px; */
-    /* background-color: #0d6efd; */
-    /* border-color: #0d6efd; */
-    /* color: #fff; */
-    /* min-width: 18rem; */
-    /* font-size: 0.95rem; */
-    /* cursor: pointer; */
-
-
     appearance: none;
     outline: 0;
     background-color: white;
     border: 0;
     padding: 10px 20px;
-    color: #239c6a;
+    color: #5071a3;
     border-radius: 3px;
-    /* width: 250px; */
     cursor: pointer;
     font-size: 18px;
     transition-duration: 0.25s;
@@ -113,9 +96,9 @@ label.radio {
 }
 
 h2 {
-    margin: 0 0 0.75rem 0;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.5rem;
+    margin: 0.5rem 0.5rem 1.5rem 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 1.5rem;
 
 }
 
@@ -126,12 +109,10 @@ h2 {
 #tooltip_time,
 .note {
     font-size: x-small;
-
-    /* color: #555; */
-    /* background-color: #777; */
     border-radius: 5px;
     border: 1px solid rgba(255, 255, 255, 0.4);
     padding: 0.25rem 0.75rem;
+    font-weight: bold;
 }
 
 #tooltip_time {
@@ -139,6 +120,7 @@ h2 {
     background-color: #fff;
     margin-top: 1rem;
     display: inline-block;
+    font-weight: bold;
 }
 
 small {
@@ -178,14 +160,12 @@ small {
 .d-flex b,
 .d-flex i {
     width: auto;
-    /* border: 1px solid; */
     border: 1px solid rgba(255, 255, 255, 0.4);
     margin: 0.05rem;
     text-align: center;
     border-radius: 5px;
-    /* background-color: #fff; */
     padding: 0.05rem;
-    font-size: x-small;
+    font-size: small;
     display: inline-block;
     cursor: pointer;
     font-weight: normal;
@@ -244,45 +224,37 @@ small {
 }
 
 .d-flex i {
-    color: rgb(255, 249, 191);
+    color: rgba(255, 255, 150, 0.8);
+    font-weight: bold;
 }
 
 .font-danger {
-    color: rgb(255, 233, 250);
+    color: rgba(255, 150, 150, 0.8)
 }
 
 .font-success {
-    color: rgb(231, 255, 233);
+    color: rgba(150, 255, 150, 0.8);
 }
 
 a{
     text-decoration: none;
-    color:rgb(229, 228, 255);
+    color:rgba(180, 180, 255, 0.8);
 }
 
 /* num_result */
 #num_result {
     margin-bottom: 3rem;
-    /* padding: 1rem; */
-    /* border: 1px solid #d1d1d1; */
-    /* border-radius: 5px; */
     width: 15rem;
     min-height: 5.7rem;
-    /* color: #555; */
-    /* font-size: 0.95rem; */
-    /* background-color: #fff; */
     overflow: hidden;
-
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
     outline: 0;
     border: 1px solid rgba(255, 255, 255, 0.4);
-    background-color: rgba(255, 255, 255, 0.2);
-    /* width: 250px; */
+    background-color: rgba(0, 0, 0, 0.1);
     border-radius: 3px;
     padding: 10px 15px;
-    /* margin: 0 auto 10px auto; */
     display: block;
     text-align: center;
     font-size: 18px;

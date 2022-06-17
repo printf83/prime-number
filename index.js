@@ -95,12 +95,9 @@ function genUI(html, callback) {
 	let frag = document.createElement("div");
 	frag.id = "root";
 	frag.innerHTML = `
-		
+		<br/>
 		${html}
-		<br/><br/>
-		<div><small>The limit is <b>${formatNumber(Number.MAX_SAFE_INTEGER)}</b> and your <b>device memory</b></small></div>
-		<div><small>View on <a href="https://github.com/printf83/factor">GitHub</a></small></div>${memoryLabel}
-		${bg}
+		<br/>
 		`;
 
 	let dom = document.getElementById("root");
@@ -333,19 +330,19 @@ function calcRangePrime() {
 
 function mw(max) {
 	switch (true) {
-		case max <= 99:
+		case max <= 9:
 			return 0;
-		case max <= 999:
+		case max <= 99:
 			return 1;
-		case max <= 9999:
+		case max <= 999:
 			return 2;
-		case max <= 99999:
+		case max <= 9999:
 			return 3;
-		case max <= 999999:
+		case max <= 99999:
 			return 4;
-		case max <= 9999999:
+		case max <= 999999:
 			return 5;
-		case max <= 99999999:
+		case max <= 9999999:
 			return 6;
 		default:
 			return 7;
