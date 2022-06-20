@@ -236,7 +236,7 @@ function showStart() {
 		<div class="form-group"><label for="os_2" class="radio"><input type="radio" id="os_2" name="os" value="1" onchange="os_onchange()" ${
 			os !== 0 ? ` checked="checked"` : ""
 		}/> Prime Only</label></div>
-		<div class="form-group" id="col_container"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div>
+		<div class="form-group" id="col_container"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div><br/>
 		<button onclick="calcRangePrime()">Start Calculate Prime</button>
 		
 		
@@ -286,7 +286,8 @@ function calcRangePrime() {
 					`
 						${header}
 						${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers${loading2}<br/>
-						${loading3}
+						${loading3}<br/><br/>
+						${btnTryAgain}
 					`,
 					function () {
 						let start = window.performance.now();
@@ -305,26 +306,28 @@ function calcRangePrime() {
 								${header}
 								We found <b>${formatNumber(primeFound)} prime number</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
 										max
-									)}</b> in <b>${formatTime(processTime)}</b>.<br/>${btnShowResult} ${btnTryAgain}
+									)}</b> in <b>${formatTime(
+										processTime
+									)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
 							`);
 								} else {
-									genUI(`${errorHeader}Fail to find prime number<br/>${btnTryAgain}`);
+									genUI(`${errorHeader}Fail to find prime number<br/><br/>${btnTryAgain}`);
 								}
 							},
 							function (e) {
-								genUI(`${errorHeader}Fail to find prime number. ${e.message}<br/>${btnTryAgain}`);
+								genUI(`${errorHeader}Fail to find prime number. ${e.message}<br/><br/>${btnTryAgain}`);
 							}
 						);
 					}
 				);
 			} else {
-				genUI(`${errorHeader}Web Worker not available<br/>${btnTryAgain}`);
+				genUI(`${errorHeader}Web Worker not available<br/><br/>${btnTryAgain}`);
 			}
 		} else {
-			genUI(`${errorHeader}Min must be a positive integer and less or equal with Max<br/>${btnTryAgain}`);
+			genUI(`${errorHeader}Min must be a positive integer and less or equal with Max<br/><br/>${btnTryAgain}`);
 		}
 	} else {
-		genUI(`${errorHeader}Max and Col must be a positive integer<br/>${btnTryAgain}`);
+		genUI(`${errorHeader}Max and Col must be a positive integer<br/><br/>${btnTryAgain}`);
 	}
 }
 
@@ -351,7 +354,9 @@ function mw(max) {
 
 function showRangePrimeOutput() {
 	genUI(
-		`${header}${loading} Generating <b>${formatNumber(max - min + 1)} number</b> into your browser${loading2}<br/>
+		`
+		${header}${loading} 
+		Generating <b> ${formatNumber(os === 0 ? max - min + 1 : result.length)} number</b> into your browser${loading2} <br/>
 		${loading3}`,
 		function () {
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
@@ -403,6 +408,8 @@ function hideTooltip() {
 	if (tooltip_container) {
 		tooltip_container.style.display = "none";
 	}
+
+	stopWorker();
 }
 function showTooltip(e) {
 	if (e.target && e.target.parentNode.classList.contains("d-flex")) {
@@ -466,10 +473,7 @@ function doScrollTo(location) {
 
 var wk = null;
 function runWorker(script, params, callback, errcallback) {
-	if (wk !== null) {
-		wk.terminate();
-		wk = null;
-	}
+	stopWorker();
 
 	wk = new Worker(`${script}.js`);
 	wk.postMessage(params);
@@ -485,6 +489,13 @@ function runWorker(script, params, callback, errcallback) {
 			errcallback(e);
 		}
 	};
+}
+
+function stopWorker() {
+	if (wk !== null) {
+		wk.terminate();
+		wk = null;
+	}
 }
 
 function getParam() {
