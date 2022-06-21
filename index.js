@@ -4,6 +4,7 @@ let min = 1;
 let max = 99999;
 let col = 6;
 let os = 1;
+let ot = 1;
 let snum = 1;
 
 const header = `<h2>Prime Number Checker</h2>`;
@@ -177,28 +178,37 @@ function calcSinglePrime() {
 					if (e.data) {
 						result = e.data;
 						if (result) {
-							if (result.length === 2) {
-								showSinglePrimeOutput(
-									`<h4>${formatNumber(
-										result[result.length - 1]
-									)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
-										result
-									)}</small><br/><br/><small id="single_time_1">${loading2}</small>`
-								);
-							} else {
-								showSinglePrimeOutput(
-									`${
-										result.length > 30
-											? `<small id="single_time_1">${loading2}</small><br/><br/>`
-											: ``
-									}
+							runWorker(
+								"factor",
+								[result, snum, ot],
+								function (e) {
+									if (result.length === 2) {
+										showSinglePrimeOutput(
+											`<h4>${formatNumber(
+												result[result.length - 1]
+											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${
+												e.data
+											}</small><br/><small id="single_time_1">${loading2}</small>`
+										);
+									} else {
+										showSinglePrimeOutput(
+											`${
+												result.length > 30
+													? `<small id="single_time_1">${loading2}</small><br/><br/>`
+													: ``
+											}
 									<h4>${formatNumber(result[result.length - 1])}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
-										result.length === 1 ? ` only` : ``
-									} be divided with <br/>${formatList(
-										result
-									)}</small><br/><br/><small id="single_time_2">${loading2}</small>`
-								);
-							}
+												result.length === 1 ? ` only` : ``
+											} be divided with <br/>${
+												e.data
+											}</small><br/><small id="single_time_2">${loading2}</small>`
+										);
+									}
+								},
+								function (e) {
+									showSinglePrimeOutput(`Fail to find prime number. ${e.message}`);
+								}
+							);
 						} else {
 							showSinglePrimeOutput(`Fail to find prime number`);
 						}
@@ -225,6 +235,9 @@ function showStart() {
 		${header}
 		<div class="form-group"><label for="num">Number : </label><input type="number" id="num" value="${snum}" onchange="calcSinglePrime()" onkeyup="calcSinglePrime()"/></div>
 		<div class="form-group"><div id="num_result"></div></div>
+		<div class="form-group"><label for="ot" class="radio"><input type="checkbox" id="ot" name="ot" onchange="ot_onchange()" ${
+			ot !== 0 ? ` checked="checked"` : ""
+		}/> Show Calculation</label></div>
 
 		${header2}
 
@@ -249,6 +262,12 @@ function showStart() {
 			}, 100);
 		}
 	);
+}
+
+function ot_onchange() {
+	ot = document.getElementById("ot").checked ? 1 : 0;
+	snum = 0;
+	calcSinglePrime();
 }
 
 function os_onchange() {
@@ -278,6 +297,7 @@ function calcRangePrime() {
 	max = parseInt(document.getElementById("max").value);
 	col = parseInt(document.getElementById("col").value);
 	os = parseInt(getRadioValue("os"), 10);
+	ot = document.getElementById("ot").checked ? 1 : 0;
 
 	if (max > 0 && col > 0) {
 		if (min > 0 && min <= max) {
@@ -414,25 +434,34 @@ function showTooltip(e) {
 				if (e.data) {
 					result = e.data;
 					if (result) {
-						if (result.length === 2) {
-							genTooltip(
-								target,
-								`<h3>${formatNumber(
-									result[result.length - 1]
-								)}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${formatList(
-									result
-								)}</small><br/><span id="tooltip_time">${loading2}</span>`
-							);
-						} else {
-							genTooltip(
-								target,
-								`<h3>${formatNumber(
-									result[result.length - 1]
-								)}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${formatList(
-									result
-								)}</small><br/><span id="tooltip_time">${loading2}</span>`
-							);
-						}
+						runWorker(
+							"factor",
+							[result, num, ot],
+							function (e) {
+								if (result.length === 2) {
+									genTooltip(
+										target,
+										`<h3>${formatNumber(
+											result[result.length - 1]
+										)}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${
+											e.data
+										}</small><br/><span id="tooltip_time">${loading2}</span>`
+									);
+								} else {
+									genTooltip(
+										target,
+										`<h3>${formatNumber(
+											result[result.length - 1]
+										)}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${
+											e.data
+										}</small><br/><span id="tooltip_time">${loading2}</span>`
+									);
+								}
+							},
+							function (e) {
+								showSinglePrimeOutput(`Fail to find prime number. ${e.message}`);
+							}
+						);
 					} else {
 						genTooltip(target, `Fail to find prime number`);
 					}
@@ -493,6 +522,7 @@ function getParam() {
 	const u_max = urlParams.get("max");
 	const u_col = urlParams.get("col");
 	const u_os = urlParams.get("os");
+	const u_ot = urlParams.get("ot");
 
 	if (u_num) {
 		snum = parseInt(u_num);
@@ -512,6 +542,10 @@ function getParam() {
 
 	if (u_os) {
 		os = parseInt(u_os, 10);
+	}
+
+	if (u_ot) {
+		ot = parseInt(u_ot, 10);
 	}
 }
 
