@@ -23,7 +23,7 @@ onmessage = function (e) {
 				tmp.push(row.join(""));
 			}
 
-			result = tmp.join(`</div><div class="d-flex">`);
+			result = `<div class="d-flex">${tmp.join(`</div><div class="d-flex">`)}</div>`;
 		} else {
 			//gen array list
 			for (x = 0; x < data.length; x++) {
@@ -33,7 +33,7 @@ onmessage = function (e) {
 			}
 
 			//combine
-			result = tmp.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1");
+			result = `<small>${tmp.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1")}</small>`;
 		}
 
 		postMessage(result);

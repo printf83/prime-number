@@ -360,37 +360,24 @@ function showRangePrimeOutput() {
 		${loading3}`,
 		function () {
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
+			let isLong = os === 0 ? result.length / col > 50 : result.length > 1000;
 
 			runWorker(
 				"joinresult",
 				[result, min, max, col, os],
 				function (e) {
 					if (e.data) {
-						if (os === 0) {
-							genUI(`
-									${header}${btnTryAgain} ${btnScrollBottom}<br/><br/>
-									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
-									<div class="result_container" onclick="showTooltip(event)">
-										<div class="result mw-${mw(max)}">
-											<div class="d-flex">${e.data}</div></div>
-										</div>
-									</div><br/>
-									<small id="multiple_time_2">${loading2}</small><br/><br/>
-									${btnTryAgain} ${btnScrollTop}
-									`);
-						} else {
-							genUI(`
-									${header}${btnTryAgain} ${btnScrollBottom}<br/><br/>
-									${e.data.length > 1000 ? `<small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
-									<div class="result_container">
-										<div class="result">
-											<small>${e.data}</small>
-										</div>
-									</div><br/>
-									<small id="multiple_time_2">${loading2}</small><br/><br/>
-									${btnTryAgain} ${btnScrollTop}
-									`);
-						}
+						genUI(`
+							${header}
+							${isLong ? `${btnTryAgain} ${btnScrollBottom}<br/><br/><small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
+							<div class="result_container"${os === 0 ? ` onclick="showTooltip(event)"` : ""}>
+								<div class="result${os === 0 ? ` mw-${mw(max)}` : ""}">
+									${e.data}
+								</div>
+							</div><br/>
+							<small id="multiple_time_2">${loading2}</small><br/><br/>
+							${btnTryAgain} ${isLong ? btnScrollTop : ""}
+							`);
 					} else {
 						genUI(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
 					}
