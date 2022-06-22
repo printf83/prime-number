@@ -6,6 +6,7 @@ let col = 6;
 let os = 1;
 let ot = 1;
 let snum = 1;
+let big = 1;
 
 function ctlCheckbox(id, checked, onchange, label) {
 	return `<div class="form-group"><label class="checkbox" for="${id}">${label}<input type="checkbox" id="${id}" onchange="${onchange}" ${
@@ -14,9 +15,15 @@ function ctlCheckbox(id, checked, onchange, label) {
 }
 
 function ctlRadio(id, name, value, checked, onchange, label) {
-	return `<div class="form-group"><label class="radio" for="${id}">${label}<input type="radio" id="${id}" name="${name}" value="${value}" onchange="${onchange}" ${
+	return `
+	<div class="form-group">
+		<label class="radio" for="${id}">${label}
+			<input type="radio" id="${id}" name="${name}" value="${value}" onchange="${onchange}" ${
 		checked ? ` checked="checked"` : ""
-	}/><span class="checkmark"></span></label></div>`;
+	}/>
+			<span class="checkmark"></span>
+		</label>
+	</div>`;
 }
 
 function ctlNumber(id, value, onchange, label, container_id) {
@@ -35,18 +42,26 @@ function ctlTextResult(id) {
 	return `<div class="form-group"><div id="${id}"></div></div>`;
 }
 
-const header = `<h2>Prime Number Checker</h2>`;
-const header2 = `<h2>Prime Number List</h2>`;
-const errorHeader = `<h2 class="font-danger">Error!</h2>`;
+const bigTitle = ` <sup class="pointer" title="BigInt"><a onclick="big_onchange(0)"><small>&beta;</small></a></sup>`;
+const smallTitle = ` <sup class="pointer" title="Number"><a onclick="big_onchange(1)"><small>&Omega;</small></a></sup>`;
+
+const header = function () {
+	return `<h2>Prime Number Checker${big ? bigTitle : smallTitle}</h2>`;
+};
+const header2 = function () {
+	return `<h2>Prime Number List${big ? bigTitle : smallTitle}</h2>`;
+};
+const errorHeader = function () {
+	return `<h2 class="font-danger">Error!${big ? bigTitle : smallTitle}</h2>`;
+};
+
 const btnTryAgain = ctlButton("Try Again", "showStart()");
-const btnShowResult = ctlButton("Show Result", "showRangePrimeOutput()"); //`<button onclick="showRangePrimeOutput()">Show Result</button>`;
-const btnScrollBottom = ctlButton("Bottom", "doScrollTo(1)"); //`<button onclick="doScrollTo(1)">Bottom</button>`;
-const btnScrollTop = ctlButton("Top", "doScrollTo(0)"); //`<button onclick="doScrollTo(0)">Top</button>`;
-const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
+const btnShowResult = ctlButton("Show Result", "showRangePrimeOutput()");
+const btnScrollBottom = ctlButton("Bottom", "doScrollTo(1)");
+const btnScrollTop = ctlButton("Top", "doScrollTo(0)");
 const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
 const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;
 const memoryLabel = `<div><small id="mem"></small></div>`;
-const bg = ``; //`<ul class="bg-bubbles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul>`;
 
 var monitorID = null;
 function addResizeListener(elem, fun) {
@@ -65,7 +80,6 @@ function addResizeListener(elem, fun) {
 	}
 
 	function test() {
-		// setTimeout(function () {
 		let newStyle = getComputedStyle(elem);
 		if (wid !== newStyle.width || hei !== newStyle.height) {
 			fun();
@@ -84,7 +98,6 @@ function addResizeListener(elem, fun) {
 
 			monitorID = requestAnimationFrame(test);
 		}
-		// }, 100);
 	}
 
 	let style = getComputedStyle(elem);
@@ -113,14 +126,11 @@ function monitorRenderTime(target, outputid1, outputid2) {
 
 function runCallback(callback) {
 	if (typeof callback === "function") {
-		// setTimeout(function () {
 		callback();
-		// }, 0);
 	}
 }
 
 function genUI(html, callback) {
-	// setTimeout(function () {
 	let frag = document.createElement("div");
 	frag.id = "root";
 	frag.innerHTML = `
@@ -135,18 +145,15 @@ function genUI(html, callback) {
 	}
 
 	runCallback(callback);
-	// }, 0);
 }
 
 function showSinglePrimeOutput(html, callback) {
-	// setTimeout(function () {
 	let elem = document.getElementById("num_result");
 	if (elem) {
 		elem.innerHTML = html;
 	}
 
 	runCallback(callback);
-	// }, 0);
 }
 
 function genTooltip(target, html) {
@@ -165,7 +172,11 @@ function genTooltip(target, html) {
 }
 
 function formatNumber(num) {
-	return num.toLocaleString("en-US");
+	if (num) {
+		return num.toLocaleString("en-US");
+	} else {
+		return "xxx";
+	}
 }
 
 function formatTime(num) {
@@ -190,13 +201,16 @@ function setInnerHtml(id, html) {
 }
 
 function calcSinglePrime() {
-	let currentNum = parseInt(document.getElementById("num").value);
-	if (currentNum > 0) {
+	let zero = big ? 0n : 0;
+	let currentNum = big
+		? BigInt(document.getElementById("num").value)
+		: parseInt(document.getElementById("num").value);
+
+	if (currentNum > zero) {
 		if (currentNum !== snum) {
-			showSinglePrimeOutput(`${loading}Checking${loading2}`);
+			showSinglePrimeOutput(`Checking${loading2}`);
 			snum = currentNum;
 
-			// setTimeout(function () {
 			monitorRenderTime("root", "single_time_1", "single_time_2");
 
 			runWorker(
@@ -210,10 +224,12 @@ function calcSinglePrime() {
 								"factor",
 								[result, snum, ot],
 								function (e) {
+									let lastNumber = result[result.length - 1];
+
 									if (result.length === 2) {
 										showSinglePrimeOutput(
 											`<h4>${formatNumber(
-												result[result.length - 1]
+												lastNumber
 											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${
 												e.data
 											}</small><br/><small id="single_time_1">${loading2}</small>`
@@ -225,7 +241,7 @@ function calcSinglePrime() {
 													? `<small id="single_time_1">${loading2}</small><br/><br/>`
 													: ``
 											}
-											<h4>${formatNumber(result[result.length - 1])}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
+											<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
 												result.length === 1 ? ` only` : ``
 											} be divided with <br/>${
 												e.data
@@ -248,7 +264,6 @@ function calcSinglePrime() {
 					showSinglePrimeOutput(`Fail to find prime number. ${e.message}`);
 				}
 			);
-			// }, 0);
 		}
 	} else {
 		showSinglePrimeOutput(`Number must more than 0`);
@@ -258,37 +273,14 @@ function calcSinglePrime() {
 function showStart() {
 	hideTooltip();
 
-	// `
-	// 	${header}
-	// 	<div class="form-group"><label for="num">Number : </label><input type="number" id="num" value="${snum}" onchange="calcSinglePrime()" onkeyup="calcSinglePrime()"/></div>
-	// 	<div class="form-group"><div id="num_result"></div></div>
-	// 	<div class="form-group"><label class="checkbox">Show Calculation<input type="checkbox" id="ot" name="ot" onchange="ot_onchange()" ${
-	// 		ot !== 0 ? ` checked="checked"` : ""
-	// 	}/></label></div>
-
-	// 	${header2}
-
-	// 	<div class="form-group"><label for="min">Min : </label><input type="number" id="min" value="${min}"/></div>
-	// 	<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
-	// 	<div class="form-group"><label class="radio">Show All<input type="radio" id="os_1" name="os" value="0" onchange="os_onchange()" ${
-	// 		os === 0 ? ` checked="checked"` : ""
-	// 	}/></label></div>
-	// 	<div class="form-group"><label class="radio">Prime Only<input type="radio" id="os_2" name="os" value="1" onchange="os_onchange()" ${
-	// 		os !== 0 ? ` checked="checked"` : ""
-	// 	}/></label></div>
-	// 	<div class="form-group" id="col_container"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div><br/>
-	// 	<button onclick="calcRangePrime()">Start Calculate Prime</button>
-
-	// `;
-
 	genUI(
 		`
-		${header}
+		${header()}
 		${ctlNumber("num", snum, "calcSinglePrime()", "Number")}
 		${ctlTextResult("num_result")}
 		${ctlCheckbox("ot", ot ? true : false, "ot_onchange()", "Show Calculation")}
 		
-		${header2}
+		${header2()}
 
 		${ctlNumber("min", min, null, "Min")}
 		${ctlNumber("max", max, null, "Max")}
@@ -301,7 +293,7 @@ function showStart() {
 				
 	`,
 		function () {
-			snum = 0;
+			snum = big ? 0n : 0;
 			os_onchange();
 			setTimeout(function () {
 				calcSinglePrime();
@@ -312,7 +304,7 @@ function showStart() {
 
 function ot_onchange() {
 	ot = document.getElementById("ot").checked ? 1 : 0;
-	snum = 0;
+	snum = big ? 0n : 0;
 	calcSinglePrime();
 }
 
@@ -323,6 +315,11 @@ function os_onchange() {
 	} else {
 		document.getElementById("col_container").style.display = "none";
 	}
+}
+
+function big_onchange(val) {
+	big = parseInt(val, 10);
+	showStart();
 }
 
 function getRadioValue(name) {
@@ -339,19 +336,29 @@ function getRadioValue(name) {
 }
 
 function calcRangePrime() {
-	min = parseInt(document.getElementById("min").value);
-	max = parseInt(document.getElementById("max").value);
-	col = parseInt(document.getElementById("col").value);
+	let zero = 0;
+	if (big) {
+		min = BigInt(document.getElementById("min").value);
+		max = BigInt(document.getElementById("max").value);
+		col = BigInt(document.getElementById("col").value);
+		zero = 0n;
+	} else {
+		min = parseInt(document.getElementById("min").value);
+		max = parseInt(document.getElementById("max").value);
+		col = parseInt(document.getElementById("col").value);
+		zero = 0;
+	}
+
 	os = parseInt(getRadioValue("os"), 10);
 	ot = document.getElementById("ot").checked ? 1 : 0;
 
-	if (max > 0 && col > 0) {
-		if (min > 0 && min <= max) {
+	if (max > zero && col > zero) {
+		if (min > zero && min <= max) {
 			if (window.Worker) {
 				genUI(
 					`
-						${header}
-						${loading} Finding prime number in <b>${formatNumber(max)}</b> numbers${loading2}<br/>
+						${header()}
+						 Finding prime number in <b>${formatNumber(max - min + (big ? 1n : 1))}</b> numbers${loading2}<br/>
 						${loading3}<br/><br/>
 						${btnTryAgain}
 					`,
@@ -369,7 +376,7 @@ function calcRangePrime() {
 									let processTime = window.performance.now() - start;
 
 									genUI(`
-								${header}
+								${header()}
 								We found <b>${formatNumber(primeFound)} prime number</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
 										max
 									)}</b> in <b>${formatTime(
@@ -377,56 +384,81 @@ function calcRangePrime() {
 									)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
 							`);
 								} else {
-									genUI(`${errorHeader}Fail to find prime number<br/><br/>${btnTryAgain}`);
+									genUI(`${errorHeader()}Fail to find prime number<br/><br/>${btnTryAgain}`);
 								}
 							},
 							function (e) {
-								genUI(`${errorHeader}Fail to find prime number. ${e.message}<br/><br/>${btnTryAgain}`);
+								genUI(
+									`${errorHeader()}Fail to find prime number. ${e.message}<br/><br/>${btnTryAgain}`
+								);
 							}
 						);
 					}
 				);
 			} else {
-				genUI(`${errorHeader}Web Worker not available<br/><br/>${btnTryAgain}`);
+				genUI(`${errorHeader()}Web Worker not available<br/><br/>${btnTryAgain}`);
 			}
 		} else {
-			genUI(`${errorHeader}Min must be a positive integer and less or equal with Max<br/><br/>${btnTryAgain}`);
+			genUI(`${errorHeader()}Min must be a positive integer and less or equal with Max<br/><br/>${btnTryAgain}`);
 		}
 	} else {
-		genUI(`${errorHeader}Max and Col must be a positive integer<br/><br/>${btnTryAgain}`);
+		genUI(`${errorHeader()}Max and Col must be a positive integer<br/><br/>${btnTryAgain}`);
 	}
 }
 
 function mw(max) {
-	switch (true) {
-		case max <= 9:
-			return 0;
-		case max <= 99:
-			return 1;
-		case max <= 999:
-			return 2;
-		case max <= 9999:
-			return 3;
-		case max <= 99999:
-			return 4;
-		case max <= 999999:
-			return 5;
-		case max <= 9999999:
-			return 6;
-		default:
-			return 7;
+	if (big) {
+		switch (true) {
+			case max <= 9n:
+				return 0;
+			case max <= 99n:
+				return 1;
+			case max <= 999n:
+				return 2;
+			case max <= 9999n:
+				return 3;
+			case max <= 99999n:
+				return 4;
+			case max <= 999999n:
+				return 5;
+			case max <= 9999999n:
+				return 6;
+			default:
+				return 7;
+		}
+	} else {
+		switch (true) {
+			case max <= 9:
+				return 0;
+			case max <= 99:
+				return 1;
+			case max <= 999:
+				return 2;
+			case max <= 9999:
+				return 3;
+			case max <= 99999:
+				return 4;
+			case max <= 999999:
+				return 5;
+			case max <= 9999999:
+				return 6;
+			default:
+				return 7;
+		}
 	}
 }
 
 function showRangePrimeOutput() {
 	genUI(
 		`
-		${header}${loading} 
-		Generating <b> ${formatNumber(os === 0 ? max - min + 1 : result.length)} number</b> into your browser${loading2} <br/>
+		${header()} 
+		Generating <b> ${formatNumber(
+			os === 0 ? max - min + (big ? 1n : 1) : result.length
+		)} number</b> into your browser${loading2} <br/>
 		${loading3}`,
 		function () {
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
-			let isLong = os === 0 ? result.length / col > 50 : result.length > 1000;
+			let isLong = os === 0 ? result.length / col > (big ? 50n : 50) : result.length > 1000;
 
 			runWorker(
 				"joinresult",
@@ -434,7 +466,7 @@ function showRangePrimeOutput() {
 				function (e) {
 					if (e.data) {
 						genUI(`
-							${header}
+							${header()}
 							${isLong ? `${btnTryAgain} ${btnScrollBottom}<br/><br/><small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 							<div class="result_container"${os === 0 ? ` onclick="showTooltip(event)"` : ""}>
 								<div class="result${os === 0 ? ` mw-${mw(max)}` : ""}">
@@ -445,11 +477,11 @@ function showRangePrimeOutput() {
 							${btnTryAgain} ${isLong ? btnScrollTop : ""}
 							`);
 					} else {
-						genUI(`${errorHeader}Fail to combine result<br/>${btnTryAgain}`);
+						genUI(`${errorHeader()}Fail to combine result<br/>${btnTryAgain}`);
 					}
 				},
 				function (e) {
-					genUI(`${errorHeader}Fail to combine result. ${e.message}<br/>${btnTryAgain}`);
+					genUI(`${errorHeader()}Fail to combine result. ${e.message}<br/>${btnTryAgain}`);
 				}
 			);
 		}
@@ -467,11 +499,10 @@ function hideTooltip() {
 function showTooltip(e) {
 	if (e.target && e.target.parentNode.classList.contains("d-flex")) {
 		const target = e.target;
-		const num = parseInt(target.innerText);
+		const num = big ? BigInt(target.innerText) : parseInt(target.innerText);
 
-		genTooltip(target, `<h3>${formatNumber(num)}</h3> ${loading} Checking${loading2}`);
+		genTooltip(target, `<h3>${formatNumber(num)}</h3> Checking${loading2}`);
 
-		// setTimeout(function () {
 		monitorRenderTime("tooltip", "tooltip_time");
 		runWorker(
 			"singleprime",
@@ -519,7 +550,6 @@ function showTooltip(e) {
 				genTooltip(target, `Fail to find prime number. ${e.message}`);
 			}
 		);
-		// }, 0);
 	} else {
 		hideTooltip();
 	}
@@ -537,7 +567,7 @@ var wk = null;
 function runWorker(script, params, callback, errcallback) {
 	stopWorker();
 
-	wk = new Worker(`${script}.js`);
+	wk = new Worker(`${script}${big ? `_big` : ""}.js`);
 	wk.postMessage(params);
 	wk.onmessage = function (e) {
 		if (typeof callback === "function") {
@@ -569,21 +599,46 @@ function getParam() {
 	const u_col = urlParams.get("col");
 	const u_os = urlParams.get("os");
 	const u_ot = urlParams.get("ot");
+	const u_big = urlParams.get("big");
 
-	if (u_num) {
-		snum = parseInt(u_num);
+	if (u_big) {
+		big = parseInt(u_big, 10);
+	} else {
+		big = 0;
 	}
 
-	if (u_min) {
-		min = parseInt(u_min);
-	}
+	if (big) {
+		if (u_num) {
+			snum = BigInt(u_num);
+		}
 
-	if (u_max) {
-		max = parseInt(u_max);
-	}
+		if (u_min) {
+			min = BigInt(u_min);
+		}
 
-	if (u_col) {
-		col = parseInt(u_col);
+		if (u_max) {
+			max = BigInt(u_max);
+		}
+
+		if (u_col) {
+			col = BigInt(u_col);
+		}
+	} else {
+		if (u_num) {
+			snum = parseInt(u_num);
+		}
+
+		if (u_min) {
+			min = parseInt(u_min);
+		}
+
+		if (u_max) {
+			max = parseInt(u_max);
+		}
+
+		if (u_col) {
+			col = parseInt(u_col);
+		}
 	}
 
 	if (u_os) {
@@ -600,10 +655,11 @@ function getMemory() {
 		let t = window.performance.memory;
 		let d = document.getElementById("mem");
 
-		d.innerHTML = `Memory usage <b>${parseInt((t.usedJSHeapSize / t.totalJSHeapSize) * 100, 10)}% | ${parseInt(
-			t.usedJSHeapSize / 1024 / 1024,
-			10
-		)}Mb</b>`;
+		d.innerHTML = `
+			Memory usage <b>
+			${parseInt((t.usedJSHeapSize / t.totalJSHeapSize) * 100, 10)}% | 
+			${parseInt(t.usedJSHeapSize / 1024 / 1024, 10)}Mb</b>
+		`;
 		getMemory();
 	}, 100);
 }
