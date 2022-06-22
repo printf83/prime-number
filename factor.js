@@ -2,7 +2,7 @@ function formatNumber(num) {
 	if (num) {
 		return num.toLocaleString("en-US");
 	} else {
-		return "xxx";
+		return `<span class="text-danger">Error!</span>`;
 	}
 }
 

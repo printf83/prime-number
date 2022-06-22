@@ -179,7 +179,7 @@ function formatNumber(num) {
 	if (num) {
 		return num.toLocaleString("en-US");
 	} else {
-		return "xxx";
+		return `<span class="text-danger">Error!</span>`;
 	}
 }
 
@@ -478,11 +478,16 @@ function showRangePrimeOutput() {
 		Generating <b> ${formatNumber(
 			os === 0 ? max - min + (big ? 1n : 1) : result.length
 		)} number</b> into your browser  ${timerIndicator(timerId)}${loading2} <br/>
-		${loading3}`,
+		${loading3}<br/><br/>
+		${btnTryAgain}
+		`,
 		function () {
 			secTimer(timerId, 1);
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
-			let isLong = os === 0 ? result.length / col > (big ? 50n : 50) : result.length > 1000;
+			let isLong =
+				os === 0
+					? (big ? BigInt(result.length) : result.length) / col > (big ? 50n : 50)
+					: result.length > 1000;
 
 			runWorker(
 				"joinresult",
@@ -676,13 +681,24 @@ function getParam() {
 	}
 }
 
-function secTimer(id, index) {
+function secTimer(id, d) {
 	setTimeout(function () {
 		let elem = document.getElementById(id);
 		if (elem) {
-			index = index ? index : 1;
-			elem.innerHTML = `since ${index} sec ago`;
-			secTimer(id, ++index);
+			d = d ? d : 1;
+
+			let h = Math.floor(d / 3600);
+			let m = Math.floor((d % 3600) / 60);
+			let s = Math.floor((d % 3600) % 60);
+
+			let hDisplay = h > 0 ? h + " hrs " : "";
+			let mDisplay = m > 0 ? m + " min " : "";
+			let sDisplay = s > 0 ? s + " sec " : "";
+
+			let text = `${hDisplay}${mDisplay}${sDisplay}`;
+
+			elem.innerHTML = `since ${text} ago `;
+			secTimer(id, ++d);
 		}
 	}, 1000);
 }
