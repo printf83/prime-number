@@ -1,4 +1,5 @@
 // var totalLoop = 0;
+let big = 0;
 let result = [];
 let min = 1;
 let max = 99999;
@@ -6,12 +7,15 @@ let col = 6;
 let os = 1;
 let ot = 1;
 let snum = 1;
-let big = 1;
 
 function ctlCheckbox(id, checked, onchange, label) {
-	return `<div class="form-group"><label class="checkbox" for="${id}">${label}<input type="checkbox" id="${id}" onchange="${onchange}" ${
-		checked ? ` checked="checked"` : ""
-	}/><span class="checkmark"></span></label></div>`;
+	return `
+	<div class="form-group">
+		<label class="checkbox" for="${id}">${label}
+			<input type="checkbox" id="${id}" onchange="${onchange}" ${checked ? ` checked="checked"` : ""}/>
+			<span class="checkmark"></span>
+		</label>
+	</div>`;
 }
 
 function ctlRadio(id, name, value, checked, onchange, label) {
@@ -27,11 +31,11 @@ function ctlRadio(id, name, value, checked, onchange, label) {
 }
 
 function ctlNumber(id, value, onchange, label, container_id) {
-	return `<div class="form-group"${
-		container_id ? ` id="${container_id}"` : ""
-	}><label for="${id}">${label} : </label><input type="number" id="${id}" value="${value}"${
-		onchange ? `onchange="${onchange}"` : ""
-	}${onchange ? `onkeyup="${onchange}"` : ""}/></div>`;
+	return `
+	<div class="form-group"${container_id ? ` id="${container_id}"` : ""}>
+		<label for="${id}">${label} : </label>
+		<input type="number" id="${id}" value="${value}"${onchange ? ` onchange="${onchange}" onkeyup="${onchange}"` : ""}/>
+	</div>`;
 }
 
 function ctlButton(label, onclick) {
@@ -135,44 +139,21 @@ function runCallback(callback) {
 }
 
 function genUI(html, callback) {
-	let frag = document.createElement("div");
-	frag.id = "root";
-	frag.innerHTML = `
-		<br/>
-		${html}
-		<br/>
-		`;
-
-	let dom = document.getElementById("root");
-	if (dom) {
-		dom.replaceWith(frag);
-	}
-
-	runCallback(callback);
+	setInnerHtml("root", html, callback);
 }
 
 function showSinglePrimeOutput(html, callback) {
-	let elem = document.getElementById("num_result");
-	if (elem) {
-		elem.innerHTML = html;
-	}
-
-	runCallback(callback);
+	setInnerHtml("num_result", html, callback);
 }
 
 function genTooltip(target, html) {
-	let frag = document.createElement("div");
-	frag.id = "tooltip";
-	frag.innerHTML = html;
-
-	let dom = document.getElementById("tooltip");
-	dom.replaceWith(frag);
-
-	let rect = target.getBoundingClientRect();
-	const tooltip_container = document.getElementById("tooltip_container");
-	tooltip_container.style.top = `${rect.top + window.scrollY - 5}px`;
-	tooltip_container.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
-	tooltip_container.style.display = "block";
+	setInnerHtml("tooltip", html, function () {
+		let rect = target.getBoundingClientRect();
+		const tooltip_container = document.getElementById("tooltip_container");
+		tooltip_container.style.top = `${rect.top + window.scrollY - 5}px`;
+		tooltip_container.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
+		tooltip_container.style.display = "block";
+	});
 }
 
 function formatNumber(num) {
@@ -195,11 +176,17 @@ function formatList(num) {
 	return num.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1");
 }
 
-function setInnerHtml(id, html) {
+function setInnerHtml(id, html, callback) {
 	if (id) {
-		let elem = document.getElementById(id);
-		if (elem) {
-			elem.innerHTML = html;
+		let dom = document.getElementById(id);
+		if (dom) {
+			let temp = document.createElement(dom.tagName);
+			temp.id = dom.id;
+			temp.innerHTML = html;
+
+			dom.replaceWith(temp);
+
+			runCallback(callback);
 		}
 	}
 }
@@ -309,9 +296,9 @@ function showStart() {
 				
 	`,
 		function () {
-			snum = big ? 0n : 0;
 			os_onchange();
 			setTimeout(function () {
+				snum = big ? 0n : 0;
 				calcSinglePrime();
 			}, 100);
 		}
@@ -397,13 +384,13 @@ function calcRangePrime() {
 									let processTime = window.performance.now() - start;
 
 									genUI(`
-								${header()}
-								We found <b>${formatNumber(primeFound)} prime number</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
+											${header()}
+											We found <b>${formatNumber(primeFound)} prime number</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
 										max
 									)}</b> in <b>${formatTime(
 										processTime
 									)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
-							`);
+										`);
 								} else {
 									genUI(`${errorHeader()}Fail to find prime number<br/><br/>${btnTryAgain}`);
 								}
@@ -624,13 +611,13 @@ function stopWorker() {
 function getParam() {
 	const queryString = window.location.search;
 	const urlParams = new URLSearchParams(queryString);
+	const u_big = urlParams.get("big");
 	const u_num = urlParams.get("num");
 	const u_min = urlParams.get("min");
 	const u_max = urlParams.get("max");
 	const u_col = urlParams.get("col");
 	const u_os = urlParams.get("os");
 	const u_ot = urlParams.get("ot");
-	const u_big = urlParams.get("big");
 
 	if (u_big) {
 		big = parseInt(u_big, 10);

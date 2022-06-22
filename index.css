@@ -178,10 +178,10 @@ small {
 .d-flex b,
 .d-flex i {
     width: auto;
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    /* border: 1px solid rgba(255, 255, 255, 0.4); */
     margin: 0.05rem;
     text-align: center;
-    border-radius: 5px;
+    /* border-radius: 5px; */
     padding: 0.05rem;
     font-size: small;
     display: inline-block;
@@ -232,8 +232,9 @@ small {
 
 .d-flex b:hover,
 .d-flex i:hover {
-    border: 1px solid #c1daffc0;
+    /* border: 1px solid #c1daffc0; */
     color: #c1daffc0;
+    background-color: rgba(0, 0, 0, 0.4);;
 }
 
 .d-flex b {
@@ -519,8 +520,8 @@ label.radio,
 label.checkbox {
     display: block;
     position: relative;
-    padding-left: 35px;
     padding-top:0.15rem;
+    padding-left: 35px;
     margin: 0.5rem 0 0.5rem 8rem;
     cursor: pointer;
     -webkit-user-select: none;
@@ -528,6 +529,7 @@ label.checkbox {
     -ms-user-select: none;
     user-select: none;
 }
+
 
 /* Hide the browser's default checkbox */
 label.radio input,

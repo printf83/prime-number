@@ -28,6 +28,6 @@ onmessage = function (e) {
 			count: result.filter((x) => x === 1).length,
 		});
 	} catch (err) {
-		postMessage(null);
+		postMessage(err);
 	}
 };
