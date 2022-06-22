@@ -528,6 +528,9 @@ label.checkbox {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    width: 9rem;
+    text-align: left;
+
 }
 
 

@@ -8,9 +8,13 @@ function isPrime(num) {
 onmessage = function (e) {
 	try {
 		let num = e.data[0];
+		let pr = e.data[1];
 
 		if (isPrime(num)) {
-			postMessage([1, num]);
+			postMessage({
+				type: "data",
+				data: [1, num],
+			});
 		} else {
 			let result = [1];
 			let max = Math.sqrt(num);
@@ -19,6 +23,14 @@ onmessage = function (e) {
 				if (num % x === 0) {
 					result.push(x);
 					result.push(num / x);
+				}
+
+				if (pr === 1) {
+					//progress
+					postMessage({
+						type: "progress",
+						data: (x / max) * 100,
+					});
 				}
 			}
 
@@ -29,7 +41,10 @@ onmessage = function (e) {
 				return a - b;
 			});
 
-			postMessage(result);
+			postMessage({
+				type: "data",
+				data: result,
+			});
 		}
 	} catch (err) {
 		postMessage(err);

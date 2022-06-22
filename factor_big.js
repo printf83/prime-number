@@ -2,7 +2,7 @@ function formatNumber(num) {
 	if (num) {
 		return num.toLocaleString("en-US");
 	} else {
-		return "xxx";
+		return `<span class="text-danger">Error!</span>`;
 	}
 }
 
@@ -11,6 +11,7 @@ onmessage = function (e) {
 		let data = e.data[0];
 		let num = e.data[1];
 		let os = e.data[2];
+		let pr = e.data[3];
 
 		let result = null;
 		if (os === 0) {
@@ -25,16 +26,27 @@ onmessage = function (e) {
                         <td>&#247;</td>
                         <td>${formatNumber(data[x])}</td>
                         <td>=</td>
-                        <td>${formatNumber(num / data[x])}</td>
+                        <td>${formatNumber(num / BigInt(data[x]))}</td>
                     </tr>
                 `);
+
+				if (pr === 1) {
+					//progress
+					postMessage({
+						type: "progress",
+						data: (x / mid) * 100,
+					});
+				}
 			}
 
 			//combine
 			result = `<div class="scrollable"><table>${tmp.join("")}</table></div>`;
 		}
 
-		postMessage(result);
+		postMessage({
+			type: "data",
+			data: result,
+		});
 	} catch (err) {
 		postMessage(err);
 	}

@@ -31,17 +31,30 @@ function isPrime(num) {
 onmessage = function (e) {
 	try {
 		let num = e.data[0];
+		let pr = e.data[1];
 
 		if (isPrime(num)) {
-			postMessage([1n, num]);
+			postMessage({
+				type: "data",
+				data: [1n, num],
+			});
 		} else {
 			let result = [1n];
 			let max = getSqrt(num);
+			let maxInt = Number(max);
 			let min = 2n;
 			for (let x = min; x <= max; x++) {
 				if (num % x === 0n) {
 					result.push(x);
 					result.push(num / x);
+				}
+
+				if (pr === 1) {
+					//progress
+					postMessage({
+						type: "progress",
+						data: (Number(x) / maxInt) * 100,
+					});
 				}
 			}
 
@@ -58,7 +71,10 @@ onmessage = function (e) {
 				}
 			});
 
-			postMessage(result);
+			postMessage({
+				type: "data",
+				data: result,
+			});
 		}
 	} catch (err) {
 		postMessage(err);

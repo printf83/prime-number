@@ -7,6 +7,7 @@ let col = 6;
 let os = 1;
 let ot = 1;
 let snum = 1;
+let pr = 0;
 
 function ctlCheckbox(id, checked, onchange, label) {
 	return `
@@ -60,6 +61,10 @@ const errorHeader = function () {
 };
 
 const timerIndicator = function (id) {
+	return `<span id="${id}"></span>`;
+};
+
+const progressIndicator = function (id) {
 	return `<span id="${id}"></span>`;
 };
 
@@ -218,7 +223,13 @@ function calcSinglePrime() {
 	if (currentNum > zero) {
 		if (currentNum !== snum) {
 			let timerId = genId();
-			showSinglePrimeOutput(`Checking ${timerIndicator(timerId)}${loading2}`);
+			let progressId = genId();
+
+			showSinglePrimeOutput(`
+								Checking ${timerIndicator(timerId)}
+								${progressIndicator(progressId)} 
+								${loading2}
+								`);
 			secTimer(timerId, 1);
 
 			snum = currentNum;
@@ -227,14 +238,14 @@ function calcSinglePrime() {
 
 			runWorker(
 				"singleprime",
-				[snum],
+				[snum, pr],
 				function (e) {
-					if (e.data) {
-						result = e.data;
+					if (e) {
+						result = e;
 						if (result) {
 							runWorker(
 								"factor",
-								[result, snum, ot],
+								[result, snum, ot, pr],
 								function (e) {
 									let lastNumber = result[result.length - 1];
 
@@ -242,9 +253,7 @@ function calcSinglePrime() {
 										showSinglePrimeOutput(
 											`<h4>${formatNumber(
 												lastNumber
-											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${
-												e.data
-											}</small><br/><small id="single_time_1">${loading2}</small>`
+											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small id="single_time_1">${loading2}</small>`
 										);
 									} else {
 										showSinglePrimeOutput(
@@ -255,14 +264,12 @@ function calcSinglePrime() {
 											}
 											<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
 												result.length === 1 ? ` only` : ``
-											} be divided with <br/>${
-												e.data
-											}</small><br/><small id="single_time_2">${loading2}</small>`
+											} be divided with <br/>${e}</small><br/><small id="single_time_2">${loading2}</small>`
 										);
 									}
 								},
 								function (e) {
-									showSinglePrimeOutput(`Fail to find prime number. ${e.message}`);
+									showSinglePrimeOutput(`Fail to find prime number. ${e}`);
 								}
 							);
 						} else {
@@ -273,7 +280,10 @@ function calcSinglePrime() {
 					}
 				},
 				function (e) {
-					showSinglePrimeOutput(`Fail to find prime number. ${e.message}`);
+					showSinglePrimeOutput(`Fail to find prime number. ${e}`);
+				},
+				function (e) {
+					updateProgress(progressId, e);
 				}
 			);
 		}
@@ -291,6 +301,7 @@ function showStart() {
 		${ctlNumber("num", snum, "calcSinglePrime()", "Number")}
 		${ctlTextResult("num_result")}
 		${ctlCheckbox("ot", ot ? true : false, "ot_onchange()", "Show Calculation")}
+		${ctlCheckbox("pr", pr ? true : false, "pr_onchange()", "Show Progress")}
 		
 		${header2()}
 
@@ -318,6 +329,10 @@ function ot_onchange() {
 	ot = document.getElementById("ot").checked ? 1 : 0;
 	snum = big ? 0n : 0;
 	calcSinglePrime();
+}
+
+function pr_onchange() {
+	pr = document.getElementById("pr").checked ? 1 : 0;
 }
 
 function os_onchange() {
@@ -368,13 +383,14 @@ function calcRangePrime() {
 		if (min > zero && min <= max) {
 			if (window.Worker) {
 				let timerId = genId();
+				let progressId = genId();
 
 				genUI(
 					`
 						${header()}
-						 Finding prime number in <b>${formatNumber(max - min + (big ? 1n : 1))}</b> numbers  ${timerIndicator(
-						timerId
-					)}${loading2}<br/>
+						 Finding prime number in <b>${formatNumber(max - min + (big ? 1n : 1))}</b> numbers ${timerIndicator(timerId)}
+						${progressIndicator(progressId)} 
+						${loading2}<br/>
 						${loading3}<br/><br/>
 						${btnTryAgain}
 					`,
@@ -384,11 +400,11 @@ function calcRangePrime() {
 
 						runWorker(
 							"prime",
-							[min, max],
+							[min, max, pr],
 							function (e) {
-								if (e.data) {
-									result = e.data.result;
-									primeFound = e.data.count;
+								if (e) {
+									result = e.result;
+									primeFound = e.count;
 
 									let processTime = window.performance.now() - start;
 
@@ -405,9 +421,10 @@ function calcRangePrime() {
 								}
 							},
 							function (e) {
-								genUI(
-									`${errorHeader()}Fail to find prime number. ${e.message}<br/><br/>${btnTryAgain}`
-								);
+								genUI(`${errorHeader()}Fail to find prime number. ${e}<br/><br/>${btnTryAgain}`);
+							},
+							function (e) {
+								updateProgress(progressId, e);
 							}
 						);
 					}
@@ -467,13 +484,16 @@ function mw(max) {
 
 function showRangePrimeOutput() {
 	let timerId = genId();
+	let progressId = genId();
 
 	genUI(
 		`
 		${header()} 
 		Generating <b> ${formatNumber(
 			os === 0 ? max - min + (big ? 1n : 1) : result.length
-		)} number</b> into your browser  ${timerIndicator(timerId)}${loading2} <br/>
+		)} number</b> into your browser  ${timerIndicator(timerId)}
+		${progressIndicator(progressId)} 
+		${loading2} <br/>
 		${loading3}<br/><br/>
 		${btnTryAgain}
 		`,
@@ -487,15 +507,15 @@ function showRangePrimeOutput() {
 
 			runWorker(
 				"joinresult",
-				[result, min, max, col, os],
+				[result, min, max, col, os, pr],
 				function (e) {
-					if (e.data) {
+					if (e) {
 						genUI(`
 							${header()}
 							${isLong ? `${btnTryAgain} ${btnScrollBottom}<br/><br/><small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
 							<div class="result_container"${os === 0 ? ` onclick="showTooltip(event)"` : ""}>
 								<div class="result${os === 0 ? ` mw-${mw(max)}` : ""}">
-									${e.data}
+									${e}
 								</div>
 							</div><br/>
 							<small id="multiple_time_2">${loading2}</small><br/><br/>
@@ -506,7 +526,10 @@ function showRangePrimeOutput() {
 					}
 				},
 				function (e) {
-					genUI(`${errorHeader()}Fail to combine result. ${e.message}<br/>${btnTryAgain}`);
+					genUI(`${errorHeader()}Fail to combine result. ${e}<br/>${btnTryAgain}`);
+				},
+				function (e) {
+					updateProgress(progressId, e);
 				}
 			);
 		}
@@ -527,43 +550,50 @@ function showTooltip(e) {
 		const num = big ? BigInt(target.innerText) : parseInt(target.innerText);
 
 		let timerId = genId();
-		genTooltip(target, `<h3>${formatNumber(num)}</h3> Checking ${timerIndicator(timerId)}${loading2}`);
+		let progressId = genId();
+		genTooltip(
+			target,
+			`
+			<h3>${formatNumber(num)}</h3> Checking ${timerIndicator(timerId)}
+			${progressIndicator(progressId)} 
+			${loading2}
+			`
+		);
 		secTimer(timerId, 1);
 
 		monitorRenderTime("tooltip", "tooltip_time");
 		runWorker(
 			"singleprime",
-			[num],
+			[num, pr],
 			function (e) {
-				if (e.data) {
-					result = e.data;
+				if (e) {
+					result = e;
 					if (result) {
 						runWorker(
 							"factor",
-							[result, num, ot],
+							[result, num, ot, pr],
 							function (e) {
 								if (result.length === 2) {
 									genTooltip(
 										target,
 										`<h3>${formatNumber(
 											result[result.length - 1]
-										)}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${
-											e.data
-										}</small><br/><span id="tooltip_time">${loading2}</span>`
+										)}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><span id="tooltip_time">${loading2}</span>`
 									);
 								} else {
 									genTooltip(
 										target,
 										`<h3>${formatNumber(
 											result[result.length - 1]
-										)}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${
-											e.data
-										}</small><br/><span id="tooltip_time">${loading2}</span>`
+										)}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${e}</small><br/><span id="tooltip_time">${loading2}</span>`
 									);
 								}
 							},
 							function (e) {
-								showSinglePrimeOutput(`Fail to find prime number. ${e.message}`);
+								showSinglePrimeOutput(`Fail to find prime number. ${e}`);
+							},
+							function (e) {
+								updateProgress(progressId, e);
 							}
 						);
 					} else {
@@ -574,7 +604,10 @@ function showTooltip(e) {
 				}
 			},
 			function (e) {
-				genTooltip(target, `Fail to find prime number. ${e.message}`);
+				genTooltip(target, `Fail to find prime number. ${e}`);
+			},
+			function (e) {
+				updateProgress(progressId, e);
 			}
 		);
 	} else {
@@ -591,21 +624,27 @@ function doScrollTo(location) {
 }
 
 var wk = null;
-function runWorker(script, params, callback, errcallback) {
+function runWorker(script, params, callback, onerror, onprogress) {
 	stopWorker();
 
 	wk = new Worker(`${script}${big ? `_big` : ""}.js`);
 	wk.postMessage(params);
 	wk.onmessage = function (e) {
-		if (typeof callback === "function") {
-			this.terminate();
-			callback(e);
+		if (e.data.type === "progress") {
+			if (typeof onprogress === "function") {
+				onprogress(e.data.data);
+			}
+		} else {
+			if (typeof callback === "function") {
+				this.terminate();
+				callback(e.data.data);
+			}
 		}
 	};
 	wk.onerror = function (e) {
-		if (typeof errcallback === "function") {
+		if (typeof onerror === "function") {
 			this.terminate();
-			errcallback(e);
+			onerror(e.message);
 		}
 	};
 }
@@ -621,6 +660,7 @@ function getParam() {
 	const queryString = window.location.search;
 	const urlParams = new URLSearchParams(queryString);
 	const u_big = urlParams.get("big");
+	const u_pr = urlParams.get("pr");
 	const u_num = urlParams.get("num");
 	const u_min = urlParams.get("min");
 	const u_max = urlParams.get("max");
@@ -632,6 +672,12 @@ function getParam() {
 		big = parseInt(u_big, 10);
 	} else {
 		big = 0;
+	}
+
+	if (u_pr) {
+		pr = parseInt(u_pr, 10);
+	} else {
+		pr = 0;
 	}
 
 	if (big) {
@@ -697,6 +743,13 @@ function secTimer(id, d, ms) {
 			secTimer(id, ++d);
 		}
 	}, 1000);
+}
+
+function updateProgress(id, value) {
+	let elem = document.getElementById(id);
+	if (elem) {
+		elem.innerHTML = `(Progress : ${value.toFixed(2)}%)`;
+	}
 }
 
 function getMemory() {

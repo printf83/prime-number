@@ -9,6 +9,9 @@ onmessage = function (e) {
 	try {
 		let min = e.data[0];
 		let max = e.data[1];
+		let pr = e.data[2];
+
+		let maxInt = Number(max);
 
 		let result = [];
 
@@ -20,12 +23,23 @@ onmessage = function (e) {
 			if (isPrime(x)) {
 				result[x - min] = 1;
 			}
+
+			if (pr === 1) {
+				//progress
+				postMessage({
+					type: "progress",
+					data: (Number(x) / maxInt) * 100,
+				});
+			}
 		}
 
 		// return result
 		postMessage({
-			result: result,
-			count: result.filter((x) => x === 1).length,
+			type: "data",
+			data: {
+				result: result,
+				count: result.filter((x) => x === 1).length,
+			},
 		});
 	} catch (err) {
 		postMessage(err);
