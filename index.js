@@ -166,9 +166,18 @@ function formatNumber(num) {
 
 function formatTime(num) {
 	if (num > 1000) {
-		return (parseFloat(num.toFixed(1)) / 1000).toLocaleString("en-US") + "s";
+		num = num / 1000;
+		let h = Math.floor(num / 3600);
+		let m = Math.floor((num % 3600) / 60);
+		let s = Math.floor(num % 3600) % 60;
+
+		let hDisplay = h > 0 ? ` ${h} hrs ` : "";
+		let mDisplay = m > 0 ? ` ${m} min ` : "";
+		let sDisplay = s > -1 ? `${m > 0 ? s : parseFloat(num.toFixed(1)).toLocaleString("en-US")} sec ` : "";
+
+		return `${hDisplay}${mDisplay}${sDisplay}`;
 	} else {
-		return parseFloat(num.toFixed(1)).toLocaleString("en-US") + "ms";
+		return `${parseFloat(num.toFixed(1)).toLocaleString("en-US")} ms`;
 	}
 }
 
@@ -668,7 +677,7 @@ function getParam() {
 	}
 }
 
-function secTimer(id, d) {
+function secTimer(id, d, ms) {
 	setTimeout(function () {
 		let elem = document.getElementById(id);
 		if (elem) {
