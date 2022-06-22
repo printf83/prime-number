@@ -338,6 +338,7 @@ h3 {
 h4 {
     margin: 0;
     font-size: 20pt;
+    overflow-wrap: break-word;
 }
 
 /* shadow */

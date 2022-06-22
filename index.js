@@ -42,8 +42,8 @@ function ctlTextResult(id) {
 	return `<div class="form-group"><div id="${id}"></div></div>`;
 }
 
-const bigTitle = ` <sup class="pointer" title="BigInt"><a onclick="big_onchange(0)"><small>&beta;</small></a></sup>`;
-const smallTitle = ` <sup class="pointer" title="Number"><a onclick="big_onchange(1)"><small>&Omega;</small></a></sup>`;
+const bigTitle = ` <sup class="pointer" title="BigInt"><a onclick="big_onchange(0)"><small>&beta;igInt</small></a></sup>`;
+const smallTitle = ` <sup class="pointer" title="Number"><a onclick="big_onchange(1)"><small>&#938;nteger</small></a></sup>`;
 
 const header = function () {
 	return `<h2>Prime Number Checker${big ? bigTitle : smallTitle}</h2>`;
@@ -53,6 +53,10 @@ const header2 = function () {
 };
 const errorHeader = function () {
 	return `<h2 class="font-danger">Error!${big ? bigTitle : smallTitle}</h2>`;
+};
+
+const timerIndicator = function (id) {
+	return `<span id="${id}"></span>`;
 };
 
 const btnTryAgain = ctlButton("Try Again", "showStart()");
@@ -200,6 +204,15 @@ function setInnerHtml(id, html) {
 	}
 }
 
+function genId() {
+	let s4 = () => {
+		return Math.floor((1 + Math.random()) * 0x10000)
+			.toString(16)
+			.substring(1);
+	};
+	return `${s4()}${s4()}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
+}
+
 function calcSinglePrime() {
 	let zero = big ? 0n : 0;
 	let currentNum = big
@@ -208,7 +221,10 @@ function calcSinglePrime() {
 
 	if (currentNum > zero) {
 		if (currentNum !== snum) {
-			showSinglePrimeOutput(`Checking${loading2}`);
+			let timerId = genId();
+			showSinglePrimeOutput(`Checking ${timerIndicator(timerId)}${loading2}`);
+			secTimer(timerId, 1);
+
 			snum = currentNum;
 
 			monitorRenderTime("root", "single_time_1", "single_time_2");
@@ -355,14 +371,19 @@ function calcRangePrime() {
 	if (max > zero && col > zero) {
 		if (min > zero && min <= max) {
 			if (window.Worker) {
+				let timerId = genId();
+
 				genUI(
 					`
 						${header()}
-						 Finding prime number in <b>${formatNumber(max - min + (big ? 1n : 1))}</b> numbers${loading2}<br/>
+						 Finding prime number in <b>${formatNumber(max - min + (big ? 1n : 1))}</b> numbers  ${timerIndicator(
+						timerId
+					)}${loading2}<br/>
 						${loading3}<br/><br/>
 						${btnTryAgain}
 					`,
 					function () {
+						secTimer(timerId, 1);
 						let start = window.performance.now();
 
 						runWorker(
@@ -449,14 +470,17 @@ function mw(max) {
 }
 
 function showRangePrimeOutput() {
+	let timerId = genId();
+
 	genUI(
 		`
 		${header()} 
 		Generating <b> ${formatNumber(
 			os === 0 ? max - min + (big ? 1n : 1) : result.length
-		)} number</b> into your browser${loading2} <br/>
+		)} number</b> into your browser  ${timerIndicator(timerId)}${loading2} <br/>
 		${loading3}`,
 		function () {
+			secTimer(timerId, 1);
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
 			let isLong = os === 0 ? result.length / col > (big ? 50n : 50) : result.length > 1000;
 
@@ -501,7 +525,9 @@ function showTooltip(e) {
 		const target = e.target;
 		const num = big ? BigInt(target.innerText) : parseInt(target.innerText);
 
-		genTooltip(target, `<h3>${formatNumber(num)}</h3> Checking${loading2}`);
+		let timerId = genId();
+		genTooltip(target, `<h3>${formatNumber(num)}</h3> Checking ${timerIndicator(timerId)}${loading2}`);
+		secTimer(timerId, 1);
 
 		monitorRenderTime("tooltip", "tooltip_time");
 		runWorker(
@@ -648,6 +674,17 @@ function getParam() {
 	if (u_ot) {
 		ot = parseInt(u_ot, 10);
 	}
+}
+
+function secTimer(id, index) {
+	setTimeout(function () {
+		let elem = document.getElementById(id);
+		if (elem) {
+			index = index ? index : 1;
+			elem.innerHTML = `since ${index} sec ago`;
+			secTimer(id, ++index);
+		}
+	}, 1000);
 }
 
 function getMemory() {
