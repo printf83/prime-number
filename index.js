@@ -7,18 +7,46 @@ let os = 1;
 let ot = 1;
 let snum = 1;
 
+function ctlCheckbox(id, checked, onchange, label) {
+	return `<div class="form-group"><label class="checkbox" for="${id}">${label}<input type="checkbox" id="${id}" onchange="${onchange}" ${
+		checked ? ` checked="checked"` : ""
+	}/><span class="checkmark"></span></label></div>`;
+}
+
+function ctlRadio(id, name, value, checked, onchange, label) {
+	return `<div class="form-group"><label class="radio" for="${id}">${label}<input type="radio" id="${id}" name="${name}" value="${value}" onchange="${onchange}" ${
+		checked ? ` checked="checked"` : ""
+	}/><span class="checkmark"></span></label></div>`;
+}
+
+function ctlNumber(id, value, onchange, label, container_id) {
+	return `<div class="form-group"${
+		container_id ? ` id="${container_id}"` : ""
+	}><label for="${id}">${label} : </label><input type="number" id="${id}" value="${value}"${
+		onchange ? `onchange="${onchange}"` : ""
+	}${onchange ? `onkeyup="${onchange}"` : ""}/></div>`;
+}
+
+function ctlButton(label, onclick) {
+	return `<button onclick="${onclick}">${label}</button>`;
+}
+
+function ctlTextResult(id) {
+	return `<div class="form-group"><div id="${id}"></div></div>`;
+}
+
 const header = `<h2>Prime Number Checker</h2>`;
 const header2 = `<h2>Prime Number List</h2>`;
 const errorHeader = `<h2 class="font-danger">Error!</h2>`;
-const btnTryAgain = `<button onclick="showStart()">Try Again</button>`;
-const btnShowResult = `<button onclick="showRangePrimeOutput()">Show Result</button>`;
-const btnScrollBottom = `<button onclick="doScrollTo(1)">Bottom</button>`;
-const btnScrollTop = `<button onclick="doScrollTo(0)">Top</button>`;
+const btnTryAgain = ctlButton("Try Again", "showStart()");
+const btnShowResult = ctlButton("Show Result", "showRangePrimeOutput()"); //`<button onclick="showRangePrimeOutput()">Show Result</button>`;
+const btnScrollBottom = ctlButton("Bottom", "doScrollTo(1)"); //`<button onclick="doScrollTo(1)">Bottom</button>`;
+const btnScrollTop = ctlButton("Top", "doScrollTo(0)"); //`<button onclick="doScrollTo(0)">Top</button>`;
 const loading = ``; //`<div class="lds-ring"><div></div><div></div><div></div><div></div></div>`;
 const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
 const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;
 const memoryLabel = `<div><small id="mem"></small></div>`;
-const bg = `<ul class="bg-bubbles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul>`;
+const bg = ``; //`<ul class="bg-bubbles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul>`;
 
 var monitorID = null;
 function addResizeListener(elem, fun) {
@@ -197,7 +225,7 @@ function calcSinglePrime() {
 													? `<small id="single_time_1">${loading2}</small><br/><br/>`
 													: ``
 											}
-									<h4>${formatNumber(result[result.length - 1])}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
+											<h4>${formatNumber(result[result.length - 1])}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
 												result.length === 1 ? ` only` : ``
 											} be divided with <br/>${
 												e.data
@@ -230,29 +258,47 @@ function calcSinglePrime() {
 function showStart() {
 	hideTooltip();
 
+	// `
+	// 	${header}
+	// 	<div class="form-group"><label for="num">Number : </label><input type="number" id="num" value="${snum}" onchange="calcSinglePrime()" onkeyup="calcSinglePrime()"/></div>
+	// 	<div class="form-group"><div id="num_result"></div></div>
+	// 	<div class="form-group"><label class="checkbox">Show Calculation<input type="checkbox" id="ot" name="ot" onchange="ot_onchange()" ${
+	// 		ot !== 0 ? ` checked="checked"` : ""
+	// 	}/></label></div>
+
+	// 	${header2}
+
+	// 	<div class="form-group"><label for="min">Min : </label><input type="number" id="min" value="${min}"/></div>
+	// 	<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
+	// 	<div class="form-group"><label class="radio">Show All<input type="radio" id="os_1" name="os" value="0" onchange="os_onchange()" ${
+	// 		os === 0 ? ` checked="checked"` : ""
+	// 	}/></label></div>
+	// 	<div class="form-group"><label class="radio">Prime Only<input type="radio" id="os_2" name="os" value="1" onchange="os_onchange()" ${
+	// 		os !== 0 ? ` checked="checked"` : ""
+	// 	}/></label></div>
+	// 	<div class="form-group" id="col_container"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div><br/>
+	// 	<button onclick="calcRangePrime()">Start Calculate Prime</button>
+
+	// `;
+
 	genUI(
 		`
 		${header}
-		<div class="form-group"><label for="num">Number : </label><input type="number" id="num" value="${snum}" onchange="calcSinglePrime()" onkeyup="calcSinglePrime()"/></div>
-		<div class="form-group"><div id="num_result"></div></div>
-		<div class="form-group"><label for="ot" class="radio"><input type="checkbox" id="ot" name="ot" onchange="ot_onchange()" ${
-			ot !== 0 ? ` checked="checked"` : ""
-		}/> Show Calculation</label></div>
-
+		${ctlNumber("num", snum, "calcSinglePrime()", "Number")}
+		${ctlTextResult("num_result")}
+		${ctlCheckbox("ot", ot ? true : false, "ot_onchange()", "Show Calculation")}
+		
 		${header2}
 
-		<div class="form-group"><label for="min">Min : </label><input type="number" id="min" value="${min}"/></div>
-		<div class="form-group"><label for="max">Max : </label><input type="number" id="max" value="${max}"/></div>
-		<div class="form-group"><label for="os_1" class="radio"><input type="radio" id="os_1" name="os" value="0" onchange="os_onchange()" ${
-			os === 0 ? ` checked="checked"` : ""
-		}/> Show All</label></div>
-		<div class="form-group"><label for="os_2" class="radio"><input type="radio" id="os_2" name="os" value="1" onchange="os_onchange()" ${
-			os !== 0 ? ` checked="checked"` : ""
-		}/> Prime Only</label></div>
-		<div class="form-group" id="col_container"><label for="col">Col : </label><input type="number" id="col" value="${col}"/></div><br/>
-		<button onclick="calcRangePrime()">Start Calculate Prime</button>
-		
-		
+		${ctlNumber("min", min, null, "Min")}
+		${ctlNumber("max", max, null, "Max")}
+
+		${ctlRadio("os_1", "os", 0, os === 0 ? true : false, "os_onchange()", "Show All")}
+		${ctlRadio("os_2", "os", 1, os === 1 ? true : false, "os_onchange()", "Prime Only")}
+
+		${ctlNumber("col", col, null, "Col", "col_container")}
+		${ctlButton("Start Calculate Prime", "calcRangePrime()")}
+				
 	`,
 		function () {
 			snum = 0;

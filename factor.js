@@ -1,6 +1,7 @@
 function formatNumber(num) {
 	return num.toLocaleString("en-US");
 }
+
 onmessage = function (e) {
 	try {
 		let data = e.data[0];
