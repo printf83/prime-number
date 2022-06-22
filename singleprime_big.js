@@ -43,18 +43,29 @@ onmessage = function (e) {
 			let max = getSqrt(num);
 			let maxInt = Number(max);
 			let min = 2n;
-			for (let x = min; x <= max; x++) {
-				if (num % x === 0n) {
-					result.push(x);
-					result.push(num / x);
-				}
 
-				if (pr === 1) {
-					//progress
-					postMessage({
-						type: "progress",
-						data: (Number(x) / maxInt) * 100,
-					});
+			if (pr === 1) {
+				let prIndex = max > 3000n ? max / 3000n : 3000n;
+				for (let x = min; x <= max; x++) {
+					if (num % x === 0n) {
+						result.push(x);
+						result.push(num / x);
+					}
+
+					if (x % prIndex === 0n) {
+						//progress
+						postMessage({
+							type: "progress",
+							data: (Number(x) / maxInt) * 100,
+						});
+					}
+				}
+			} else {
+				for (let x = min; x <= max; x++) {
+					if (num % x === 0n) {
+						result.push(x);
+						result.push(num / x);
+					}
 				}
 			}
 

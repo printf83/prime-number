@@ -17,17 +17,26 @@ onmessage = function (e) {
 		result = new Array(max - min + 1).fill(0);
 
 		// loop inside array
-		for (let x = min; x <= max; x++) {
-			if (isPrime(x)) {
-				result[x - min] = 1;
-			}
+		if (pr === 1) {
+			let prIndex = max > 3000 ? Math.floor(max / 3000) : 3000;
+			for (let x = min; x <= max; x++) {
+				if (isPrime(x)) {
+					result[x - min] = 1;
+				}
 
-			if (pr === 1) {
-				//progress
-				postMessage({
-					type: "progress",
-					data: (x / max) * 100,
-				});
+				if (x % prIndex === 0) {
+					//progress
+					postMessage({
+						type: "progress",
+						data: (x / max) * 100,
+					});
+				}
+			}
+		} else {
+			for (let x = min; x <= max; x++) {
+				if (isPrime(x)) {
+					result[x - min] = 1;
+				}
 			}
 		}
 

@@ -6,26 +6,39 @@ onmessage = function (e) {
 		let os = e.data[4];
 		let pr = e.data[5];
 
-		let dataLength = data.length;
+		let max = data.length;
 		let tmp = [];
 		let result = null;
 		if (os === 0) {
 			//gen array list
 			let row = [];
-			for (x = 0; x < dataLength; x++) {
-				row.push(data[x] === 1 ? `<i>${x + min}</i>` : `<b>${x + min}</b>`);
 
-				if ((x + 1) % col === 0) {
-					tmp.push(row.join(""));
-					row = [];
+			if (pr === 1) {
+				let prIndex = max > 3000 ? Math.floor(max / 3000) : 3000;
+				for (x = 0; x < max; x++) {
+					row.push(data[x] === 1 ? `<i>${x + min}</i>` : `<b>${x + min}</b>`);
+
+					if ((x + 1) % col === 0) {
+						tmp.push(row.join(""));
+						row = [];
+					}
+
+					if (x % prIndex === 0) {
+						//progress
+						postMessage({
+							type: "progress",
+							data: (x / max) * 100,
+						});
+					}
 				}
+			} else {
+				for (x = 0; x < max; x++) {
+					row.push(data[x] === 1 ? `<i>${x + min}</i>` : `<b>${x + min}</b>`);
 
-				if (pr === 1) {
-					//progress
-					postMessage({
-						type: "progress",
-						data: (x / dataLength) * 100,
-					});
+					if ((x + 1) % col === 0) {
+						tmp.push(row.join(""));
+						row = [];
+					}
 				}
 			}
 
@@ -36,17 +49,26 @@ onmessage = function (e) {
 			result = `<div class="d-flex">${tmp.join(`</div><div class="d-flex">`)}</div>`;
 		} else {
 			//gen array list
-			for (x = 0; x < dataLength; x++) {
-				if (data[x] === 1) {
-					tmp.push(x + min);
-				}
+			if (pr === 1) {
+				let prIndex = max > 3000 ? Math.floor(max / 3000) : 3000;
+				for (x = 0; x < max; x++) {
+					if (data[x] === 1) {
+						tmp.push(x + min);
+					}
 
-				if (pr === 1) {
-					//progress
-					postMessage({
-						type: "progress",
-						data: (x / dataLength) * 100,
-					});
+					if (x % prIndex === 0) {
+						//progress
+						postMessage({
+							type: "progress",
+							data: (x / max) * 100,
+						});
+					}
+				}
+			} else {
+				for (x = 0; x < max; x++) {
+					if (data[x] === 1) {
+						tmp.push(x + min);
+					}
 				}
 			}
 

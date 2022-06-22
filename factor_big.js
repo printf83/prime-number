@@ -18,10 +18,12 @@ onmessage = function (e) {
 			result = data.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1");
 		} else {
 			let tmp = [];
-			let mid = data.length > 2 ? parseInt(data.length / 2, 10) : data.length;
+			let max = data.length > 2 ? parseInt(data.length / 2, 10) : data.length;
 			//gen array list
-			for (x = 0; x < mid; x++) {
-				tmp.push(`
+			if (pr === 1) {
+				let prIndex = max > 3000 ? Math.floor(max / 3000) : 3000;
+				for (x = 0; x < max; x++) {
+					tmp.push(`
                     <tr>
                         <td>&#247;</td>
                         <td>${formatNumber(data[x])}</td>
@@ -30,12 +32,24 @@ onmessage = function (e) {
                     </tr>
                 `);
 
-				if (pr === 1) {
-					//progress
-					postMessage({
-						type: "progress",
-						data: (x / mid) * 100,
-					});
+					if (x % prIndex === 0) {
+						//progress
+						postMessage({
+							type: "progress",
+							data: (x / max) * 100,
+						});
+					}
+				}
+			} else {
+				for (x = 0; x < max; x++) {
+					tmp.push(`
+                    <tr>
+                        <td>&#247;</td>
+                        <td>${formatNumber(data[x])}</td>
+                        <td>=</td>
+                        <td>${formatNumber(num / BigInt(data[x]))}</td>
+                    </tr>
+                `);
 				}
 			}
 

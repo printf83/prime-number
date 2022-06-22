@@ -19,18 +19,29 @@ onmessage = function (e) {
 			let result = [1];
 			let max = Math.sqrt(num);
 			let min = 2;
-			for (let x = min; x <= max; x++) {
-				if (num % x === 0) {
-					result.push(x);
-					result.push(num / x);
-				}
 
-				if (pr === 1) {
-					//progress
-					postMessage({
-						type: "progress",
-						data: (x / max) * 100,
-					});
+			if (pr === 1) {
+				let prIndex = max > 3000 ? Math.floor(max / 3000) : 3000;
+				for (let x = min; x <= max; x++) {
+					if (num % x === 0) {
+						result.push(x);
+						result.push(num / x);
+					}
+
+					if (x % prIndex === 0) {
+						//progress
+						postMessage({
+							type: "progress",
+							data: (x / max) * 100,
+						});
+					}
+				}
+			} else {
+				for (let x = min; x <= max; x++) {
+					if (num % x === 0) {
+						result.push(x);
+						result.push(num / x);
+					}
 				}
 			}
 
