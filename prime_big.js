@@ -15,7 +15,7 @@ function progress(x, max, div) {
 }
 
 function progressDiv(max, div) {
-	div = div ? div : 1000n;
+	div = div ? div : 100n;
 	return max > div ? max / div : div;
 }
 
@@ -47,7 +47,7 @@ onmessage = function (e) {
 					result[x - min] = 1;
 				}
 
-				progress(x - min, length, prDiv);
+				progress(x - min + 1n, length, prDiv);
 			}
 
 			progress(length, length, prDiv);

@@ -15,7 +15,7 @@ function progress(x, max, div) {
 }
 
 function progressDiv(max, div) {
-	div = div ? div : 1000;
+	div = div ? div : 100;
 	return max > div ? Math.floor(max / div) : div;
 }
 
@@ -33,7 +33,7 @@ onmessage = function (e) {
 		let pr = e.data[2];
 		let result = [];
 
-		let length = max - min + 1n;
+		let length = max - min + 1;
 
 		// create empty array
 		result = new Array(length).fill(0);
@@ -47,7 +47,7 @@ onmessage = function (e) {
 					result[x - min] = 1;
 				}
 
-				progress(x - min, length, prDiv);
+				progress(x - min + 1, length, prDiv);
 			}
 
 			progress(length, length, prDiv);

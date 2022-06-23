@@ -15,7 +15,7 @@ function progress(x, max, div) {
 }
 
 function progressDiv(max, div) {
-	div = div ? div : 1000;
+	div = div ? div : 100;
 	return max > div ? Math.floor(max / div) : div;
 }
 
@@ -23,7 +23,7 @@ function formatNumber(num) {
 	if (num) {
 		return num.toLocaleString("en-US");
 	} else {
-		return `<span class="text-danger">Error!</span>`;
+		return `<span class="font-danger">Error!</span>`;
 	}
 }
 

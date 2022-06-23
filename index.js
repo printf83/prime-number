@@ -34,7 +34,7 @@ function ctlRadio(id, name, value, checked, onchange, label) {
 function ctlNumber(id, value, onchange, label, container_id) {
 	return `
 	<div class="form-group"${container_id ? ` id="${container_id}"` : ""}>
-		<label for="${id}">${label} : </label>
+		<label for="${id}">${label}</label>
 		<input type="number" id="${id}" value="${value}"${onchange ? ` onchange="${onchange}" onkeyup="${onchange}"` : ""}/>
 	</div>`;
 }
@@ -75,6 +75,10 @@ const btnScrollTop = ctlButton("Top", "doScrollTo(0)");
 const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
 const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;
 const memoryLabel = `<div><small id="mem"></small></div>`;
+
+const loading4 = function () {
+	return !pr ? `${loading2}` : "";
+};
 
 var monitorID = null;
 function addResizeListener(elem, fun) {
@@ -165,7 +169,7 @@ function formatNumber(num) {
 	if (num) {
 		return num.toLocaleString("en-US");
 	} else {
-		return `<span class="text-danger">Error!</span>`;
+		return `<span class="font-danger">Error!</span>`;
 	}
 }
 
@@ -176,11 +180,17 @@ function formatTime(num) {
 		let m = Math.floor((num % 3600) / 60);
 		let s = Math.floor(num % 3600) % 60;
 
-		let hDisplay = h > 0 ? ` ${h} hrs ` : "";
-		let mDisplay = m > 0 ? ` ${m} min ` : "";
-		let sDisplay = s > -1 ? `${m > 0 ? s : parseFloat(num.toFixed(1)).toLocaleString("en-US")} sec ` : "";
+		// let hDisplay = h > 0 ? ` ${h} hrs ` : "";
+		// let mDisplay = m > 0 ? ` ${m} min ` : "";
+		// let sDisplay = s > -1 ? `${m > 0 ? s : parseFloat(num.toFixed(1)).toLocaleString("en-US")} sec ` : "";
 
-		return `${hDisplay}${mDisplay}${sDisplay}`;
+		// return `${hDisplay}${mDisplay}${sDisplay}`;
+
+		let hDisplay = h > 0 ? `${h} hrs` : null;
+		let mDisplay = m > 0 ? `${m} min` : null;
+		let sDisplay = s > -1 ? `${m > 0 ? s : parseFloat(num.toFixed(1)).toLocaleString("en-US")} sec` : null;
+
+		return formatList([hDisplay, mDisplay, sDisplay].filter(Boolean)); //`${hDisplay}${mDisplay}${sDisplay}`;
 	} else {
 		return `${parseFloat(num.toFixed(1)).toLocaleString("en-US")} ms`;
 	}
@@ -227,7 +237,7 @@ function calcSinglePrime() {
 
 			showSinglePrimeOutput(`
 								Checking ${timerIndicator(timerId)}
-								${loading2}<br/>
+								${loading4()}<br/>
 								${progressIndicator(progressId)} 
 								`);
 			secTimer(timerId, 1);
@@ -305,8 +315,8 @@ function showStart() {
 		
 		${header2()}
 
-		${ctlNumber("min", min, null, "Min")}
-		${ctlNumber("max", max, null, "Max")}
+		${ctlNumber("min", min, null, "Minimum")}
+		${ctlNumber("max", max, null, "Maximum")}
 
 		${ctlRadio("os_1", "os", 0, os === 0 ? true : false, "os_onchange()", "Show All")}
 		${ctlRadio("os_2", "os", 1, os === 1 ? true : false, "os_onchange()", "Prime Only")}
@@ -338,7 +348,7 @@ function pr_onchange() {
 function os_onchange() {
 	let val = parseInt(getRadioValue("os"), 10);
 	if (val === 0) {
-		document.getElementById("col_container").style.display = "flex";
+		document.getElementById("col_container").style.display = "grid";
 	} else {
 		document.getElementById("col_container").style.display = "none";
 	}
@@ -389,7 +399,7 @@ function calcRangePrime() {
 					`
 						${header()}
 						Finding prime number in <b>${formatNumber(max - min + (big ? 1n : 1))}</b> numbers ${timerIndicator(timerId)}
-						${loading2}<br/>
+						${loading4()}<br/>
 						${progressIndicator(progressId)}<br/>
 						${loading3}<br/><br/>
 						${btnTryAgain}
@@ -492,7 +502,7 @@ function showRangePrimeOutput() {
 		Generating <b> ${formatNumber(
 			os === 0 ? max - min + (big ? 1n : 1) : result.length
 		)} number</b> into your browser  ${timerIndicator(timerId)}
-		${loading2}<br/>
+		${loading4()}<br/>
 		${progressIndicator(progressId)}<br/>
 		${loading3}<br/><br/>
 		${btnTryAgain}
@@ -555,7 +565,7 @@ function showTooltip(e) {
 			target,
 			`
 			<h3>${formatNumber(num)}</h3> Checking ${timerIndicator(timerId)}
-			${loading2}<br/>
+			${loading4()}<br/>
 			${progressIndicator(progressId)}
 			`
 		);
@@ -636,14 +646,14 @@ function runWorker(script, params, callback, onerror, onprogress) {
 			}
 		} else {
 			if (typeof callback === "function") {
-				this.terminate();
+				//this.terminate();
 				callback(e.data.data);
 			}
 		}
 	};
 	wk.onerror = function (e) {
 		if (typeof onerror === "function") {
-			this.terminate();
+			//this.terminate();
 			onerror(e.message);
 		}
 	};
@@ -733,11 +743,11 @@ function secTimer(id, d, ms) {
 			let m = Math.floor((d % 3600) / 60);
 			let s = Math.floor((d % 3600) % 60);
 
-			let hDisplay = h > 0 ? h + " hrs " : "";
-			let mDisplay = m > 0 ? m + " min " : "";
-			let sDisplay = s > 0 ? s + " sec " : "";
+			let hDisplay = h > 0 ? `${h} hrs` : null;
+			let mDisplay = m > 0 ? `${m} min` : null;
+			let sDisplay = s > 0 ? `${s} sec` : null;
 
-			let text = `${hDisplay}${mDisplay}${sDisplay}`;
+			let text = formatList([hDisplay, mDisplay, sDisplay].filter(Boolean)); //`${hDisplay}${mDisplay}${sDisplay}`;
 
 			elem.innerHTML = `since ${text} ago `;
 			secTimer(id, ++d);
