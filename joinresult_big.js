@@ -1,3 +1,24 @@
+let lastProgress = 0;
+function progress(x, max, div) {
+	if (x % div === 0n) {
+		let curProgress = (x / max) * 100n;
+		if (lastProgress !== curProgress) {
+			lastProgress = curProgress;
+
+			//progress
+			postMessage({
+				type: "progress",
+				data: Number(curProgress),
+			});
+		}
+	}
+}
+
+function progressDiv(max, div) {
+	div = div ? div : 3000n;
+	return max > div ? max / div : div;
+}
+
 onmessage = function (e) {
 	try {
 		let data = e.data[0];
@@ -6,15 +27,17 @@ onmessage = function (e) {
 		let os = e.data[4];
 		let pr = e.data[5];
 
-		let max = data.length;
+		let max = BigInt(data.length);
 		let tmp = [];
 		let result = null;
+
+		let prDiv = progressDiv(max);
+
 		if (os === 0) {
 			//gen array list
 
 			let row = [];
 			if (pr === 1) {
-				let prIndex = max > 3000n ? max / 3000n : 3000n;
 				for (x = 0n; x < max; x++) {
 					row.push(data[x] === 1 ? `<i>${x + min}</i>` : `<b>${x + min}</b>`);
 
@@ -23,13 +46,7 @@ onmessage = function (e) {
 						row = [];
 					}
 
-					if (x % prIndex === 0n) {
-						//progress
-						postMessage({
-							type: "progress",
-							data: (Number(x) / max) * 100,
-						});
-					}
+					progress(x, max, prDiv);
 				}
 			} else {
 				for (x = 0n; x < max; x++) {
@@ -56,13 +73,7 @@ onmessage = function (e) {
 						tmp.push(x + min);
 					}
 
-					if (x % prIndex === 0n) {
-						//progress
-						postMessage({
-							type: "progress",
-							data: (Number(x) / max) * 100,
-						});
-					}
+					progress(x, max, prDiv);
 				}
 			} else {
 				for (x = 0n; x < max; x++) {

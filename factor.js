@@ -1,3 +1,24 @@
+let lastProgress = 0;
+function progress(x, max, div) {
+	if (x % div === 0) {
+		let curProgress = Math.floor((x / max) * 100);
+		if (lastProgress !== curProgress) {
+			lastProgress = curProgress;
+
+			//progress
+			postMessage({
+				type: "progress",
+				data: curProgress,
+			});
+		}
+	}
+}
+
+function progressDiv(max, div) {
+	div = div ? div : 3000;
+	return max > div ? Math.floor(max / div) : div;
+}
+
 function formatNumber(num) {
 	if (num) {
 		return num.toLocaleString("en-US");
@@ -21,7 +42,8 @@ onmessage = function (e) {
 			let max = data.length > 2 ? parseInt(data.length / 2, 10) : data.length;
 			//gen array list
 			if (pr === 1) {
-				let prIndex = max > 3000 ? Math.floor(max / 3000) : 3000;
+				let prDiv = progressDiv(max);
+
 				for (x = 0; x < max; x++) {
 					tmp.push(`
                     <tr>
@@ -32,13 +54,7 @@ onmessage = function (e) {
                     </tr>
                 `);
 
-					if (x % prIndex === 0) {
-						//progress
-						postMessage({
-							type: "progress",
-							data: (x / max) * 100,
-						});
-					}
+					progress(x, max, prDiv);
 				}
 			} else {
 				for (x = 0; x < max; x++) {

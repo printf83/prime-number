@@ -47,8 +47,8 @@ function ctlTextResult(id) {
 	return `<div class="form-group"><div id="${id}"></div></div>`;
 }
 
-const bigTitle = ` <sup class="pointer" title="BigInt"><small><a href="javascript:void()" onclick="big_onchange(0)">&beta;igInt</a></small></sup>`;
-const smallTitle = ` <sup class="pointer" title="Number"><small><a href="javascript:void()" onclick="big_onchange(1)">&#938;nteger</a></small></sup>`;
+const bigTitle = ` <sup class="pointer" title="BigInt"><small><a href="javascript:void(0)" onclick="big_onchange(0)">&beta;igInt</a></small></sup>`;
+const smallTitle = ` <sup class="pointer" title="Number"><small><a href="javascript:void(0)" onclick="big_onchange(1)">&#938;nteger</a></small></sup>`;
 
 const header = function () {
 	return `<h2>Prime Number Checker${big ? bigTitle : smallTitle}</h2>`;
@@ -253,13 +253,13 @@ function calcSinglePrime() {
 										showSinglePrimeOutput(
 											`<h4>${formatNumber(
 												lastNumber
-											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small id="single_time_1">${loading2}</small>`
+											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><small id="single_time_1">${loading2}</small>`
 										);
 									} else {
 										showSinglePrimeOutput(
 											`${
 												result.length > 30
-													? `<small id="single_time_1">${loading2}</small><br/>`
+													? `<small id="single_time_1">${loading2}</small><br/><br/>`
 													: ``
 											}
 											<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
@@ -636,14 +636,14 @@ function runWorker(script, params, callback, onerror, onprogress) {
 			}
 		} else {
 			if (typeof callback === "function") {
-				this.terminate();
+				//this.terminate();
 				callback(e.data.data);
 			}
 		}
 	};
 	wk.onerror = function (e) {
 		if (typeof onerror === "function") {
-			this.terminate();
+			//this.terminate();
 			onerror(e.message);
 		}
 	};
@@ -748,7 +748,7 @@ function secTimer(id, d, ms) {
 function updateProgress(id, value) {
 	let elem = document.getElementById(id);
 	if (elem) {
-		elem.innerHTML = `(Progress : ${value.toFixed(2)}%)`;
+		elem.innerHTML = `(Progress : ${value.toFixed(0)}%)`;
 	}
 }
 

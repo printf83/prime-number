@@ -1,3 +1,24 @@
+let lastProgress = 0;
+function progress(x, max, div) {
+	if (x % div === 0) {
+		let curProgress = Math.floor((x / max) * 100);
+		if (lastProgress !== curProgress) {
+			lastProgress = curProgress;
+
+			//progress
+			postMessage({
+				type: "progress",
+				data: curProgress,
+			});
+		}
+	}
+}
+
+function progressDiv(max, div) {
+	div = div ? div : 3000;
+	return max > div ? Math.floor(max / div) : div;
+}
+
 onmessage = function (e) {
 	try {
 		let data = e.data[0];
@@ -9,6 +30,9 @@ onmessage = function (e) {
 		let max = data.length;
 		let tmp = [];
 		let result = null;
+
+		let prDiv = progressDiv(max);
+
 		if (os === 0) {
 			//gen array list
 			let row = [];
@@ -23,13 +47,7 @@ onmessage = function (e) {
 						row = [];
 					}
 
-					if (x % prIndex === 0) {
-						//progress
-						postMessage({
-							type: "progress",
-							data: (x / max) * 100,
-						});
-					}
+					progress(x, max, prDiv);
 				}
 			} else {
 				for (x = 0; x < max; x++) {
@@ -50,19 +68,12 @@ onmessage = function (e) {
 		} else {
 			//gen array list
 			if (pr === 1) {
-				let prIndex = max > 3000 ? Math.floor(max / 3000) : 3000;
 				for (x = 0; x < max; x++) {
 					if (data[x] === 1) {
 						tmp.push(x + min);
 					}
 
-					if (x % prIndex === 0) {
-						//progress
-						postMessage({
-							type: "progress",
-							data: (x / max) * 100,
-						});
-					}
+					progress(x, max, prDiv);
 				}
 			} else {
 				for (x = 0; x < max; x++) {

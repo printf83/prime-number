@@ -1,3 +1,24 @@
+let lastProgress = 0;
+function progress(x, max, div) {
+	if (x % div === 0n) {
+		let curProgress = (x / max) * 100n;
+		if (lastProgress !== curProgress) {
+			lastProgress = curProgress;
+
+			//progress
+			postMessage({
+				type: "progress",
+				data: Number(curProgress),
+			});
+		}
+	}
+}
+
+function progressDiv(max, div) {
+	div = div ? div : 3000n;
+	return max > div ? max / div : div;
+}
+
 function getSqrt(value) {
 	if (value < 2n) {
 		return value;
@@ -41,24 +62,18 @@ onmessage = function (e) {
 		} else {
 			let result = [1n];
 			let max = getSqrt(num);
-			let maxInt = Number(max);
 			let min = 2n;
 
 			if (pr === 1) {
-				let prIndex = max > 3000n ? max / 3000n : 3000n;
+				let prDiv = progressDiv(max);
+
 				for (let x = min; x <= max; x++) {
 					if (num % x === 0n) {
 						result.push(x);
 						result.push(num / x);
 					}
 
-					if (x % prIndex === 0n) {
-						//progress
-						postMessage({
-							type: "progress",
-							data: (Number(x) / maxInt) * 100,
-						});
-					}
+					progress(x, max, prDiv);
 				}
 			} else {
 				for (let x = min; x <= max; x++) {

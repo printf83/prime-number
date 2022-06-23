@@ -1,3 +1,24 @@
+let lastProgress = 0;
+function progress(x, max, div) {
+	if (x % div === 0n) {
+		let curProgress = (x / max) * 100n;
+		if (lastProgress !== curProgress) {
+			lastProgress = curProgress;
+
+			//progress
+			postMessage({
+				type: "progress",
+				data: Number(curProgress),
+			});
+		}
+	}
+}
+
+function progressDiv(max, div) {
+	div = div ? div : 3000n;
+	return max > div ? max / div : div;
+}
+
 function isPrime(num) {
 	if (num == 2n || num == 3n) return true;
 	if (num <= 1n || num % 2n == 0n || num % 3n == 0n) return false;
@@ -10,9 +31,6 @@ onmessage = function (e) {
 		let min = e.data[0];
 		let max = e.data[1];
 		let pr = e.data[2];
-
-		let maxInt = Number(max);
-
 		let result = [];
 
 		// create empty array
@@ -20,20 +38,17 @@ onmessage = function (e) {
 
 		// loop inside array
 		if (pr === 1) {
-			let prIndex = max > 3000n ? max / 3000n : 3000n;
+			let prDiv = progressDiv(max);
+
 			for (let x = min; x <= max; x++) {
 				if (isPrime(x)) {
 					result[x - min] = 1;
 				}
 
-				if (x % prIndex === 0n) {
-					//progress
-					postMessage({
-						type: "progress",
-						data: (Number(x) / maxInt) * 100,
-					});
-				}
+				progress(x, max, prDiv);
 			}
+
+			progress(max, max, prDiv);
 		} else {
 			for (let x = min; x <= max; x++) {
 				if (isPrime(x)) {

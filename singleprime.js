@@ -1,3 +1,24 @@
+let lastProgress = 0;
+function progress(x, max, div) {
+	if (x % div === 0) {
+		let curProgress = Math.floor((x / max) * 100);
+		if (lastProgress !== curProgress) {
+			lastProgress = curProgress;
+
+			//progress
+			postMessage({
+				type: "progress",
+				data: curProgress,
+			});
+		}
+	}
+}
+
+function progressDiv(max, div) {
+	div = div ? div : 3000;
+	return max > div ? Math.floor(max / div) : div;
+}
+
 function isPrime(num) {
 	if (num == 2 || num == 3) return true;
 	if (num <= 1 || num % 2 == 0 || num % 3 == 0) return false;
@@ -21,20 +42,15 @@ onmessage = function (e) {
 			let min = 2;
 
 			if (pr === 1) {
-				let prIndex = max > 3000 ? Math.floor(max / 3000) : 3000;
+				let prDiv = progressDiv(max);
+
 				for (let x = min; x <= max; x++) {
 					if (num % x === 0) {
 						result.push(x);
 						result.push(num / x);
 					}
 
-					if (x % prIndex === 0) {
-						//progress
-						postMessage({
-							type: "progress",
-							data: (x / max) * 100,
-						});
-					}
+					progress(x, max, prDiv);
 				}
 			} else {
 				for (let x = min; x <= max; x++) {
