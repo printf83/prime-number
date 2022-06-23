@@ -342,6 +342,26 @@ h4 {
     overflow-wrap: break-word;
 }
 
+progress{
+    -webkit-appearance: none;
+    appearance: none;
+    margin:1.5rem 0 0 0;
+    display: inline-block;
+    width: auto;
+    height: 0.25rem;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+progress[value]::-webkit-progress-value::after {
+    content: '';
+    position: absolute;
+    background-color: white;
+}
+
+progress[value]::-moz-progress-bar {
+    background-color: white;
+}
+
 /* shadow */
 #tooltip,
 #arrow::before {

@@ -65,7 +65,7 @@ const timerIndicator = function (id) {
 };
 
 const progressIndicator = function (id) {
-	return `<span id="${id}"></span>`;
+	return id ? `<progress id="${id}" value="0" max="100">0%</progress> ` : ""; //`<span id="${id}"></span>`;
 };
 
 const btnTryAgain = ctlButton("Try Again", "showStart()");
@@ -223,12 +223,12 @@ function calcSinglePrime() {
 	if (currentNum > zero) {
 		if (currentNum !== snum) {
 			let timerId = genId();
-			let progressId = genId();
+			let progressId = pr ? genId() : null;
 
 			showSinglePrimeOutput(`
 								Checking ${timerIndicator(timerId)}
+								${loading2}<br/>
 								${progressIndicator(progressId)} 
-								${loading2}
 								`);
 			secTimer(timerId, 1);
 
@@ -383,14 +383,14 @@ function calcRangePrime() {
 		if (min > zero && min <= max) {
 			if (window.Worker) {
 				let timerId = genId();
-				let progressId = genId();
+				let progressId = pr ? genId() : null;
 
 				genUI(
 					`
 						${header()}
-						 Finding prime number in <b>${formatNumber(max - min + (big ? 1n : 1))}</b> numbers ${timerIndicator(timerId)}
-						${progressIndicator(progressId)} 
+						Finding prime number in <b>${formatNumber(max - min + (big ? 1n : 1))}</b> numbers ${timerIndicator(timerId)}
 						${loading2}<br/>
+						${progressIndicator(progressId)}<br/>
 						${loading3}<br/><br/>
 						${btnTryAgain}
 					`,
@@ -484,7 +484,7 @@ function mw(max) {
 
 function showRangePrimeOutput() {
 	let timerId = genId();
-	let progressId = genId();
+	let progressId = pr ? genId() : null;
 
 	genUI(
 		`
@@ -492,8 +492,8 @@ function showRangePrimeOutput() {
 		Generating <b> ${formatNumber(
 			os === 0 ? max - min + (big ? 1n : 1) : result.length
 		)} number</b> into your browser  ${timerIndicator(timerId)}
-		${progressIndicator(progressId)} 
-		${loading2} <br/>
+		${loading2}<br/>
+		${progressIndicator(progressId)}<br/>
 		${loading3}<br/><br/>
 		${btnTryAgain}
 		`,
@@ -555,8 +555,8 @@ function showTooltip(e) {
 			target,
 			`
 			<h3>${formatNumber(num)}</h3> Checking ${timerIndicator(timerId)}
-			${progressIndicator(progressId)} 
-			${loading2}
+			${loading2}<br/>
+			${progressIndicator(progressId)}
 			`
 		);
 		secTimer(timerId, 1);
@@ -748,7 +748,8 @@ function secTimer(id, d, ms) {
 function updateProgress(id, value) {
 	let elem = document.getElementById(id);
 	if (elem) {
-		elem.innerHTML = `(Progress : ${value.toFixed(0)}%)`;
+		elem.innerHTML = `${value.toFixed(0)}%`;
+		elem.value = value;
 	}
 }
 
