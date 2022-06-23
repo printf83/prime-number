@@ -47,8 +47,8 @@ function ctlTextResult(id) {
 	return `<div class="form-group"><div id="${id}"></div></div>`;
 }
 
-const bigTitle = ` <sup class="pointer" title="BigInt"><a onclick="big_onchange(0)"><small>&beta;igInt</small></a></sup>`;
-const smallTitle = ` <sup class="pointer" title="Number"><a onclick="big_onchange(1)"><small>&#938;nteger</small></a></sup>`;
+const bigTitle = ` <sup class="pointer" title="BigInt"><small><a href="javascript:void()" onclick="big_onchange(0)">&beta;igInt</a></small></sup>`;
+const smallTitle = ` <sup class="pointer" title="Number"><small><a href="javascript:void()" onclick="big_onchange(1)">&#938;nteger</a></small></sup>`;
 
 const header = function () {
 	return `<h2>Prime Number Checker${big ? bigTitle : smallTitle}</h2>`;
@@ -253,18 +253,18 @@ function calcSinglePrime() {
 										showSinglePrimeOutput(
 											`<h4>${formatNumber(
 												lastNumber
-											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small id="single_time_1">${loading2}</small>`
+											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><small id="single_time_1">${loading2}</small>`
 										);
 									} else {
 										showSinglePrimeOutput(
 											`${
 												result.length > 30
-													? `<small id="single_time_1">${loading2}</small><br/><br/>`
+													? `<small id="single_time_1">${loading2}</small><br/>`
 													: ``
 											}
 											<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
 												result.length === 1 ? ` only` : ``
-											} be divided with <br/>${e}</small><br/><small id="single_time_2">${loading2}</small>`
+											} be divided with <br/>${e}</small><small id="single_time_2">${loading2}</small>`
 										);
 									}
 								},

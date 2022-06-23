@@ -262,7 +262,7 @@ a{
 
 /* num_result */
 #num_result {
-    margin-bottom: 0.5rem 0;
+    margin: 0.5rem 0;
     width: 15rem;
     min-height: 5.7rem;
     overflow: hidden;
