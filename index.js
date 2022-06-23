@@ -253,7 +253,7 @@ function calcSinglePrime() {
 										showSinglePrimeOutput(
 											`<h4>${formatNumber(
 												lastNumber
-											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><small id="single_time_1">${loading2}</small>`
+											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small id="single_time_1">${loading2}</small>`
 										);
 									} else {
 										showSinglePrimeOutput(
@@ -264,7 +264,7 @@ function calcSinglePrime() {
 											}
 											<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
 												result.length === 1 ? ` only` : ``
-											} be divided with <br/>${e}</small><small id="single_time_2">${loading2}</small>`
+											} be divided with <br/>${e}</small><br/><small id="single_time_2">${loading2}</small>`
 										);
 									}
 								},
