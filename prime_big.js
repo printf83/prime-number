@@ -33,22 +33,24 @@ onmessage = function (e) {
 		let pr = e.data[2];
 		let result = [];
 
+		let length = max - min + 1n;
+
 		// create empty array
-		result = new Array(max - min + 1n).fill(0);
+		result = new Array(length).fill(0);
 
 		// loop inside array
 		if (pr === 1) {
-			let prDiv = progressDiv(max);
+			let prDiv = progressDiv(length);
 
 			for (let x = min; x <= max; x++) {
 				if (isPrime(x)) {
 					result[x - min] = 1;
 				}
 
-				progress(x, max, prDiv);
+				progress(x - min, length, prDiv);
 			}
 
-			progress(max, max, prDiv);
+			progress(length, length, prDiv);
 		} else {
 			for (let x = min; x <= max; x++) {
 				if (isPrime(x)) {

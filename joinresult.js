@@ -38,7 +38,6 @@ onmessage = function (e) {
 			let row = [];
 
 			if (pr === 1) {
-				let prIndex = max > 3000 ? Math.floor(max / 3000) : 3000;
 				for (x = 0; x < max; x++) {
 					row.push(data[x] === 1 ? `<i>${x + min}</i>` : `<b>${x + min}</b>`);
 

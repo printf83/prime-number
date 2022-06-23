@@ -67,7 +67,6 @@ onmessage = function (e) {
 		} else {
 			//gen array list
 			if (pr === 1) {
-				let prIndex = max > 3000n ? max / 3000n : 3000n;
 				for (x = 0n; x < max; x++) {
 					if (data[x] === 1) {
 						tmp.push(x + min);
