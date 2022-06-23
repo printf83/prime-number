@@ -342,24 +342,21 @@ h4 {
     overflow-wrap: break-word;
 }
 
-progress{
-    -webkit-appearance: none;
-    appearance: none;
-    margin:1.5rem 0 0 0;
-    display: inline-block;
-    width: auto;
-    height: 0.25rem;
+.progress{
+    height:5px;
+    width: 200px;
+    padding:1px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
     background-color: rgba(0, 0, 0, 0.1);
+    margin: 1rem auto 0 auto;
+    border-radius: 3px;
 }
 
-progress[value]::-webkit-progress-value::after {
-    content: '';
-    position: absolute;
-    background-color: white;
-}
-
-progress[value]::-moz-progress-bar {
-    background-color: white;
+.progress .bar {
+    background-color: rgba(255, 255, 255, 0.8);
+    height: 100%;
+    width: 0;
+    border-radius: 3px;
 }
 
 /* shadow */
@@ -481,7 +478,7 @@ progress[value]::-moz-progress-bar {
 #multiple_time_2 .lds-ellipsis div,
 #single_time_1 .lds-ellipsis div,
 #single_time_2 .lds-ellipsis div {
-    background: #555;
+    background: #fff;
 }
 
 .lds-ellipsis div:nth-child(1) {

@@ -65,7 +65,7 @@ const timerIndicator = function (id) {
 };
 
 const progressIndicator = function (id) {
-	return id ? `<progress id="${id}" value="0" max="100">0%</progress> ` : ""; //`<span id="${id}"></span>`;
+	return id ? `<div class="progress"><div class="bar" id="${id}">&nbsp;</div></div>` : ""; //`<span id="${id}"></span>`;
 };
 
 const btnTryAgain = ctlButton("Try Again", "showStart()");
@@ -748,8 +748,7 @@ function secTimer(id, d, ms) {
 function updateProgress(id, value) {
 	let elem = document.getElementById(id);
 	if (elem) {
-		elem.innerHTML = `${value.toFixed(0)}%`;
-		elem.value = value;
+		elem.style.width = `${value.toFixed(0)}%`;
 	}
 }
 
