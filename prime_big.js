@@ -1,7 +1,7 @@
-let lastProgress = 0;
+let lastProgress = 0n;
 function progress(x, max, div) {
 	if (x % div === 0n) {
-		let curProgress = (x / max) * 100n;
+		let curProgress = (x * 100n) / max;
 		if (lastProgress !== curProgress) {
 			lastProgress = curProgress;
 
@@ -15,7 +15,7 @@ function progress(x, max, div) {
 }
 
 function progressDiv(max, div) {
-	div = div ? div : 3000n;
+	div = div ? div : 1000n;
 	return max > div ? max / div : div;
 }
 

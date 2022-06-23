@@ -636,14 +636,14 @@ function runWorker(script, params, callback, onerror, onprogress) {
 			}
 		} else {
 			if (typeof callback === "function") {
-				//this.terminate();
+				this.terminate();
 				callback(e.data.data);
 			}
 		}
 	};
 	wk.onerror = function (e) {
 		if (typeof onerror === "function") {
-			//this.terminate();
+			this.terminate();
 			onerror(e.message);
 		}
 	};

@@ -15,7 +15,7 @@ function progress(x, max, div) {
 }
 
 function progressDiv(max, div) {
-	div = div ? div : 3000;
+	div = div ? div : 1000;
 	return max > div ? Math.floor(max / div) : div;
 }
 
