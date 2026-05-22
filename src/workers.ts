@@ -1,4 +1,12 @@
 import { state } from "./state";
+import PrimeWorker from "./prime.ts?worker";
+import PrimeWorkerBig from "./prime_big.ts?worker";
+import SinglePrimeWorker from "./singleprime.ts?worker";
+import SinglePrimeWorkerBig from "./singleprime_big.ts?worker";
+import FactorWorker from "./factor.ts?worker";
+import FactorWorkerBig from "./factor_big.ts?worker";
+import JoinResultWorker from "./joinresult.ts?worker";
+import JoinResultWorkerBig from "./joinresult_big.ts?worker";
 
 export type WorkerScript = "prime" | "singleprime" | "factor" | "joinresult";
 
@@ -27,18 +35,18 @@ export type WorkerMessage<T> =
 	| { type: "progress"; data: number }
 	| { type: "data"; data: T };
 
-const workerUrls = {
-	prime: new URL("./prime.ts", import.meta.url),
-	prime_big: new URL("./prime_big.ts", import.meta.url),
-	singleprime: new URL("./singleprime.ts", import.meta.url),
-	singleprime_big: new URL("./singleprime_big.ts", import.meta.url),
-	factor: new URL("./factor.ts", import.meta.url),
-	factor_big: new URL("./factor_big.ts", import.meta.url),
-	joinresult: new URL("./joinresult.ts", import.meta.url),
-	joinresult_big: new URL("./joinresult_big.ts", import.meta.url),
+const workerConstructors = {
+	prime: PrimeWorker,
+	prime_big: PrimeWorkerBig,
+	singleprime: SinglePrimeWorker,
+	singleprime_big: SinglePrimeWorkerBig,
+	factor: FactorWorker,
+	factor_big: FactorWorkerBig,
+	joinresult: JoinResultWorker,
+	joinresult_big: JoinResultWorkerBig,
 } as const;
 
-type WorkerUrlKey = keyof typeof workerUrls;
+type WorkerConstructorKey = keyof typeof workerConstructors;
 
 let wk: Worker | null = null;
 
@@ -51,12 +59,14 @@ export function runWorker<T extends WorkerScript>(
 ): void {
 	stopWorker();
 
-	const workerKey = `${script}${state.big ? `_big` : ""}` as WorkerUrlKey;
-	const workerUrl = workerUrls[workerKey];
+	const workerKey =
+		`${script}${state.big ? `_big` : ""}` as WorkerConstructorKey;
+	const WorkerConstructor = workerConstructors[workerKey];
 
-	wk = new Worker(workerUrl, { type: "module" });
-	wk.postMessage(params);
-	wk.onmessage = function (
+	const worker = new WorkerConstructor();
+	wk = worker;
+	worker.postMessage(params);
+	worker.onmessage = function (
 		e: MessageEvent<WorkerMessage<WorkerResultMap[T]>>,
 	): void {
 		if (e.data.type === "progress") {

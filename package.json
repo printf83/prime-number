@@ -6,7 +6,7 @@
 	"description": "Prime number calculator with web workers",
 	"scripts": {
 		"build": "vite build",
-		"build:gh-pages": "vite build --base=/prime-number/",
+		"build:gh-pages": "vite build --base=./",
 		"deploy": "pnpm build:gh-pages && pnpm exec gh-pages -d dist",
 		"dev": "vite",
 		"preview": "vite preview",
