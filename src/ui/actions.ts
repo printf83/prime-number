@@ -1,11 +1,11 @@
-import { state } from "./state";
+import { state } from "../state";
 import {
 	formatNumber,
 	formatTime,
 	genId,
 	parseBigIntInput,
 	parseIntInput,
-} from "./utils";
+} from "../utils";
 import {
 	genTooltip,
 	genUI,
@@ -14,91 +14,30 @@ import {
 	secTimer,
 	showSinglePrimeOutput,
 	updateProgress,
-} from "./dom";
-import { runWorker, stopWorker } from "./workers";
+} from "../dom";
+import { runWorker, stopWorker } from "../workers";
+import {
+	btnScrollBottom,
+	btnScrollTop,
+	btnShowResult,
+	btnTryAgain,
+	ctlButton,
+	ctlCheckbox,
+	ctlNumber,
+	ctlRadio,
+	ctlTextResult,
+	errorHeader,
+	header,
+	header2,
+	loading2,
+	loading3,
+	loading4,
+	timerIndicator,
+	progressIndicator,
+} from "./builders";
+import { attachShowRangePrimeEvents, attachShowStartEvents } from "./events";
 
-function ctlCheckbox(id: string, checked: boolean, label: string): string {
-	return `
-	<div class="form-group">
-		<label class="checkbox" for="${id}">${label}
-			<input type="checkbox" id="${id}" ${checked ? ` checked="checked"` : ""}/>
-			<span class="checkmark"></span>
-		</label>
-	</div>`;
-}
-
-function ctlRadio(
-	id: string,
-	name: string,
-	value: number,
-	checked: boolean,
-	label: string,
-): string {
-	return `
-	<div class="form-group">
-		<label class="radio" for="${id}">${label}
-			<input type="radio" id="${id}" name="${name}" value="${value}" ${checked ? ` checked="checked"` : ""}/>
-			<span class="checkmark"></span>
-		</label>
-	</div>`;
-}
-
-function ctlNumber(
-	id: string,
-	value: number | bigint,
-	label: string,
-	container_id?: string,
-): string {
-	return `
-	<div class="form-group"${container_id ? ` id="${container_id}"` : ""}>
-		<label for="${id}">${label}</label>
-		<input type="number" id="${id}" value="${value}" />
-	</div>`;
-}
-
-function ctlButton(id: string, label: string): string {
-	return `<button type="button" id="${id}">${label}</button>`;
-}
-
-function ctlTextResult(id: string): string {
-	return `<div class="form-group"><div id="${id}"></div></div>`;
-}
-
-const bigTitle = ` <sup class="pointer" title="BigInt"><small><a href="#" id="btn-bigint">&beta;igInt</a></small></sup>`;
-const smallTitle = ` <sup class="pointer" title="Number"><small><a href="#" id="btn-smallint">&#938;nteger</a></small></sup>`;
-
-const header = function () {
-	return `<h2>Prime Number Checker${state.big ? bigTitle : smallTitle}</h2>`;
-};
-const header2 = function () {
-	return `<h2>Prime Number List${state.big ? bigTitle : smallTitle}</h2>`;
-};
-const errorHeader = function () {
-	return `<h2 class="font-danger">Error!${state.big ? bigTitle : smallTitle}</h2>`;
-};
-
-const timerIndicator = function (id: string) {
-	return `<span id="${id}"></span>`;
-};
-
-const progressIndicator = function (id: string | null) {
-	return id
-		? `<div class="progress"><div class="bar" id="${id}">&nbsp;</div></div>`
-		: "";
-};
-
-const btnTryAgain = ctlButton("btn-try-again", "Try Again");
-const btnShowResult = ctlButton("btn-show-result", "Show Result");
-const btnScrollBottom = ctlButton("btn-scroll-bottom", "Bottom");
-const btnScrollTop = ctlButton("btn-scroll-top", "Top");
-const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
-const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;
-
-const loading4 = function () {
-	return !state.pr ? `${loading2}` : "";
-};
-
-function calcSinglePrime(): void {
+export function calcSinglePrime(): void {
 	const zero = state.big ? 0n : 0;
 	const numElement = document.getElementById(
 		"num",
@@ -118,10 +57,10 @@ function calcSinglePrime(): void {
 			const progressId = state.pr ? genId() : null;
 
 			showSinglePrimeOutput(`
-					Checking ${timerIndicator(timerId)}
-					${loading4()}<br/>
-					${progressIndicator(progressId)} 
-					`);
+				Checking ${timerIndicator(timerId)}
+				${loading4()}<br/>
+				${progressIndicator(progressId)} 
+				`);
 			secTimer(timerId, 1);
 
 			state.snum = currentNum;
@@ -133,7 +72,7 @@ function calcSinglePrime(): void {
 				[state.snum, state.pr],
 				function (e) {
 					if (e) {
-						state.result = e as (number | bigint)[];
+						state.result = e;
 						if (state.result) {
 							runWorker(
 								"factor",
@@ -153,11 +92,9 @@ function calcSinglePrime(): void {
 													? `<small id="single_time_1">${loading2}</small><br/><br/>`
 													: ``
 											}
-										<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
-											state.result.length === 1
-												? ` only`
-												: ``
-										} be divided with <br/>${e}</small><br/><small id="single_time_2">${loading2}</small>`,
+									<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
+										state.result.length === 1 ? ` only` : ``
+									} be divided with <br/>${e}</small><br/><small id="single_time_2">${loading2}</small>`,
 										);
 									}
 								},
@@ -187,7 +124,7 @@ function calcSinglePrime(): void {
 	}
 }
 
-function showStart(): void {
+export function showStart(): void {
 	hideTooltip();
 
 	genUI(
@@ -210,7 +147,14 @@ function showStart(): void {
 		${ctlButton("btn-start-calc", "Start Calculate Prime")}
 		`,
 		function () {
-			attachShowStartEvents();
+			attachShowStartEvents({
+				calcSinglePrime,
+				calcRangePrime,
+				ot_onchange,
+				pr_onchange,
+				big_onchange,
+				os_onchange,
+			});
 			os_onchange();
 			setTimeout(function () {
 				state.snum = state.big ? 0n : 0;
@@ -220,89 +164,7 @@ function showStart(): void {
 	);
 }
 
-function attachShowStartEvents(): void {
-	const numElement = document.getElementById(
-		"num",
-	) as HTMLInputElement | null;
-	const startButton = document.getElementById("btn-start-calc");
-	const otCheckbox = document.getElementById("ot") as HTMLInputElement | null;
-	const prCheckbox = document.getElementById("pr") as HTMLInputElement | null;
-	const bigIntButton = document.getElementById("btn-bigint");
-	const smallIntButton = document.getElementById("btn-smallint");
-	const osInputs =
-		document.querySelectorAll<HTMLInputElement>('input[name="os"]');
-
-	if (numElement) {
-		numElement.addEventListener("change", calcSinglePrime);
-		numElement.addEventListener("keyup", function (event) {
-			if (event.key === "Enter") {
-				calcSinglePrime();
-			}
-		});
-	}
-
-	if (startButton) {
-		startButton.addEventListener("click", calcRangePrime);
-	}
-
-	if (otCheckbox) {
-		otCheckbox.addEventListener("change", ot_onchange);
-	}
-
-	if (prCheckbox) {
-		prCheckbox.addEventListener("change", pr_onchange);
-	}
-
-	if (bigIntButton) {
-		bigIntButton.addEventListener("click", function (event) {
-			event.preventDefault();
-			big_onchange(0);
-		});
-	}
-
-	if (smallIntButton) {
-		smallIntButton.addEventListener("click", function (event) {
-			event.preventDefault();
-			big_onchange(1);
-		});
-	}
-
-	osInputs.forEach((input) => {
-		input.addEventListener("change", os_onchange);
-	});
-}
-
-function attachShowRangePrimeEvents(): void {
-	const btnTryAgain = document.getElementById("btn-try-again");
-	const btnShowResult = document.getElementById("btn-show-result");
-	const btnScrollBottom = document.getElementById("btn-scroll-bottom");
-	const btnScrollTop = document.getElementById("btn-scroll-top");
-	const resultContainer = document.querySelector(
-		".result_container",
-	) as HTMLElement | null;
-
-	if (btnTryAgain) {
-		btnTryAgain.addEventListener("click", showStart);
-	}
-
-	if (btnShowResult) {
-		btnShowResult.addEventListener("click", showRangePrimeOutput);
-	}
-
-	if (btnScrollBottom) {
-		btnScrollBottom.addEventListener("click", () => doScrollTo(1));
-	}
-
-	if (btnScrollTop) {
-		btnScrollTop.addEventListener("click", () => doScrollTo(0));
-	}
-
-	if (resultContainer && state.os === 0) {
-		resultContainer.addEventListener("click", showTooltip);
-	}
-}
-
-function ot_onchange(): void {
+export function ot_onchange(): void {
 	state.ot = (document.getElementById("ot") as HTMLInputElement).checked
 		? 1
 		: 0;
@@ -310,13 +172,13 @@ function ot_onchange(): void {
 	calcSinglePrime();
 }
 
-function pr_onchange(): void {
+export function pr_onchange(): void {
 	state.pr = (document.getElementById("pr") as HTMLInputElement).checked
 		? 1
 		: 0;
 }
 
-function os_onchange(): void {
+export function os_onchange(): void {
 	const val = parseInt(getRadioValue("os") ?? "0", 10);
 	const colContainer = document.getElementById("col_container");
 
@@ -325,12 +187,12 @@ function os_onchange(): void {
 	}
 }
 
-function big_onchange(val: string | number): void {
+export function big_onchange(val: string | number): void {
 	state.big = parseInt(String(val), 10);
 	showStart();
 }
 
-function getParamFromUrl(): void {
+export function getParamFromUrl(): void {
 	const queryString = window.location.search;
 	const urlParams = new URLSearchParams(queryString);
 	const u_big = urlParams.get("big");
@@ -397,7 +259,7 @@ function getParamFromUrl(): void {
 	}
 }
 
-function calcRangePrime(): void {
+export function calcRangePrime(): void {
 	let zero: number | bigint = 0;
 	if (state.big) {
 		const minElement = document.getElementById(
@@ -475,13 +337,13 @@ function calcRangePrime(): void {
 
 				genUI(
 					`
-					${header()}
-					Finding prime number in <b>${formatNumber(state.big ? (state.max as bigint) - (state.min as bigint) + 1n : (state.max as number) - (state.min as number) + 1)}</b> numbers ${timerIndicator(timerId)}
-					${loading4()}<br/>
-					${progressIndicator(progressId)}<br/>
-					${loading3}<br/><br/>
-					${btnTryAgain}
-					`,
+				${header()}
+				Finding prime number in <b>${formatNumber(state.big ? (state.max as bigint) - (state.min as bigint) + 1n : (state.max as number) - (state.min as number) + 1)}</b> numbers ${timerIndicator(timerId)}
+				${loading4()}<br/>
+				${progressIndicator(progressId)}<br/>
+				${loading3}<br/><br/>
+				${btnTryAgain}
+				`,
 					function () {
 						secTimer(timerId, 1);
 						const start = window.performance.now();
@@ -491,19 +353,16 @@ function calcRangePrime(): void {
 							[state.min, state.max, state.pr],
 							function (e) {
 								if (e) {
-									const payload = e as {
-										result: (number | bigint)[];
-										count: number;
-									};
+									const payload = e;
 									state.result = payload.result;
 									state.primeFound = payload.count;
 									const processTime =
 										window.performance.now() - start;
 
 									genUI(`
-										${header()}
-										We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
-									`);
+									${header()}
+									We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
+								`);
 								} else {
 									genUI(
 										`${errorHeader()}Fail to find prime number<br/><br/>${btnTryAgain}`,
@@ -580,7 +439,7 @@ function mw(maxValue: number | bigint) {
 	}
 }
 
-function showRangePrimeOutput(): void {
+export function showRangePrimeOutput(): void {
 	const timerId = genId();
 	const progressId = state.pr ? genId() : null;
 
@@ -600,7 +459,12 @@ function showRangePrimeOutput(): void {
 		${btnTryAgain}
 		`,
 		function () {
-			attachShowRangePrimeEvents();
+			attachShowRangePrimeEvents({
+				showStart,
+				showRangePrimeOutput,
+				showTooltip,
+				doScrollTo,
+			});
 			secTimer(timerId, 1);
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
 			const isLong =
@@ -634,12 +498,24 @@ function showRangePrimeOutput(): void {
 							<small id="multiple_time_2">${loading2}</small><br/><br/>
 							${btnTryAgain} ${isLong ? btnScrollTop : ""}
 							`,
-							attachShowRangePrimeEvents,
+							() =>
+								attachShowRangePrimeEvents({
+									showStart,
+									showRangePrimeOutput,
+									showTooltip,
+									doScrollTo,
+								}),
 						);
 					} else {
 						genUI(
 							`${errorHeader()}Fail to combine result<br/>${btnTryAgain}`,
-							attachShowRangePrimeEvents,
+							() =>
+								attachShowRangePrimeEvents({
+									showStart,
+									showRangePrimeOutput,
+									showTooltip,
+									doScrollTo,
+								}),
 						);
 					}
 				},
@@ -656,7 +532,7 @@ function showRangePrimeOutput(): void {
 	);
 }
 
-function hideTooltip(): void {
+export function hideTooltip(): void {
 	const tooltip_container = document.getElementById("tooltip_container");
 	if (tooltip_container) {
 		tooltip_container.style.display = "none";
@@ -665,7 +541,7 @@ function hideTooltip(): void {
 	stopWorker();
 }
 
-function showTooltip(e: Event): void {
+export function showTooltip(e: Event): void {
 	const target = e.target as HTMLElement | null;
 	if (
 		target?.parentNode instanceof HTMLElement &&
@@ -693,7 +569,7 @@ function showTooltip(e: Event): void {
 			[num, state.pr],
 			function (e) {
 				if (e) {
-					state.result = e as (number | bigint)[];
+					state.result = e;
 					if (state.result) {
 						runWorker(
 							"factor",
@@ -739,7 +615,7 @@ function showTooltip(e: Event): void {
 	}
 }
 
-function doScrollTo(location: number): void {
+export function doScrollTo(location: number): void {
 	if (location === 1) {
 		window.scrollTo(0, document.body.scrollHeight);
 	} else {
@@ -747,16 +623,4 @@ function doScrollTo(location: number): void {
 	}
 }
 
-export {
-	calcRangePrime,
-	calcSinglePrime,
-	big_onchange,
-	hideTooltip,
-	ot_onchange,
-	pr_onchange,
-	doScrollTo,
-	getParamFromUrl as getParam,
-	showRangePrimeOutput,
-	showStart,
-	showTooltip,
-};
+export { getParamFromUrl as getParam };

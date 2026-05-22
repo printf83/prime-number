@@ -1,15 +1,38 @@
 import { state } from "./state";
 
-export type WorkerMessage =
+export type WorkerScript = "prime" | "singleprime" | "factor" | "joinresult";
+
+export interface WorkerParamsMap {
+	prime: [number | bigint, number | bigint, number];
+	singleprime: [number | bigint, number];
+	factor: [(number | bigint)[], number | bigint, number, number];
+	joinresult: [
+		(number | bigint)[],
+		number | bigint,
+		number | bigint,
+		number | bigint,
+		number,
+		number,
+	];
+}
+
+export interface WorkerResultMap {
+	prime: { result: (number | bigint)[]; count: number };
+	singleprime: (number | bigint)[];
+	factor: (number | bigint)[];
+	joinresult: string;
+}
+
+export type WorkerMessage<T> =
 	| { type: "progress"; data: number }
-	| { type: "data"; data: unknown };
+	| { type: "data"; data: T };
 
 let wk: Worker | null = null;
 
-export function runWorker(
-	script: string,
-	params: unknown[],
-	callback: (e: unknown) => void,
+export function runWorker<T extends WorkerScript>(
+	script: T,
+	params: WorkerParamsMap[T],
+	callback: (data: WorkerResultMap[T]) => void,
 	onerror?: (e: string) => void,
 	onprogress?: (e: number) => void,
 ): void {
@@ -17,7 +40,9 @@ export function runWorker(
 
 	wk = new Worker(`dist/${script}${state.big ? `_big` : ""}.js`);
 	wk.postMessage(params);
-	wk.onmessage = function (e: MessageEvent<WorkerMessage>) {
+	wk.onmessage = function (
+		e: MessageEvent<WorkerMessage<WorkerResultMap[T]>>,
+	): void {
 		if (e.data.type === "progress") {
 			if (typeof onprogress === "function") {
 				onprogress(e.data.data);
