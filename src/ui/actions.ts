@@ -552,18 +552,26 @@ export function showRangePrimeOutput(): void {
 			? Math.ceil(resultArray.length / col)
 			: Math.ceil(primeValues.length / col);
 
-	const recordBytes = resultArray instanceof Uint8Array
-		? resultArray.byteLength
-		: resultArray.length * 8;
+	const recordBytes =
+		resultArray instanceof Uint8Array
+			? resultArray.byteLength
+			: resultArray.length * 8;
 	console.debug(
 		"[PrimeDebug] Result in memory:",
-		"records=", resultArray.length,
-		"totalRows=", totalRows,
-		"visibleCount=", visibleCount,
-		"primeFound=", state.primeFound,
-		"col=", col,
-		"bytes=", recordBytes,
-		"mode=", state.os === 1 ? "prime-only" : "all",
+		"records=",
+		resultArray.length,
+		"totalRows=",
+		totalRows,
+		"visibleCount=",
+		visibleCount,
+		"primeFound=",
+		state.primeFound,
+		"col=",
+		col,
+		"bytes=",
+		recordBytes,
+		"mode=",
+		state.os === 1 ? "prime-only" : "all",
 	);
 
 	if (totalRows > maxRows) {
@@ -641,8 +649,15 @@ export function showRangePrimeOutput(): void {
 			rowHeight = measureRowHeight();
 			inner.style.height = `${totalRows * rowHeight}px`;
 
+			const content = document.createElement("div");
+			content.className = "result-content";
+			content.style.position = "absolute";
+			content.style.left = "0";
+			content.style.top = "0";
+			content.style.width = "100%";
+			inner.appendChild(content);
+
 			function renderRow(row: number): string {
-				const top = row * rowHeight;
 				const start = row * col;
 				const items: string[] = [];
 
@@ -672,7 +687,7 @@ export function showRangePrimeOutput(): void {
 					}
 				}
 
-				return `<div class="result-row" style="top:${top}px">${items.join("")}</div>`;
+				return `<div class="result-row">${items.join("")}</div>`;
 			}
 
 			function render(): void {
@@ -695,7 +710,8 @@ export function showRangePrimeOutput(): void {
 					html += renderRow(row);
 				}
 
-				inner.innerHTML = html;
+				content.style.transform = `translateY(${firstRow * rowHeight}px)`;
+				content.innerHTML = html;
 			}
 
 			viewport.addEventListener("scroll", render);

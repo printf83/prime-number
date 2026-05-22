@@ -183,15 +183,24 @@ small {
 	width: 100%;
 }
 
-.result-row {
+.result-content {
 	position: absolute;
 	left: 0;
+	top: 0;
 	width: 100%;
+}
+
+.result-row {
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
+	overflow-x: auto;
 	gap: 0.35rem;
 	padding: 0.15rem 0;
 	justify-content: center;
+}
+
+.result-item {
+	white-space: nowrap;
 }
 
 .result-item {
