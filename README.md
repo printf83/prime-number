@@ -39,6 +39,14 @@ pnpm build
 pnpm preview
 ```
 
+### GitHub Pages Deployment
+
+```bash
+pnpm deploy
+```
+
+This builds the app with `vite build --base=/prime-number/` and publishes the `dist` directory to the repository's `gh-pages` branch.
+
 ### Type checking and linting
 
 ```bash
@@ -54,9 +62,9 @@ pnpm lint
 - `src/index.ts` — bootstrap and global window bindings
 - `src/workers.ts` — typed worker loader using Vite `new URL(..., import.meta.url)` paths
 - `src/ui/` — split UI implementation
-  - `builders.ts` — HTML fragment builders and accessible controls
-  - `events.ts` — DOM event wiring and button handlers
-  - `actions.ts` — UI state flow and worker orchestration
+    - `builders.ts` — HTML fragment builders and accessible controls
+    - `events.ts` — DOM event wiring and button handlers
+    - `actions.ts` — UI state flow and worker orchestration
 - `src/dom.ts` — DOM helpers, tooltip display, accessible progress updates, and render timing
 - `src/utils.ts` — formatting and input parsing helpers
 - `src/state.ts` — shared app state and window typing

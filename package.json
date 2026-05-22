@@ -6,12 +6,15 @@
 	"description": "Prime number calculator with web workers",
 	"scripts": {
 		"build": "vite build",
+		"build:gh-pages": "vite build --base=/prime-number/",
+		"deploy": "pnpm build:gh-pages && pnpm exec gh-pages -d dist",
 		"dev": "vite",
 		"preview": "vite preview",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint . --ext .ts,.js --max-warnings=0"
 	},
 	"devDependencies": {
+		"gh-pages": "^5.0.0",
 		"@typescript-eslint/eslint-plugin": "^8.59.4",
 		"@typescript-eslint/parser": "^8.59.4",
 		"eslint": "^10.4.0",
