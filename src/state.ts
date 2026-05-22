@@ -7,7 +7,7 @@ export type PerformanceWithMemory = Performance & {
 
 export const state = {
 	big: 0,
-	result: [] as (number | bigint)[],
+	result: [] as (number | bigint)[] | Uint8Array,
 	primeFound: 0,
 	min: 1 as number | bigint,
 	max: 99999 as number | bigint,

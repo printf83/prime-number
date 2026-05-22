@@ -18,7 +18,7 @@
 	self.onmessage = function (e: MessageEvent<unknown>): void {
 		try {
 			const [data, min, , col, os, pr] = e.data as [
-				number[],
+				number[] | Uint8Array,
 				number,
 				number,
 				number,

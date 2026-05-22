@@ -15,7 +15,7 @@ export interface WorkerParamsMap {
 	singleprime: [number | bigint, number];
 	factor: [(number | bigint)[], number | bigint, number, number];
 	joinresult: [
-		(number | bigint)[],
+		(number | bigint)[] | Uint8Array,
 		number | bigint,
 		number | bigint,
 		number | bigint,
@@ -25,7 +25,7 @@ export interface WorkerParamsMap {
 }
 
 export interface WorkerResultMap {
-	prime: { result: (number | bigint)[]; count: number };
+	prime: { result: (number | bigint)[] | Uint8Array; count: number };
 	singleprime: (number | bigint)[];
 	factor: (number | bigint)[];
 	joinresult: string;

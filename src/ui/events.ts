@@ -72,7 +72,8 @@ export interface ShowRangePrimeEventHandlers {
 export function attachShowRangePrimeEvents(
 	handlers: ShowRangePrimeEventHandlers,
 ): void {
-	const btnTryAgain = document.getElementById("btn-try-again");
+	const btnTryAgainList =
+		document.querySelectorAll<HTMLButtonElement>("#btn-try-again");
 	const btnShowResult = document.getElementById("btn-show-result");
 	const btnScrollBottom = document.getElementById("btn-scroll-bottom");
 	const btnScrollTop = document.getElementById("btn-scroll-top");
@@ -82,8 +83,10 @@ export function attachShowRangePrimeEvents(
 		".result_container",
 	) as HTMLElement | null;
 
-	if (btnTryAgain) {
-		btnTryAgain.addEventListener("click", handlers.showStart);
+	if (btnTryAgainList.length > 0) {
+		btnTryAgainList.forEach((button) => {
+			button.addEventListener("click", handlers.showStart);
+		});
 	}
 
 	if (btnShowResult) {
