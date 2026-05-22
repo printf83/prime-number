@@ -24,8 +24,8 @@ function ctlRadio(id, name, value, checked, onchange, label) {
 	<div class="form-group">
 		<label class="radio" for="${id}">${label}
 			<input type="radio" id="${id}" name="${name}" value="${value}" onchange="${onchange}" ${
-		checked ? ` checked="checked"` : ""
-	}/>
+				checked ? ` checked="checked"` : ""
+			}/>
 			<span class="checkmark"></span>
 		</label>
 	</div>`;
@@ -65,7 +65,9 @@ const timerIndicator = function (id) {
 };
 
 const progressIndicator = function (id) {
-	return id ? `<div class="progress"><div class="bar" id="${id}">&nbsp;</div></div>` : ""; //`<span id="${id}"></span>`;
+	return id
+		? `<div class="progress"><div class="bar" id="${id}">&nbsp;</div></div>`
+		: ""; //`<span id="${id}"></span>`;
 };
 
 const btnTryAgain = ctlButton("Try Again", "showStart()");
@@ -80,7 +82,7 @@ const loading4 = function () {
 	return !pr ? `${loading2}` : "";
 };
 
-var monitorID = null;
+let monitorID = null;
 function addResizeListener(elem, fun) {
 	var requestAnimationFrame =
 		window.requestAnimationFrame ||
@@ -88,7 +90,8 @@ function addResizeListener(elem, fun) {
 		window.webkitRequestAnimationFrame ||
 		window.msRequestAnimationFrame;
 
-	var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame;
+	var cancelAnimationFrame =
+		window.cancelAnimationFrame || window.mozCancelAnimationFrame;
 
 	if (monitorID !== null) {
 		cancelAnimationFrame(monitorID);
@@ -166,10 +169,27 @@ function genTooltip(target, html) {
 }
 
 function formatNumber(num) {
-	if (num) {
+	if (num === 0 || num) {
 		return num.toLocaleString("en-US");
 	} else {
 		return `<span class="font-danger">Error!</span>`;
+	}
+}
+
+function parseIntInput(value) {
+	let n = parseInt(value, 10);
+	return Number.isNaN(n) ? null : n;
+}
+
+function parseBigIntInput(value) {
+	if (typeof value !== "string" || value.trim() === "") {
+		return 0n;
+	}
+
+	try {
+		return BigInt(value);
+	} catch (err) {
+		return null;
 	}
 }
 
@@ -188,7 +208,10 @@ function formatTime(num) {
 
 		let hDisplay = h > 0 ? `${h} hrs` : null;
 		let mDisplay = m > 0 ? `${m} min` : null;
-		let sDisplay = s > -1 ? `${m > 0 ? s : parseFloat(num.toFixed(1)).toLocaleString("en-US")} sec` : null;
+		let sDisplay =
+			s > -1
+				? `${m > 0 ? s : parseFloat(num.toFixed(1)).toLocaleString("en-US")} sec`
+				: null;
 
 		return formatList([hDisplay, mDisplay, sDisplay].filter(Boolean)); //`${hDisplay}${mDisplay}${sDisplay}`;
 	} else {
@@ -227,8 +250,13 @@ function genId() {
 function calcSinglePrime() {
 	let zero = big ? 0n : 0;
 	let currentNum = big
-		? BigInt(document.getElementById("num").value)
-		: parseInt(document.getElementById("num").value);
+		? parseBigIntInput(document.getElementById("num")?.value ?? "")
+		: parseIntInput(document.getElementById("num")?.value ?? "");
+
+	if (currentNum === null) {
+		showSinglePrimeOutput(`Please enter a valid number`);
+		return;
+	}
 
 	if (currentNum > zero) {
 		if (currentNum !== snum) {
@@ -262,8 +290,8 @@ function calcSinglePrime() {
 									if (result.length === 2) {
 										showSinglePrimeOutput(
 											`<h4>${formatNumber(
-												lastNumber
-											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><small id="single_time_1">${loading2}</small>`
+												lastNumber,
+											)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><small id="single_time_1">${loading2}</small>`,
 										);
 									} else {
 										showSinglePrimeOutput(
@@ -273,14 +301,18 @@ function calcSinglePrime() {
 													: ``
 											}
 											<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
-												result.length === 1 ? ` only` : ``
-											} be divided with <br/>${e}</small><br/><small id="single_time_2">${loading2}</small>`
+												result.length === 1
+													? ` only`
+													: ``
+											} be divided with <br/>${e}</small><br/><small id="single_time_2">${loading2}</small>`,
 										);
 									}
 								},
 								function (e) {
-									showSinglePrimeOutput(`Fail to find prime number. ${e}`);
-								}
+									showSinglePrimeOutput(
+										`Fail to find prime number. ${e}`,
+									);
+								},
 							);
 						} else {
 							showSinglePrimeOutput(`Fail to find prime number`);
@@ -294,7 +326,7 @@ function calcSinglePrime() {
 				},
 				function (e) {
 					updateProgress(progressId, e);
-				}
+				},
 			);
 		}
 	} else {
@@ -331,7 +363,7 @@ function showStart() {
 				snum = big ? 0n : 0;
 				calcSinglePrime();
 			}, 100);
-		}
+		},
 	);
 }
 
@@ -360,12 +392,11 @@ function big_onchange(val) {
 }
 
 function getRadioValue(name) {
-	var ele = document.getElementsByName(name);
+	const ele = document.getElementsByName(name);
 
-	for (i = 0; i < ele.length; i++) {
+	for (let i = 0; i < ele.length; i++) {
 		if (ele[i].checked) {
 			return ele[i].value;
-			break;
 		}
 	}
 
@@ -375,19 +406,26 @@ function getRadioValue(name) {
 function calcRangePrime() {
 	let zero = 0;
 	if (big) {
-		min = BigInt(document.getElementById("min").value);
-		max = BigInt(document.getElementById("max").value);
-		col = BigInt(document.getElementById("col").value);
+		min = parseBigIntInput(document.getElementById("min")?.value ?? "");
+		max = parseBigIntInput(document.getElementById("max")?.value ?? "");
+		col = parseBigIntInput(document.getElementById("col")?.value ?? "");
 		zero = 0n;
 	} else {
-		min = parseInt(document.getElementById("min").value);
-		max = parseInt(document.getElementById("max").value);
-		col = parseInt(document.getElementById("col").value);
+		min = parseIntInput(document.getElementById("min")?.value ?? "");
+		max = parseIntInput(document.getElementById("max")?.value ?? "");
+		col = parseIntInput(document.getElementById("col")?.value ?? "");
 		zero = 0;
 	}
 
 	os = parseInt(getRadioValue("os"), 10);
 	ot = document.getElementById("ot").checked ? 1 : 0;
+
+	if (min === null || max === null || col === null) {
+		genUI(
+			`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+		);
+		return;
+	}
 
 	if (max > zero && col > zero) {
 		if (min > zero && min <= max) {
@@ -416,37 +454,48 @@ function calcRangePrime() {
 									result = e.result;
 									primeFound = e.count;
 
-									let processTime = window.performance.now() - start;
+									let processTime =
+										window.performance.now() - start;
 
 									genUI(`
 											${header()}
 											We found <b>${formatNumber(primeFound)} prime number</b> between <b>${formatNumber(min)}</b> and <b>${formatNumber(
-										max
-									)}</b> in <b>${formatTime(
-										processTime
-									)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
+												max,
+											)}</b> in <b>${formatTime(
+												processTime,
+											)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
 										`);
 								} else {
-									genUI(`${errorHeader()}Fail to find prime number<br/><br/>${btnTryAgain}`);
+									genUI(
+										`${errorHeader()}Fail to find prime number<br/><br/>${btnTryAgain}`,
+									);
 								}
 							},
 							function (e) {
-								genUI(`${errorHeader()}Fail to find prime number. ${e}<br/><br/>${btnTryAgain}`);
+								genUI(
+									`${errorHeader()}Fail to find prime number. ${e}<br/><br/>${btnTryAgain}`,
+								);
 							},
 							function (e) {
 								updateProgress(progressId, e);
-							}
+							},
 						);
-					}
+					},
 				);
 			} else {
-				genUI(`${errorHeader()}Web Worker not available<br/><br/>${btnTryAgain}`);
+				genUI(
+					`${errorHeader()}Web Worker not available<br/><br/>${btnTryAgain}`,
+				);
 			}
 		} else {
-			genUI(`${errorHeader()}Min must be a positive integer and less or equal with Max<br/><br/>${btnTryAgain}`);
+			genUI(
+				`${errorHeader()}Min must be a positive integer and less or equal with Max<br/><br/>${btnTryAgain}`,
+			);
 		}
 	} else {
-		genUI(`${errorHeader()}Max and Col must be a positive integer<br/><br/>${btnTryAgain}`);
+		genUI(
+			`${errorHeader()}Max and Col must be a positive integer<br/><br/>${btnTryAgain}`,
+		);
 	}
 }
 
@@ -500,7 +549,7 @@ function showRangePrimeOutput() {
 		`
 		${header()} 
 		Generating <b> ${formatNumber(
-			os === 0 ? max - min + (big ? 1n : 1) : result.length
+			os === 0 ? max - min + (big ? 1n : 1) : result.length,
 		)} number</b> into your browser  ${timerIndicator(timerId)}
 		${loading4()}<br/>
 		${progressIndicator(progressId)}<br/>
@@ -512,7 +561,8 @@ function showRangePrimeOutput() {
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
 			let isLong =
 				os === 0
-					? (big ? BigInt(result.length) : result.length) / col > (big ? 50n : 50)
+					? (big ? BigInt(result.length) : result.length) / col >
+						(big ? 50n : 50)
 					: result.length > 1000;
 
 			runWorker(
@@ -532,17 +582,21 @@ function showRangePrimeOutput() {
 							${btnTryAgain} ${isLong ? btnScrollTop : ""}
 							`);
 					} else {
-						genUI(`${errorHeader()}Fail to combine result<br/>${btnTryAgain}`);
+						genUI(
+							`${errorHeader()}Fail to combine result<br/>${btnTryAgain}`,
+						);
 					}
 				},
 				function (e) {
-					genUI(`${errorHeader()}Fail to combine result. ${e}<br/>${btnTryAgain}`);
+					genUI(
+						`${errorHeader()}Fail to combine result. ${e}<br/>${btnTryAgain}`,
+					);
 				},
 				function (e) {
 					updateProgress(progressId, e);
-				}
+				},
 			);
-		}
+		},
 	);
 }
 
@@ -555,7 +609,7 @@ function hideTooltip() {
 	stopWorker();
 }
 function showTooltip(e) {
-	if (e.target && e.target.parentNode.classList.contains("d-flex")) {
+	if (e.target?.parentNode?.classList.contains("d-flex")) {
 		const target = e.target;
 		const num = big ? BigInt(target.innerText) : parseInt(target.innerText);
 
@@ -567,7 +621,7 @@ function showTooltip(e) {
 			<h3>${formatNumber(num)}</h3> Checking ${timerIndicator(timerId)}
 			${loading4()}<br/>
 			${progressIndicator(progressId)}
-			`
+			`,
 		);
 		secTimer(timerId, 1);
 
@@ -587,24 +641,26 @@ function showTooltip(e) {
 									genTooltip(
 										target,
 										`<h3>${formatNumber(
-											result[result.length - 1]
-										)}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><span id="tooltip_time">${loading2}</span>`
+											result[result.length - 1],
+										)}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><span id="tooltip_time">${loading2}</span>`,
 									);
 								} else {
 									genTooltip(
 										target,
 										`<h3>${formatNumber(
-											result[result.length - 1]
-										)}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${e}</small><br/><span id="tooltip_time">${loading2}</span>`
+											result[result.length - 1],
+										)}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${e}</small><br/><span id="tooltip_time">${loading2}</span>`,
 									);
 								}
 							},
 							function (e) {
-								showSinglePrimeOutput(`Fail to find prime number. ${e}`);
+								showSinglePrimeOutput(
+									`Fail to find prime number. ${e}`,
+								);
 							},
 							function (e) {
 								updateProgress(progressId, e);
-							}
+							},
 						);
 					} else {
 						genTooltip(target, `Fail to find prime number`);
@@ -618,7 +674,7 @@ function showTooltip(e) {
 			},
 			function (e) {
 				updateProgress(progressId, e);
-			}
+			},
 		);
 	} else {
 		hideTooltip();
@@ -633,7 +689,7 @@ function doScrollTo(location) {
 	}
 }
 
-var wk = null;
+let wk = null;
 function runWorker(script, params, callback, onerror, onprogress) {
 	stopWorker();
 
@@ -747,7 +803,9 @@ function secTimer(id, d, ms) {
 			let mDisplay = m > 0 ? `${m} min` : null;
 			let sDisplay = s > 0 ? `${s} sec` : null;
 
-			let text = formatList([hDisplay, mDisplay, sDisplay].filter(Boolean)); //`${hDisplay}${mDisplay}${sDisplay}`;
+			let text = formatList(
+				[hDisplay, mDisplay, sDisplay].filter(Boolean),
+			); //`${hDisplay}${mDisplay}${sDisplay}`;
 
 			elem.innerHTML = `since ${text} ago `;
 			secTimer(id, ++d);
@@ -767,11 +825,14 @@ function getMemory() {
 		let t = window.performance.memory;
 		let d = document.getElementById("mem");
 
-		d.innerHTML = `
+		if (d) {
+			d.innerHTML = `
 			Memory usage <b>
 			${parseInt((t.usedJSHeapSize / t.totalJSHeapSize) * 100, 10)}% | 
 			${parseInt(t.usedJSHeapSize / 1024 / 1024, 10)}Mb</b>
 		`;
+		}
+
 		getMemory();
 	}, 100);
 }

@@ -38,8 +38,12 @@ onmessage = function (e) {
 			let row = [];
 
 			if (pr === 1) {
-				for (x = 0; x < max; x++) {
-					row.push(data[x] === 1 ? `<i>${x + min}</i>` : `<b>${x + min}</b>`);
+				for (let x = 0; x < max; x++) {
+					row.push(
+						data[x] === 1
+							? `<i>${x + min}</i>`
+							: `<b>${x + min}</b>`,
+					);
 
 					if ((x + 1) % col === 0) {
 						tmp.push(row.join(""));
@@ -49,8 +53,12 @@ onmessage = function (e) {
 					progress(x, max, prDiv);
 				}
 			} else {
-				for (x = 0; x < max; x++) {
-					row.push(data[x] === 1 ? `<i>${x + min}</i>` : `<b>${x + min}</b>`);
+				for (let x = 0; x < max; x++) {
+					row.push(
+						data[x] === 1
+							? `<i>${x + min}</i>`
+							: `<b>${x + min}</b>`,
+					);
 
 					if ((x + 1) % col === 0) {
 						tmp.push(row.join(""));
@@ -67,7 +75,7 @@ onmessage = function (e) {
 		} else {
 			//gen array list
 			if (pr === 1) {
-				for (x = 0; x < max; x++) {
+				for (let x = 0; x < max; x++) {
 					if (data[x] === 1) {
 						tmp.push(x + min);
 					}
@@ -75,7 +83,7 @@ onmessage = function (e) {
 					progress(x, max, prDiv);
 				}
 			} else {
-				for (x = 0; x < max; x++) {
+				for (let x = 0; x < max; x++) {
 					if (data[x] === 1) {
 						tmp.push(x + min);
 					}

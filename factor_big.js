@@ -20,7 +20,7 @@ function progressDiv(max, div) {
 }
 
 function formatNumber(num) {
-	if (num) {
+	if (num === 0n || num) {
 		return num.toLocaleString("en-US");
 	} else {
 		return `<span class="font-danger">Error!</span>`;
@@ -39,12 +39,14 @@ onmessage = function (e) {
 			result = data.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1");
 		} else {
 			let tmp = [];
-			let max = BigInt(data.length > 2 ? parseInt(data.length / 2, 10) : data.length);
+			let max = BigInt(
+				data.length > 2 ? parseInt(data.length / 2, 10) : data.length,
+			);
 			//gen array list
 			if (pr === 1) {
 				let prDiv = progressDiv(max);
 
-				for (x = 0n; x < max; x++) {
+				for (let x = 0n; x < max; x++) {
 					tmp.push(`
                     <tr>
                         <td>&#247;</td>
@@ -57,7 +59,7 @@ onmessage = function (e) {
 					progress(x, max, prDiv);
 				}
 			} else {
-				for (x = 0; x < max; x++) {
+				for (let x = 0n; x < max; x++) {
 					tmp.push(`
                     <tr>
                         <td>&#247;</td>
