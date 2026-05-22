@@ -260,210 +260,229 @@ export function getParamFromUrl(): void {
 }
 
 export function calcRangePrime(): void {
-    let zero: number | bigint = 0;
+	let zero: number | bigint = 0;
 
-    if (state.big) {
-        const minElement = document.getElementById("min") as HTMLInputElement | null;
-        const maxElement = document.getElementById("max") as HTMLInputElement | null;
-        const colElement = document.getElementById("col") as HTMLInputElement | null;
-        const minValue = parseBigIntInput(minElement?.value ?? "");
-        const maxValue = parseBigIntInput(maxElement?.value ?? "");
-        const colValue = parseBigIntInput(colElement?.value ?? "");
+	if (state.big) {
+		const minElement = document.getElementById(
+			"min",
+		) as HTMLInputElement | null;
+		const maxElement = document.getElementById(
+			"max",
+		) as HTMLInputElement | null;
+		const colElement = document.getElementById(
+			"col",
+		) as HTMLInputElement | null;
+		const minValue = parseBigIntInput(minElement?.value ?? "");
+		const maxValue = parseBigIntInput(maxElement?.value ?? "");
+		const colValue = parseBigIntInput(colElement?.value ?? "");
 
-        if (minValue === null || maxValue === null || colValue === null) {
-            genUI(
-                `${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
-                function () {
-                    attachShowRangePrimeEvents({
-                        showStart,
-                        showRangePrimeOutput,
-                        showTooltip,
-                        big_onchange: big_onchange,
-                        doScrollTo,
-                    });
-                },
-            );
-            return;
-        }
+		if (minValue === null || maxValue === null || colValue === null) {
+			genUI(
+				`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+				function () {
+					attachShowRangePrimeEvents({
+						showStart,
+						showRangePrimeOutput,
+						showTooltip,
+						big_onchange: big_onchange,
+						doScrollTo,
+					});
+				},
+			);
+			return;
+		}
 
-        state.min = minValue;
-        state.max = maxValue;
-        state.col = colValue;
-        zero = 0n;
-    } else {
-        const minElement = document.getElementById("min") as HTMLInputElement | null;
-        const maxElement = document.getElementById("max") as HTMLInputElement | null;
-        const colElement = document.getElementById("col") as HTMLInputElement | null;
-        const minValue = parseIntInput(minElement?.value ?? "");
-        const maxValue = parseIntInput(maxElement?.value ?? "");
-        const colValue = parseIntInput(colElement?.value ?? "");
+		state.min = minValue;
+		state.max = maxValue;
+		state.col = colValue;
+		zero = 0n;
+	} else {
+		const minElement = document.getElementById(
+			"min",
+		) as HTMLInputElement | null;
+		const maxElement = document.getElementById(
+			"max",
+		) as HTMLInputElement | null;
+		const colElement = document.getElementById(
+			"col",
+		) as HTMLInputElement | null;
+		const minValue = parseIntInput(minElement?.value ?? "");
+		const maxValue = parseIntInput(maxElement?.value ?? "");
+		const colValue = parseIntInput(colElement?.value ?? "");
 
-        if (minValue === null || maxValue === null || colValue === null) {
-            genUI(
-                `${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
-                function () {
-                    attachShowRangePrimeEvents({
-                        showStart,
-                        showRangePrimeOutput,
-                        showTooltip,
-                        big_onchange: big_onchange,
-                        doScrollTo,
-                    });
-                },
-            );
-            return;
-        }
+		if (minValue === null || maxValue === null || colValue === null) {
+			genUI(
+				`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+				function () {
+					attachShowRangePrimeEvents({
+						showStart,
+						showRangePrimeOutput,
+						showTooltip,
+						big_onchange: big_onchange,
+						doScrollTo,
+					});
+				},
+			);
+			return;
+		}
 
-        state.min = minValue;
-        state.max = maxValue;
-        state.col = colValue;
-        zero = 0;
-    }
+		state.min = minValue;
+		state.max = maxValue;
+		state.col = colValue;
+		zero = 0;
+	}
 
-    state.os = parseInt(getRadioValue("os") ?? "0", 10);
-    state.ot = ((document.getElementById("ot") as HTMLInputElement) || { checked: false }).checked ? 1 : 0;
+	state.os = parseInt(getRadioValue("os") ?? "0", 10);
+	state.ot = (
+		(document.getElementById("ot") as HTMLInputElement) || {
+			checked: false,
+		}
+	).checked
+		? 1
+		: 0;
 
-    if (state.min === null || state.max === null || state.col === null) {
-        genUI(
-            `${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
-            function () {
-                attachShowRangePrimeEvents({
-                    showStart,
-                    showRangePrimeOutput,
-                    showTooltip,
-                    big_onchange: big_onchange,
-                    doScrollTo,
-                });
-            },
-        );
-        return;
-    }
+	if (state.min === null || state.max === null || state.col === null) {
+		genUI(
+			`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+			function () {
+				attachShowRangePrimeEvents({
+					showStart,
+					showRangePrimeOutput,
+					showTooltip,
+					big_onchange: big_onchange,
+					doScrollTo,
+				});
+			},
+		);
+		return;
+	}
 
-    if (state.max > zero && state.col > zero) {
-        if (state.min > zero && state.min <= state.max) {
-            if (window.Worker) {
-                const timerId = genId();
-                const progressId = state.pr ? genId() : null;
+	if (state.max > zero && state.col > zero) {
+		if (state.min > zero && state.min <= state.max) {
+			if (window.Worker) {
+				const timerId = genId();
+				const progressId = state.pr ? genId() : null;
 
-                genUI(
-                    `
+				genUI(
+					`
                 ${header()}
                 Finding prime number in <b>${formatNumber(
-                    state.big
-                        ? (state.max as bigint) - (state.min as bigint) + 1n
-                        : (state.max as number) - (state.min as number) + 1,
-                )}</b> numbers ${timerIndicator(timerId)}
+					state.big
+						? (state.max as bigint) - (state.min as bigint) + 1n
+						: (state.max as number) - (state.min as number) + 1,
+				)}</b> numbers ${timerIndicator(timerId)}
                 ${loading4()}<br/>
                 ${progressIndicator(progressId)}<br/>
                 ${loading3}<br/><br/>
                 ${btnTryAgain}
                 `,
-                    function () {
-                        secTimer(timerId, 1);
-                        const start = window.performance.now();
+					function () {
+						secTimer(timerId, 1);
+						const start = window.performance.now();
 
-                        runWorker(
-                            "prime",
-                            [state.min, state.max, state.pr],
-                            function (e) {
-                                if (e) {
-                                    const payload = e;
-                                    state.result = payload.result;
-                                    state.primeFound = payload.count;
-                                    const processTime = window.performance.now() - start;
+						runWorker(
+							"prime",
+							[state.min, state.max, state.pr],
+							function (e) {
+								if (e) {
+									const payload = e;
+									state.result = payload.result;
+									state.primeFound = payload.count;
+									const processTime =
+										window.performance.now() - start;
 
-                                    genUI(
-                                        `
+									genUI(
+										`
                                     ${header()}
                                     We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
                                     `,
-                                        function () {
-                                            attachShowRangePrimeEvents({
-                                                showStart,
-                                                showRangePrimeOutput,
-                                                showTooltip,
-                                                big_onchange: big_onchange,
-                                                doScrollTo,
-                                            });
-                                        },
-                                    );
-                                } else {
-                                    genUI(
-                                        `${errorHeader()}Fail to find prime number<br/><br/>${btnTryAgain}`,
-                                        function () {
-                                            attachShowRangePrimeEvents({
-                                                showStart,
-                                                showRangePrimeOutput,
-                                                showTooltip,
-                                                big_onchange: big_onchange,
-                                                doScrollTo,
-                                            });
-                                        },
-                                    );
-                                }
-                            },
-                            function (e) {
-                                genUI(
-                                    `${errorHeader()}Fail to find prime number. ${e}<br/><br/>${btnTryAgain}`,
-                                    function () {
-                                        attachShowRangePrimeEvents({
-                                            showStart,
-                                            showRangePrimeOutput,
-                                            showTooltip,
-                                            big_onchange: big_onchange,
-                                            doScrollTo,
-                                        });
-                                    },
-                                );
-                            },
-                            function (e) {
-                                updateProgress(progressId, e);
-                            },
-                        );
-                    },
-                );
-            } else {
-                genUI(
-                    `${errorHeader()}Web Worker not available<br/><br/>${btnTryAgain}`,
-                    function () {
-                        attachShowRangePrimeEvents({
-                            showStart,
-                            showRangePrimeOutput,
-                            showTooltip,
-                            big_onchange: big_onchange,
-                            doScrollTo,
-                        });
-                    },
-                );
-            }
-        } else {
-            genUI(
-                `${errorHeader()}Min must be a positive integer and less or equal with Max<br/><br/>${btnTryAgain}`,
-                function () {
-                    attachShowRangePrimeEvents({
-                        showStart,
-                        showRangePrimeOutput,
-                        showTooltip,
-                        big_onchange: big_onchange,
-                        doScrollTo,
-                    });
-                },
-            );
-        }
-    } else {
-        genUI(
-            `${errorHeader()}Max and Col must be a positive integer<br/><br/>${btnTryAgain}`,
-            function () {
-                attachShowRangePrimeEvents({
-                    showStart,
-                    showRangePrimeOutput,
-                    showTooltip,
-                    big_onchange: big_onchange,
-                    doScrollTo,
-                });
-            },
-        );
-    }
+										function () {
+											attachShowRangePrimeEvents({
+												showStart,
+												showRangePrimeOutput,
+												showTooltip,
+												big_onchange: big_onchange,
+												doScrollTo,
+											});
+										},
+									);
+								} else {
+									genUI(
+										`${errorHeader()}Fail to find prime number<br/><br/>${btnTryAgain}`,
+										function () {
+											attachShowRangePrimeEvents({
+												showStart,
+												showRangePrimeOutput,
+												showTooltip,
+												big_onchange: big_onchange,
+												doScrollTo,
+											});
+										},
+									);
+								}
+							},
+							function (e) {
+								genUI(
+									`${errorHeader()}Fail to find prime number. ${e}<br/><br/>${btnTryAgain}`,
+									function () {
+										attachShowRangePrimeEvents({
+											showStart,
+											showRangePrimeOutput,
+											showTooltip,
+											big_onchange: big_onchange,
+											doScrollTo,
+										});
+									},
+								);
+							},
+							function (e) {
+								updateProgress(progressId, e);
+							},
+						);
+					},
+				);
+			} else {
+				genUI(
+					`${errorHeader()}Web Worker not available<br/><br/>${btnTryAgain}`,
+					function () {
+						attachShowRangePrimeEvents({
+							showStart,
+							showRangePrimeOutput,
+							showTooltip,
+							big_onchange: big_onchange,
+							doScrollTo,
+						});
+					},
+				);
+			}
+		} else {
+			genUI(
+				`${errorHeader()}Min must be a positive integer and less or equal with Max<br/><br/>${btnTryAgain}`,
+				function () {
+					attachShowRangePrimeEvents({
+						showStart,
+						showRangePrimeOutput,
+						showTooltip,
+						big_onchange: big_onchange,
+						doScrollTo,
+					});
+				},
+			);
+		}
+	} else {
+		genUI(
+			`${errorHeader()}Max and Col must be a positive integer<br/><br/>${btnTryAgain}`,
+			function () {
+				attachShowRangePrimeEvents({
+					showStart,
+					showRangePrimeOutput,
+					showTooltip,
+					big_onchange: big_onchange,
+					doScrollTo,
+				});
+			},
+		);
+	}
 }
 function mw(maxValue: number | bigint) {
 	if (state.big) {
@@ -510,6 +529,35 @@ function mw(maxValue: number | bigint) {
 export function showRangePrimeOutput(): void {
 	const timerId = genId();
 	const progressId = state.pr ? genId() : null;
+	const renderThreshold = 2000;
+	const visibleCount =
+		state.os === 0 ? state.result.length : state.primeFound;
+
+	if (visibleCount > renderThreshold) {
+		genUI(
+			`
+			${header()} 
+			Too many results to render safely in the browser.<br/>
+			${
+				state.os === 0
+					? `Switch to Prime Only mode or reduce your range so the output is smaller.`
+					: `Reduce the range so the prime list is under ${renderThreshold} items.`
+			}
+			<br/><br/>
+			${btnTryAgain}
+			`,
+			function () {
+				attachShowRangePrimeEvents({
+					showStart,
+					showRangePrimeOutput,
+					showTooltip,
+					big_onchange: big_onchange,
+					doScrollTo,
+				});
+			},
+		);
+		return;
+	}
 
 	genUI(
 		`

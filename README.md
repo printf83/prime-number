@@ -6,6 +6,7 @@ A small browser app that checks numbers for primality and renders prime lists us
 
 - TypeScript-powered frontend
 - Web Worker-based prime and factor calculations
+- Segmented Sieve of Eratosthenes for normal prime range searches
 - Vite development server and production build
 - Accessible UI using semantic buttons, ARIA progress indicators, and tooltip roles
 - Supports both JavaScript `number` mode and `BigInt` mode
@@ -45,7 +46,7 @@ pnpm preview
 pnpm deploy
 ```
 
-This builds the app with `vite build --base=/prime-number/` and publishes the `dist` directory to the repository's `gh-pages` branch.
+This builds the app with `vite build --base=./` and publishes the `dist` directory to the repository's `gh-pages` branch.
 
 ### Type checking and linting
 
@@ -79,6 +80,8 @@ pnpm lint
 
 ## Notes
 
+- Normal prime range searches now use a segmented Sieve of Eratosthenes for much better performance
+- BigInt mode is available for values outside the safe JavaScript integer range, but ordinary `number` mode is still faster for typical ranges
 - Vite is used as the build/dev server; no manual `dist/` worker path generation is required
 - Web workers are loaded as modules with Vite-compatible URLs
 - The app avoids inline `javascript:void(0)` and anchor-only click handlers
