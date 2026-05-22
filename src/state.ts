@@ -12,6 +12,7 @@ export const state = {
 	min: 1 as number | bigint,
 	max: 99999 as number | bigint,
 	col: 6 as number | bigint,
+	maxRows: 200000,
 	os: 1,
 	ot: 1,
 	snum: 1 as number | bigint,
@@ -27,6 +28,5 @@ declare global {
 		calcRangePrime: () => void;
 		showRangePrimeOutput: () => void;
 		showTooltip: (e: Event) => void;
-		doScrollTo: (location: number) => void;
 	}
 }

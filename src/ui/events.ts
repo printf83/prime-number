@@ -5,6 +5,7 @@ export interface ShowStartEventHandlers {
 	calcRangePrime: () => void;
 	ot_onchange: () => void;
 	pr_onchange: () => void;
+	maxRows_onchange: () => void;
 	big_onchange: (val: string | number) => void;
 	os_onchange: () => void;
 }
@@ -16,8 +17,10 @@ export function attachShowStartEvents(handlers: ShowStartEventHandlers): void {
 	const startButton = document.getElementById("btn-start-calc");
 	const otCheckbox = document.getElementById("ot") as HTMLInputElement | null;
 	const prCheckbox = document.getElementById("pr") as HTMLInputElement | null;
-	const bigIntButton = document.getElementById("btn-bigint");
-	const smallIntButton = document.getElementById("btn-smallint");
+	const bigIntButtons =
+		document.querySelectorAll<HTMLButtonElement>("#btn-bigint");
+	const smallIntButtons =
+		document.querySelectorAll<HTMLButtonElement>("#btn-smallint");
 	const osInputs =
 		document.querySelectorAll<HTMLInputElement>('input[name="os"]');
 
@@ -42,17 +45,29 @@ export function attachShowStartEvents(handlers: ShowStartEventHandlers): void {
 		prCheckbox.addEventListener("change", handlers.pr_onchange);
 	}
 
-	if (bigIntButton) {
-		bigIntButton.addEventListener("click", function (event) {
-			event.preventDefault();
-			handlers.big_onchange(0);
+	const maxRowsElement = document.getElementById(
+		"max_rows",
+	) as HTMLInputElement | null;
+
+	if (maxRowsElement) {
+		maxRowsElement.addEventListener("change", handlers.maxRows_onchange);
+	}
+
+	if (bigIntButtons.length > 0) {
+		bigIntButtons.forEach((button) => {
+			button.addEventListener("click", function (event) {
+				event.preventDefault();
+				handlers.big_onchange(0);
+			});
 		});
 	}
 
-	if (smallIntButton) {
-		smallIntButton.addEventListener("click", function (event) {
-			event.preventDefault();
-			handlers.big_onchange(1);
+	if (smallIntButtons.length > 0) {
+		smallIntButtons.forEach((button) => {
+			button.addEventListener("click", function (event) {
+				event.preventDefault();
+				handlers.big_onchange(1);
+			});
 		});
 	}
 
@@ -65,7 +80,6 @@ export interface ShowRangePrimeEventHandlers {
 	showStart: () => void;
 	showRangePrimeOutput: () => void;
 	showTooltip: (e: Event) => void;
-	doScrollTo: (location: number) => void;
 	big_onchange: (val: string | number) => void;
 }
 
@@ -75,10 +89,10 @@ export function attachShowRangePrimeEvents(
 	const btnTryAgainList =
 		document.querySelectorAll<HTMLButtonElement>("#btn-try-again");
 	const btnShowResult = document.getElementById("btn-show-result");
-	const btnScrollBottom = document.getElementById("btn-scroll-bottom");
-	const btnScrollTop = document.getElementById("btn-scroll-top");
-	const btnBigInt = document.getElementById("btn-bigint");
-	const btnSmallInt = document.getElementById("btn-smallint");
+	const btnBigIntList =
+		document.querySelectorAll<HTMLButtonElement>("#btn-bigint");
+	const btnSmallIntList =
+		document.querySelectorAll<HTMLButtonElement>("#btn-smallint");
 	const resultContainer = document.querySelector(
 		".result_container",
 	) as HTMLElement | null;
@@ -93,29 +107,25 @@ export function attachShowRangePrimeEvents(
 		btnShowResult.addEventListener("click", handlers.showRangePrimeOutput);
 	}
 
-	if (btnScrollBottom) {
-		btnScrollBottom.addEventListener("click", () => handlers.doScrollTo(1));
-	}
-
-	if (btnScrollTop) {
-		btnScrollTop.addEventListener("click", () => handlers.doScrollTo(0));
-	}
-
-	if (btnBigInt) {
-		btnBigInt.addEventListener("click", (event) => {
-			event.preventDefault();
-			handlers.big_onchange(1);
+	if (btnBigIntList.length > 0) {
+		btnBigIntList.forEach((button) => {
+			button.addEventListener("click", (event) => {
+				event.preventDefault();
+				handlers.big_onchange(1);
+			});
 		});
 	}
 
-	if (btnSmallInt) {
-		btnSmallInt.addEventListener("click", (event) => {
-			event.preventDefault();
-			handlers.big_onchange(0);
+	if (btnSmallIntList.length > 0) {
+		btnSmallIntList.forEach((button) => {
+			button.addEventListener("click", (event) => {
+				event.preventDefault();
+				handlers.big_onchange(0);
+			});
 		});
 	}
 
-	if (resultContainer && state.os === 0) {
+	if (resultContainer) {
 		resultContainer.addEventListener("click", handlers.showTooltip);
 	}
 }

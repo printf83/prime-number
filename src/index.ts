@@ -9,7 +9,6 @@ import {
 	showRangePrimeOutput,
 	showStart,
 	showTooltip,
-	doScrollTo,
 } from "./ui";
 
 window.showStart = showStart;
@@ -19,7 +18,6 @@ window.big_onchange = big_onchange;
 window.calcRangePrime = calcRangePrime;
 window.showRangePrimeOutput = showRangePrimeOutput;
 window.showTooltip = showTooltip;
-window.doScrollTo = doScrollTo;
 
 getParam();
 showStart();

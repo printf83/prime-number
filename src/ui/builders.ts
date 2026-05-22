@@ -51,8 +51,8 @@ export function ctlTextResult(id: string): string {
 	return `<div class="form-group" role="status" aria-live="polite"><div id="${id}"></div></div>`;
 }
 
-export const bigTitle = ` <sup class="pointer" title="BigInt"><small><button type="button" id="btn-bigint" aria-label="Switch to BigInt mode">&beta;igInt</button></small></sup>`;
-export const smallTitle = ` <sup class="pointer" title="Number"><small><button type="button" id="btn-smallint" aria-label="Switch to Integer mode">&#938;nteger</button></small></sup>`;
+export const bigTitle = ` <sup class="pointer" title="BigInt"><small><button type="button" id="btn-bigint" class="mode-toggle" aria-label="Switch to BigInt mode">&beta;igInt</button></small></sup>`;
+export const smallTitle = ` <sup class="pointer" title="Number"><small><button type="button" id="btn-smallint" class="mode-toggle" aria-label="Switch to Integer mode">&#938;nteger</button></small></sup>`;
 
 export const header = function () {
 	return `<h2>Prime Number Checker${state.big ? bigTitle : smallTitle}</h2>`;
@@ -76,8 +76,6 @@ export function progressIndicator(id: string | null) {
 
 export const btnTryAgain = ctlButton("btn-try-again", "Try Again");
 export const btnShowResult = ctlButton("btn-show-result", "Show Result");
-export const btnScrollBottom = ctlButton("btn-scroll-bottom", "Bottom");
-export const btnScrollTop = ctlButton("btn-scroll-top", "Top");
 export const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
 export const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;
 

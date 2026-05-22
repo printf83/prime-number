@@ -45,7 +45,10 @@ export function genTooltip(target: HTMLElement, html: string): void {
 	});
 }
 
-export function addResizeListener(elem: HTMLElement, fun: () => void): void {
+export function addResizeListener(
+	elem: HTMLElement,
+	fun: () => void,
+): () => void {
 	type RequestAnimationFrameWindow = Window & {
 		mozRequestAnimationFrame?: typeof window.requestAnimationFrame;
 		webkitRequestAnimationFrame?: typeof window.requestAnimationFrame;
@@ -58,22 +61,67 @@ export function addResizeListener(elem: HTMLElement, fun: () => void): void {
 		win.mozRequestAnimationFrame ||
 		win.webkitRequestAnimationFrame ||
 		win.msRequestAnimationFrame;
+	const cancelAnimationFrameFn =
+		win.cancelAnimationFrame ||
+		(win as any).mozCancelAnimationFrame ||
+		(win as any).webkitCancelAnimationFrame ||
+		(win as any).msCancelAnimationFrame;
 
 	let wid = getComputedStyle(elem).width;
 	let hei = getComputedStyle(elem).height;
+	let rafId: number | null = null;
+	let cancelled = false;
+
+	function cleanup(): void {
+		cancelled = true;
+		if (rafId !== null && typeof cancelAnimationFrameFn === "function") {
+			cancelAnimationFrameFn(rafId);
+		}
+	}
 
 	function test(): void {
+		if (cancelled) {
+			return;
+		}
+
 		const newStyle = getComputedStyle(elem);
 		if (wid !== newStyle.width || hei !== newStyle.height) {
 			wid = newStyle.width;
 			hei = newStyle.height;
 			fun();
+			cleanup();
+			return;
 		}
 
-		requestAnimationFrame(test);
+		rafId = requestAnimationFrame(test);
 	}
 
-	requestAnimationFrame(test);
+	if (typeof ResizeObserver !== "undefined") {
+		const observer = new ResizeObserver(() => {
+			if (cancelled) {
+				return;
+			}
+			fun();
+			observer.disconnect();
+			cleanup();
+		});
+		observer.observe(elem);
+
+		return function () {
+			cancelled = true;
+			observer.disconnect();
+			if (
+				rafId !== null &&
+				typeof cancelAnimationFrameFn === "function"
+			) {
+				cancelAnimationFrameFn(rafId);
+			}
+		};
+	}
+
+	rafId = requestAnimationFrame(test);
+
+	return cleanup;
 }
 
 export function monitorRenderTime(
@@ -85,7 +133,7 @@ export function monitorRenderTime(
 
 	if (elem) {
 		const start = window.performance.now();
-		addResizeListener(elem, function () {
+		const cancel = addResizeListener(elem, function () {
 			const duration = window.performance.now() - start;
 			const sduration = formatTime(duration);
 
@@ -93,6 +141,7 @@ export function monitorRenderTime(
 				setInnerHtml(outputid1, `Complete in ${sduration}`);
 				setInnerHtml(outputid2, `Complete in ${sduration}`);
 			}, 100);
+			cancel();
 		});
 	}
 }

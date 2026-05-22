@@ -17,8 +17,6 @@ import {
 } from "../dom";
 import { runWorker, stopWorker } from "../workers";
 import {
-	btnScrollBottom,
-	btnScrollTop,
 	btnShowResult,
 	btnTryAgain,
 	ctlButton,
@@ -144,6 +142,7 @@ export function showStart(): void {
 		${ctlRadio("os_2", "os", 1, state.os === 1 ? true : false, "Prime Only")}
 
 		${ctlNumber("col", state.col, "Col", "col_container")}
+		${ctlNumber("max_rows", state.maxRows as number, "Max render rows")}
 		${ctlButton("btn-start-calc", "Start Calculate Prime")}
 		`,
 		function () {
@@ -153,6 +152,7 @@ export function showStart(): void {
 				ot_onchange,
 				pr_onchange,
 				big_onchange,
+				maxRows_onchange,
 				os_onchange,
 			});
 			os_onchange();
@@ -178,13 +178,19 @@ export function pr_onchange(): void {
 		: 0;
 }
 
-export function os_onchange(): void {
-	const val = parseInt(getRadioValue("os") ?? "0", 10);
-	const colContainer = document.getElementById("col_container");
+export function maxRows_onchange(): void {
+	const maxRowsElement = document.getElementById(
+		"max_rows",
+	) as HTMLInputElement | null;
+	const maxRowsValue = parseIntInput(maxRowsElement?.value ?? "");
 
-	if (colContainer) {
-		colContainer.style.display = val === 0 ? "grid" : "none";
+	if (maxRowsValue !== null && maxRowsValue > 0) {
+		state.maxRows = maxRowsValue;
 	}
+}
+
+export function os_onchange(): void {
+	parseInt(getRadioValue("os") ?? "0", 10);
 }
 
 export function big_onchange(val: string | number): void {
@@ -285,7 +291,6 @@ export function calcRangePrime(): void {
 						showRangePrimeOutput,
 						showTooltip,
 						big_onchange: big_onchange,
-						doScrollTo,
 					});
 				},
 			);
@@ -319,7 +324,6 @@ export function calcRangePrime(): void {
 						showRangePrimeOutput,
 						showTooltip,
 						big_onchange: big_onchange,
-						doScrollTo,
 					});
 				},
 			);
@@ -350,7 +354,6 @@ export function calcRangePrime(): void {
 					showRangePrimeOutput,
 					showTooltip,
 					big_onchange: big_onchange,
-					doScrollTo,
 				});
 			},
 		);
@@ -402,7 +405,6 @@ export function calcRangePrime(): void {
 												showRangePrimeOutput,
 												showTooltip,
 												big_onchange: big_onchange,
-												doScrollTo,
 											});
 										},
 									);
@@ -415,7 +417,6 @@ export function calcRangePrime(): void {
 												showRangePrimeOutput,
 												showTooltip,
 												big_onchange: big_onchange,
-												doScrollTo,
 											});
 										},
 									);
@@ -430,7 +431,6 @@ export function calcRangePrime(): void {
 											showRangePrimeOutput,
 											showTooltip,
 											big_onchange: big_onchange,
-											doScrollTo,
 										});
 									},
 								);
@@ -450,7 +450,6 @@ export function calcRangePrime(): void {
 							showRangePrimeOutput,
 							showTooltip,
 							big_onchange: big_onchange,
-							doScrollTo,
 						});
 					},
 				);
@@ -464,7 +463,6 @@ export function calcRangePrime(): void {
 						showRangePrimeOutput,
 						showTooltip,
 						big_onchange: big_onchange,
-						doScrollTo,
 					});
 				},
 			);
@@ -478,7 +476,6 @@ export function calcRangePrime(): void {
 					showRangePrimeOutput,
 					showTooltip,
 					big_onchange: big_onchange,
-					doScrollTo,
 				});
 			},
 		);
@@ -528,22 +525,54 @@ function mw(maxValue: number | bigint) {
 
 export function showRangePrimeOutput(): void {
 	const timerId = genId();
-	const progressId = state.pr ? genId() : null;
-	const renderThreshold = 2000;
-	const visibleCount =
-		state.os === 0 ? state.result.length : state.primeFound;
+	const resultArray = state.result as number[] | Uint8Array;
+	const visibleCount = state.os === 0 ? resultArray.length : state.primeFound;
+	const col = Math.max(
+		1,
+		state.big ? Number(state.col as bigint) : Number(state.col as number),
+	);
+	const rowHeight = 30;
+	const maxRows = state.maxRows || 200000;
 
-	if (visibleCount > renderThreshold) {
+	const primeValues: Array<number | bigint> = [];
+	if (state.os === 1) {
+		for (let index = 0; index < resultArray.length; index++) {
+			if (resultArray[index] === 1) {
+				primeValues.push(
+					state.big
+						? (state.min as bigint) + BigInt(index)
+						: (state.min as number) + index,
+				);
+			}
+		}
+	}
+
+	const totalRows =
+		state.os === 0
+			? Math.ceil(resultArray.length / col)
+			: Math.ceil(primeValues.length / col);
+
+	const recordBytes = resultArray instanceof Uint8Array
+		? resultArray.byteLength
+		: resultArray.length * 8;
+	console.debug(
+		"[PrimeDebug] Result in memory:",
+		"records=", resultArray.length,
+		"totalRows=", totalRows,
+		"visibleCount=", visibleCount,
+		"primeFound=", state.primeFound,
+		"col=", col,
+		"bytes=", recordBytes,
+		"mode=", state.os === 1 ? "prime-only" : "all",
+	);
+
+	if (totalRows > maxRows) {
 		genUI(
 			`
 			${header()} 
 			Too many results to render safely in the browser.<br/>
-			${
-				state.os === 0
-					? `Switch to Prime Only mode or reduce your range so the output is smaller.`
-					: `Reduce the range so the prime list is under ${renderThreshold} items.`
-			}
-			<br/><br/>
+			Reduce the range or use a smaller column count, or increase the Max render rows setting on the start page.<br/>
+			Current limit: <b>${formatNumber(maxRows)}</b> rows.<br/><br/>
 			${btnTryAgain}
 			`,
 			function () {
@@ -552,7 +581,6 @@ export function showRangePrimeOutput(): void {
 					showRangePrimeOutput,
 					showTooltip,
 					big_onchange: big_onchange,
-					doScrollTo,
 				});
 			},
 		);
@@ -562,16 +590,13 @@ export function showRangePrimeOutput(): void {
 	genUI(
 		`
 		${header()} 
-		Generating <b> ${formatNumber(
-			state.os === 0
-				? state.big
-					? (state.max as bigint) - (state.min as bigint) + 1n
-					: (state.max as number) - (state.min as number) + 1
-				: state.result.length,
-		)} number</b> into your browser  ${timerIndicator(timerId)}
-		${loading4()}<br/>
-		${progressIndicator(progressId)}<br/>
-		${loading3}<br/><br/>
+		Showing <b>${formatNumber(visibleCount)} numbers</b> in a scrollable view.<br/>
+		Scroll to render items as they come into view.
+		<div class="result_container">
+			<div class="result-viewport">
+				<div class="result-inner"></div>
+			</div>
+		</div><br/>
 		${btnTryAgain}
 		`,
 		function () {
@@ -580,73 +605,101 @@ export function showRangePrimeOutput(): void {
 				showRangePrimeOutput,
 				showTooltip,
 				big_onchange: big_onchange,
-				doScrollTo,
 			});
-			secTimer(timerId, 1);
-			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
-			const isLong =
-				state.os === 0
-					? state.big
-						? BigInt(state.result.length) / (state.col as bigint) >
-							50n
-						: state.result.length / (state.col as number) > 50
-					: state.result.length > 1000;
-			runWorker(
-				"joinresult",
-				[
-					state.result,
-					state.min,
-					state.max,
-					state.col,
-					state.os,
-					state.pr,
-				],
-				function (e) {
-					if (e) {
-						genUI(
-							`
-							${header()}
-							${isLong ? `${btnTryAgain} ${btnScrollBottom}<br/><br/><small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
-							<div class="result_container">
-								<div class="result${state.os === 0 ? ` mw-${mw(state.max)}` : ""}">
-									${e}
-								</div>
-							</div><br/>
-							<small id="multiple_time_2">${loading2}</small><br/><br/>
-							${btnTryAgain} ${isLong ? btnScrollTop : ""}
-							`,
-							() =>
-								attachShowRangePrimeEvents({
-									showStart,
-									showRangePrimeOutput,
-									showTooltip,
-									big_onchange: big_onchange,
-									doScrollTo,
-								}),
-						);
-					} else {
-						genUI(
-							`${errorHeader()}Fail to combine result<br/>${btnTryAgain}`,
-							() =>
-								attachShowRangePrimeEvents({
-									showStart,
-									showRangePrimeOutput,
-									showTooltip,
-									big_onchange: big_onchange,
-									doScrollTo,
-								}),
+
+			const viewport = document.querySelector(
+				".result-viewport",
+			) as HTMLElement | null;
+			const inner = document.querySelector(
+				".result-inner",
+			) as HTMLElement | null;
+
+			if (!viewport || !inner) {
+				return;
+			}
+
+			let rowHeight = 30;
+
+			function getValue(index: number): number | bigint {
+				return state.big
+					? (state.min as bigint) + BigInt(index)
+					: (state.min as number) + index;
+			}
+
+			function measureRowHeight(): number {
+				const sample = document.createElement("div");
+				sample.style.visibility = "hidden";
+				sample.style.position = "relative";
+				sample.style.width = "100%";
+				sample.innerHTML = renderRow(0);
+				inner!.appendChild(sample);
+				const height = Math.ceil(sample.getBoundingClientRect().height);
+				inner!.removeChild(sample);
+				return Math.max(30, height);
+			}
+
+			rowHeight = measureRowHeight();
+			inner.style.height = `${totalRows * rowHeight}px`;
+
+			function renderRow(row: number): string {
+				const top = row * rowHeight;
+				const start = row * col;
+				const items: string[] = [];
+
+				if (state.os === 1) {
+					for (
+						let index = start;
+						index < Math.min(primeValues.length, start + col);
+						index++
+					) {
+						const value = primeValues[index];
+						items.push(
+							`<span class="result-item prime">${formatNumber(value)}</span>`,
 						);
 					}
-				},
-				function (e) {
-					genUI(
-						`${errorHeader()}Fail to combine result. ${e}<br/><br/>${btnTryAgain}`,
-					);
-				},
-				function (e) {
-					updateProgress(progressId, e);
-				},
-			);
+				} else {
+					for (
+						let index = start;
+						index < Math.min(resultArray.length, start + col);
+						index++
+					) {
+						const value = getValue(index);
+						items.push(
+							`<span class="result-item ${
+								resultArray[index] === 1 ? "prime" : "composite"
+							}">${formatNumber(value)}</span>`,
+						);
+					}
+				}
+
+				return `<div class="result-row" style="top:${top}px">${items.join("")}</div>`;
+			}
+
+			function render(): void {
+				if (!viewport || !inner) {
+					return;
+				}
+				const scrollTop = viewport.scrollTop;
+				const firstRow = Math.max(
+					0,
+					Math.floor(scrollTop / rowHeight) - 5,
+				);
+				const visibleRows = Math.min(
+					totalRows,
+					Math.ceil(viewport.clientHeight / rowHeight) + 10,
+				);
+				const lastRow = Math.min(totalRows, firstRow + visibleRows);
+
+				let html = "";
+				for (let row = firstRow; row < lastRow; row++) {
+					html += renderRow(row);
+				}
+
+				inner.innerHTML = html;
+			}
+
+			viewport.addEventListener("scroll", render);
+			render();
 		},
 	);
 }
@@ -662,14 +715,22 @@ export function hideTooltip(): void {
 }
 
 export function showTooltip(e: Event): void {
-	const target = e.target as HTMLElement | null;
-	if (
-		target?.parentNode instanceof HTMLElement &&
-		target.parentNode.classList.contains("d-flex")
+	const clicked = e.target as HTMLElement | null;
+	let target: HTMLElement | null = null;
+
+	const closestResult = clicked?.closest(".result-item");
+	if (closestResult instanceof HTMLElement) {
+		target = closestResult;
+	} else if (
+		clicked?.parentNode instanceof HTMLElement &&
+		clicked.parentNode.classList.contains("d-flex")
 	) {
-		const num = state.big
-			? BigInt(target.innerText)
-			: parseInt(target.innerText);
+		target = clicked;
+	}
+
+	if (target) {
+		const rawText = target.innerText.trim().replace(/,/g, "");
+		const num = state.big ? BigInt(rawText) : parseInt(rawText, 10);
 
 		const timerId = genId();
 		const progressId = genId();
@@ -732,14 +793,6 @@ export function showTooltip(e: Event): void {
 		);
 	} else {
 		hideTooltip();
-	}
-}
-
-export function doScrollTo(location: number): void {
-	if (location === 1) {
-		window.scrollTo(0, document.body.scrollHeight);
-	} else {
-		window.scrollTo(0, 0);
 	}
 }
 
