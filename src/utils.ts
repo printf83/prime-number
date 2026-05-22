@@ -37,7 +37,11 @@ export function formatTime(num: number): string {
 				? `${m > 0 ? s : parseFloat(num.toFixed(1)).toLocaleString("en-US")} sec`
 				: null;
 
-		return formatList([hDisplay, mDisplay, sDisplay].filter(Boolean));
+		const parts = [hDisplay, mDisplay, sDisplay].filter(
+			(value): value is string => Boolean(value),
+		);
+
+		return formatList(parts);
 	}
 
 	return `${parseFloat(num.toFixed(1)).toLocaleString("en-US")} ms`;

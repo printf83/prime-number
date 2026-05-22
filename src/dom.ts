@@ -168,7 +168,9 @@ export function secTimer(id: string, d: number): void {
 			const sDisplay = s > 0 ? `${s} sec` : null;
 
 			const text = formatList(
-				[hDisplay, mDisplay, sDisplay].filter(Boolean),
+				[hDisplay, mDisplay, sDisplay].filter(
+					(value): value is string => Boolean(value),
+				),
 			);
 
 			elem.innerHTML = `since ${text} ago `;
@@ -184,11 +186,15 @@ export function getMemory() {
 		const d = document.getElementById("mem");
 
 		if (d) {
-			d.innerHTML = `
-			Memory usage <b>
-			${Math.floor((t.usedJSHeapSize / t.totalJSHeapSize) * 100)}% | 
-			${Math.floor(t.usedJSHeapSize / 1024 / 1024)}Mb</b>
-			`;
+			if (t) {
+				d.innerHTML = `
+				Memory usage <b>
+				${Math.floor((t.usedJSHeapSize / t.totalJSHeapSize) * 100)}% | 
+				${Math.floor(t.usedJSHeapSize / 1024 / 1024)}Mb</b>
+				`;
+			} else {
+				d.innerHTML = `Memory usage unavailable`;
+			}
 		}
 
 		getMemory();

@@ -17,16 +17,11 @@ import {
 } from "./dom";
 import { runWorker, stopWorker } from "./workers";
 
-function ctlCheckbox(
-	id: string,
-	checked: boolean,
-	onchange: string,
-	label: string,
-): string {
+function ctlCheckbox(id: string, checked: boolean, label: string): string {
 	return `
 	<div class="form-group">
 		<label class="checkbox" for="${id}">${label}
-			<input type="checkbox" id="${id}" onchange="${onchange}" ${checked ? ` checked="checked"` : ""}/>
+			<input type="checkbox" id="${id}" ${checked ? ` checked="checked"` : ""}/>
 			<span class="checkmark"></span>
 		</label>
 	</div>`;
@@ -37,13 +32,12 @@ function ctlRadio(
 	name: string,
 	value: number,
 	checked: boolean,
-	onchange: string,
 	label: string,
 ): string {
 	return `
 	<div class="form-group">
 		<label class="radio" for="${id}">${label}
-			<input type="radio" id="${id}" name="${name}" value="${value}" onchange="${onchange}" ${checked ? ` checked="checked"` : ""}/>
+			<input type="radio" id="${id}" name="${name}" value="${value}" ${checked ? ` checked="checked"` : ""}/>
 			<span class="checkmark"></span>
 		</label>
 	</div>`;
@@ -52,27 +46,26 @@ function ctlRadio(
 function ctlNumber(
 	id: string,
 	value: number | bigint,
-	onchange: string | null,
 	label: string,
 	container_id?: string,
 ): string {
 	return `
 	<div class="form-group"${container_id ? ` id="${container_id}"` : ""}>
 		<label for="${id}">${label}</label>
-		<input type="number" id="${id}" value="${value}"${onchange ? ` onchange="${onchange}" onkeyup="${onchange}"` : ""}/>
+		<input type="number" id="${id}" value="${value}" />
 	</div>`;
 }
 
-function ctlButton(label: string, onclick: string): string {
-	return `<button onclick="${onclick}">${label}</button>`;
+function ctlButton(id: string, label: string): string {
+	return `<button type="button" id="${id}">${label}</button>`;
 }
 
 function ctlTextResult(id: string): string {
 	return `<div class="form-group"><div id="${id}"></div></div>`;
 }
 
-const bigTitle = ` <sup class="pointer" title="BigInt"><small><a href="javascript:void(0)" onclick="big_onchange(0)">&beta;igInt</a></small></sup>`;
-const smallTitle = ` <sup class="pointer" title="Number"><small><a href="javascript:void(0)" onclick="big_onchange(1)">&#938;nteger</a></small></sup>`;
+const bigTitle = ` <sup class="pointer" title="BigInt"><small><a href="#" id="btn-bigint">&beta;igInt</a></small></sup>`;
+const smallTitle = ` <sup class="pointer" title="Number"><small><a href="#" id="btn-smallint">&#938;nteger</a></small></sup>`;
 
 const header = function () {
 	return `<h2>Prime Number Checker${state.big ? bigTitle : smallTitle}</h2>`;
@@ -88,16 +81,16 @@ const timerIndicator = function (id: string) {
 	return `<span id="${id}"></span>`;
 };
 
-const progressIndicator = function (id: string) {
+const progressIndicator = function (id: string | null) {
 	return id
 		? `<div class="progress"><div class="bar" id="${id}">&nbsp;</div></div>`
 		: "";
 };
 
-const btnTryAgain = ctlButton("Try Again", "showStart()");
-const btnShowResult = ctlButton("Show Result", "showRangePrimeOutput()");
-const btnScrollBottom = ctlButton("Bottom", "doScrollTo(1)");
-const btnScrollTop = ctlButton("Top", "doScrollTo(0)");
+const btnTryAgain = ctlButton("btn-try-again", "Try Again");
+const btnShowResult = ctlButton("btn-show-result", "Show Result");
+const btnScrollBottom = ctlButton("btn-scroll-bottom", "Bottom");
+const btnScrollTop = ctlButton("btn-scroll-top", "Top");
 const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
 const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;
 
@@ -200,23 +193,24 @@ function showStart(): void {
 	genUI(
 		`
 		${header()}
-		${ctlNumber("num", state.snum, "calcSinglePrime()", "Number")}
+		${ctlNumber("num", state.snum, "Number")}
 		${ctlTextResult("num_result")}
-		${ctlCheckbox("ot", state.ot ? true : false, "ot_onchange()", "Show Calculation")}
-		${ctlCheckbox("pr", state.pr ? true : false, "pr_onchange()", "Show Progress")}
+		${ctlCheckbox("ot", state.ot ? true : false, "Show Calculation")}
+		${ctlCheckbox("pr", state.pr ? true : false, "Show Progress")}
 		
 		${header2()}
 
-		${ctlNumber("min", state.min, null, "Minimum")}
-		${ctlNumber("max", state.max, null, "Maximum")}
+		${ctlNumber("min", state.min, "Minimum")}
+		${ctlNumber("max", state.max, "Maximum")}
 
-		${ctlRadio("os_1", "os", 0, state.os === 0 ? true : false, "os_onchange()", "Show All")}
-		${ctlRadio("os_2", "os", 1, state.os === 1 ? true : false, "os_onchange()", "Prime Only")}
+		${ctlRadio("os_1", "os", 0, state.os === 0 ? true : false, "Show All")}
+		${ctlRadio("os_2", "os", 1, state.os === 1 ? true : false, "Prime Only")}
 
-		${ctlNumber("col", state.col, null, "Col", "col_container")}
-		${ctlButton("Start Calculate Prime", "calcRangePrime()")}
+		${ctlNumber("col", state.col, "Col", "col_container")}
+		${ctlButton("btn-start-calc", "Start Calculate Prime")}
 		`,
 		function () {
+			attachShowStartEvents();
 			os_onchange();
 			setTimeout(function () {
 				state.snum = state.big ? 0n : 0;
@@ -224,6 +218,88 @@ function showStart(): void {
 			}, 100);
 		},
 	);
+}
+
+function attachShowStartEvents(): void {
+	const numElement = document.getElementById(
+		"num",
+	) as HTMLInputElement | null;
+	const startButton = document.getElementById("btn-start-calc");
+	const otCheckbox = document.getElementById("ot") as HTMLInputElement | null;
+	const prCheckbox = document.getElementById("pr") as HTMLInputElement | null;
+	const bigIntButton = document.getElementById("btn-bigint");
+	const smallIntButton = document.getElementById("btn-smallint");
+	const osInputs =
+		document.querySelectorAll<HTMLInputElement>('input[name="os"]');
+
+	if (numElement) {
+		numElement.addEventListener("change", calcSinglePrime);
+		numElement.addEventListener("keyup", function (event) {
+			if (event.key === "Enter") {
+				calcSinglePrime();
+			}
+		});
+	}
+
+	if (startButton) {
+		startButton.addEventListener("click", calcRangePrime);
+	}
+
+	if (otCheckbox) {
+		otCheckbox.addEventListener("change", ot_onchange);
+	}
+
+	if (prCheckbox) {
+		prCheckbox.addEventListener("change", pr_onchange);
+	}
+
+	if (bigIntButton) {
+		bigIntButton.addEventListener("click", function (event) {
+			event.preventDefault();
+			big_onchange(0);
+		});
+	}
+
+	if (smallIntButton) {
+		smallIntButton.addEventListener("click", function (event) {
+			event.preventDefault();
+			big_onchange(1);
+		});
+	}
+
+	osInputs.forEach((input) => {
+		input.addEventListener("change", os_onchange);
+	});
+}
+
+function attachShowRangePrimeEvents(): void {
+	const btnTryAgain = document.getElementById("btn-try-again");
+	const btnShowResult = document.getElementById("btn-show-result");
+	const btnScrollBottom = document.getElementById("btn-scroll-bottom");
+	const btnScrollTop = document.getElementById("btn-scroll-top");
+	const resultContainer = document.querySelector(
+		".result_container",
+	) as HTMLElement | null;
+
+	if (btnTryAgain) {
+		btnTryAgain.addEventListener("click", showStart);
+	}
+
+	if (btnShowResult) {
+		btnShowResult.addEventListener("click", showRangePrimeOutput);
+	}
+
+	if (btnScrollBottom) {
+		btnScrollBottom.addEventListener("click", () => doScrollTo(1));
+	}
+
+	if (btnScrollTop) {
+		btnScrollTop.addEventListener("click", () => doScrollTo(0));
+	}
+
+	if (resultContainer && state.os === 0) {
+		resultContainer.addEventListener("click", showTooltip);
+	}
 }
 
 function ot_onchange(): void {
@@ -333,9 +409,20 @@ function calcRangePrime(): void {
 		const colElement = document.getElementById(
 			"col",
 		) as HTMLInputElement | null;
-		state.min = parseBigIntInput(minElement?.value ?? "");
-		state.max = parseBigIntInput(maxElement?.value ?? "");
-		state.col = parseBigIntInput(colElement?.value ?? "");
+		const minValue = parseBigIntInput(minElement?.value ?? "");
+		const maxValue = parseBigIntInput(maxElement?.value ?? "");
+		const colValue = parseBigIntInput(colElement?.value ?? "");
+
+		if (minValue === null || maxValue === null || colValue === null) {
+			genUI(
+				`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+			);
+			return;
+		}
+
+		state.min = minValue;
+		state.max = maxValue;
+		state.col = colValue;
 		zero = 0n;
 	} else {
 		const minElement = document.getElementById(
@@ -347,9 +434,20 @@ function calcRangePrime(): void {
 		const colElement = document.getElementById(
 			"col",
 		) as HTMLInputElement | null;
-		state.min = parseIntInput(minElement?.value ?? "");
-		state.max = parseIntInput(maxElement?.value ?? "");
-		state.col = parseIntInput(colElement?.value ?? "");
+		const minValue = parseIntInput(minElement?.value ?? "");
+		const maxValue = parseIntInput(maxElement?.value ?? "");
+		const colValue = parseIntInput(colElement?.value ?? "");
+
+		if (minValue === null || maxValue === null || colValue === null) {
+			genUI(
+				`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+			);
+			return;
+		}
+
+		state.min = minValue;
+		state.max = maxValue;
+		state.col = colValue;
 		zero = 0;
 	}
 
@@ -502,6 +600,7 @@ function showRangePrimeOutput(): void {
 		${btnTryAgain}
 		`,
 		function () {
+			attachShowRangePrimeEvents();
 			secTimer(timerId, 1);
 			monitorRenderTime("root", "multiple_time_1", "multiple_time_2");
 			const isLong =
@@ -523,20 +622,24 @@ function showRangePrimeOutput(): void {
 				],
 				function (e) {
 					if (e) {
-						genUI(`
+						genUI(
+							`
 							${header()}
 							${isLong ? `${btnTryAgain} ${btnScrollBottom}<br/><br/><small id="multiple_time_1">${loading2}</small><br/><br/>` : ``}
-							<div class="result_container"${state.os === 0 ? ` onclick="showTooltip(event)"` : ""}>
+							<div class="result_container">
 								<div class="result${state.os === 0 ? ` mw-${mw(state.max)}` : ""}">
 									${e}
 								</div>
 							</div><br/>
 							<small id="multiple_time_2">${loading2}</small><br/><br/>
 							${btnTryAgain} ${isLong ? btnScrollTop : ""}
-							`);
+							`,
+							attachShowRangePrimeEvents,
+						);
 					} else {
 						genUI(
 							`${errorHeader()}Fail to combine result<br/>${btnTryAgain}`,
+							attachShowRangePrimeEvents,
 						);
 					}
 				},
@@ -562,7 +665,7 @@ function hideTooltip(): void {
 	stopWorker();
 }
 
-function showTooltip(e: MouseEvent): void {
+function showTooltip(e: Event): void {
 	const target = e.target as HTMLElement | null;
 	if (
 		target?.parentNode instanceof HTMLElement &&
