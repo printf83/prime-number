@@ -5,13 +5,17 @@
 	"private": true,
 	"description": "Prime number calculator with web workers",
 	"scripts": {
-		"build": "tsc",
+		"build": "vite build",
+		"dev": "vite",
+		"preview": "vite preview",
+		"typecheck": "tsc --noEmit",
 		"lint": "eslint . --ext .ts,.js --max-warnings=0"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^8.59.4",
 		"@typescript-eslint/parser": "^8.59.4",
 		"eslint": "^10.4.0",
-		"typescript": "^6.0.3"
+		"typescript": "^6.0.3",
+		"vite": "^8.0.14"
 	}
 }

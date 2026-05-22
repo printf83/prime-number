@@ -27,6 +27,19 @@ export type WorkerMessage<T> =
 	| { type: "progress"; data: number }
 	| { type: "data"; data: T };
 
+const workerUrls = {
+	prime: new URL("./prime.ts", import.meta.url),
+	prime_big: new URL("./prime_big.ts", import.meta.url),
+	singleprime: new URL("./singleprime.ts", import.meta.url),
+	singleprime_big: new URL("./singleprime_big.ts", import.meta.url),
+	factor: new URL("./factor.ts", import.meta.url),
+	factor_big: new URL("./factor_big.ts", import.meta.url),
+	joinresult: new URL("./joinresult.ts", import.meta.url),
+	joinresult_big: new URL("./joinresult_big.ts", import.meta.url),
+} as const;
+
+type WorkerUrlKey = keyof typeof workerUrls;
+
 let wk: Worker | null = null;
 
 export function runWorker<T extends WorkerScript>(
@@ -38,7 +51,10 @@ export function runWorker<T extends WorkerScript>(
 ): void {
 	stopWorker();
 
-	wk = new Worker(`dist/${script}${state.big ? `_big` : ""}.js`);
+	const workerKey = `${script}${state.big ? `_big` : ""}` as WorkerUrlKey;
+	const workerUrl = workerUrls[workerKey];
+
+	wk = new Worker(workerUrl, { type: "module" });
 	wk.postMessage(params);
 	wk.onmessage = function (
 		e: MessageEvent<WorkerMessage<WorkerResultMap[T]>>,

@@ -536,6 +536,7 @@ export function hideTooltip(): void {
 	const tooltip_container = document.getElementById("tooltip_container");
 	if (tooltip_container) {
 		tooltip_container.style.display = "none";
+		tooltip_container.setAttribute("aria-hidden", "true");
 	}
 
 	stopWorker();

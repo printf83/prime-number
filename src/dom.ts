@@ -12,18 +12,13 @@ export function setInnerHtml(
 	html: string,
 	callback?: () => void,
 ): void {
-	if (id) {
-		const dom = document.getElementById(id);
-		if (dom) {
-			const temp = document.createElement(dom.tagName) as HTMLElement;
-			temp.id = dom.id;
-			temp.innerHTML = html;
-
-			dom.replaceWith(temp);
-
-			runCallback(callback);
-		}
+	const dom = document.getElementById(id);
+	if (!dom) {
+		return;
 	}
+
+	dom.innerHTML = html;
+	runCallback(callback);
 }
 
 export function genUI(html: string, callback?: () => void): void {
@@ -45,6 +40,7 @@ export function genTooltip(target: HTMLElement, html: string): void {
 			tooltip_container.style.top = `${rect.top + window.scrollY - 5}px`;
 			tooltip_container.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
 			tooltip_container.style.display = "block";
+			tooltip_container.setAttribute("aria-hidden", "false");
 		}
 	});
 }
@@ -54,7 +50,6 @@ export function addResizeListener(elem: HTMLElement, fun: () => void): void {
 		mozRequestAnimationFrame?: typeof window.requestAnimationFrame;
 		webkitRequestAnimationFrame?: typeof window.requestAnimationFrame;
 		msRequestAnimationFrame?: typeof window.requestAnimationFrame;
-		mozCancelAnimationFrame?: typeof window.cancelAnimationFrame;
 	};
 
 	const win = window as RequestAnimationFrameWindow;
@@ -64,43 +59,21 @@ export function addResizeListener(elem: HTMLElement, fun: () => void): void {
 		win.webkitRequestAnimationFrame ||
 		win.msRequestAnimationFrame;
 
-	const cancelAnimationFrame =
-		window.cancelAnimationFrame || win.mozCancelAnimationFrame;
+	let wid = getComputedStyle(elem).width;
+	let hei = getComputedStyle(elem).height;
 
-	let monitorID: number | null = null;
-
-	if (monitorID !== null) {
-		cancelAnimationFrame(monitorID);
-		monitorID = null;
-		fun();
-	}
-
-	function test() {
+	function test(): void {
 		const newStyle = getComputedStyle(elem);
 		if (wid !== newStyle.width || hei !== newStyle.height) {
-			fun();
 			wid = newStyle.width;
 			hei = newStyle.height;
-
-			if (monitorID !== null) {
-				cancelAnimationFrame(monitorID);
-				monitorID = null;
-			}
-		} else {
-			if (monitorID !== null) {
-				cancelAnimationFrame(monitorID);
-				monitorID = null;
-			}
-
-			monitorID = requestAnimationFrame(test);
+			fun();
 		}
+
+		requestAnimationFrame(test);
 	}
 
-	const style = getComputedStyle(elem);
-	let wid = style.width;
-	let hei = style.height;
-
-	monitorID = requestAnimationFrame(test);
+	requestAnimationFrame(test);
 }
 
 export function monitorRenderTime(
@@ -132,6 +105,10 @@ export function updateProgress(id: string | null, value: number): void {
 	const elem = document.getElementById(id);
 	if (elem) {
 		elem.style.width = `${value.toFixed(0)}%`;
+		const progressContainer = elem.parentElement;
+		if (progressContainer) {
+			progressContainer.setAttribute("aria-valuenow", value.toFixed(0));
+		}
 	}
 }
 

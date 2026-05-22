@@ -44,15 +44,15 @@ export function ctlNumber(
 }
 
 export function ctlButton(id: string, label: string): string {
-	return `<button type="button" id="${id}">${label}</button>`;
+	return `<button type="button" id="${id}" aria-label="${label}">${label}</button>`;
 }
 
 export function ctlTextResult(id: string): string {
-	return `<div class="form-group"><div id="${id}"></div></div>`;
+	return `<div class="form-group" role="status" aria-live="polite"><div id="${id}"></div></div>`;
 }
 
-export const bigTitle = ` <sup class="pointer" title="BigInt"><small><a href="#" id="btn-bigint">&beta;igInt</a></small></sup>`;
-export const smallTitle = ` <sup class="pointer" title="Number"><small><a href="#" id="btn-smallint">&#938;nteger</a></small></sup>`;
+export const bigTitle = ` <sup class="pointer" title="BigInt"><small><button type="button" id="btn-bigint" aria-label="Switch to BigInt mode">&beta;igInt</button></small></sup>`;
+export const smallTitle = ` <sup class="pointer" title="Number"><small><button type="button" id="btn-smallint" aria-label="Switch to Integer mode">&#938;nteger</button></small></sup>`;
 
 export const header = function () {
 	return `<h2>Prime Number Checker${state.big ? bigTitle : smallTitle}</h2>`;
@@ -70,7 +70,7 @@ export function timerIndicator(id: string) {
 
 export function progressIndicator(id: string | null) {
 	return id
-		? `<div class="progress"><div class="bar" id="${id}">&nbsp;</div></div>`
+		? `<div class="progress" role="progressbar" aria-label="Calculation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" id="${id}">&nbsp;</div></div>`
 		: "";
 }
 

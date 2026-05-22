@@ -46,11 +46,11 @@
 			<div><small id="mem"></small></div>
 		</div>
 
-		<div id="tooltip_container">
-			<div id="tooltip">My tooltip</div>
-			<div id="arrow"></div>
+		<div id="tooltip_container" aria-hidden="true">
+			<div id="tooltip" role="tooltip" aria-live="polite"></div>
+			<div id="arrow" aria-hidden="true"></div>
 		</div>
 
-		<script type="module" src="dist/index.js"></script>
+		<script type="module" src="/src/index.ts"></script>
 	</body>
 </html>
