@@ -66,6 +66,7 @@ export interface ShowRangePrimeEventHandlers {
 	showRangePrimeOutput: () => void;
 	showTooltip: (e: Event) => void;
 	doScrollTo: (location: number) => void;
+	big_onchange: (val: string | number) => void;
 }
 
 export function attachShowRangePrimeEvents(
@@ -75,6 +76,8 @@ export function attachShowRangePrimeEvents(
 	const btnShowResult = document.getElementById("btn-show-result");
 	const btnScrollBottom = document.getElementById("btn-scroll-bottom");
 	const btnScrollTop = document.getElementById("btn-scroll-top");
+	const btnBigInt = document.getElementById("btn-bigint");
+	const btnSmallInt = document.getElementById("btn-smallint");
 	const resultContainer = document.querySelector(
 		".result_container",
 	) as HTMLElement | null;
@@ -93,6 +96,20 @@ export function attachShowRangePrimeEvents(
 
 	if (btnScrollTop) {
 		btnScrollTop.addEventListener("click", () => handlers.doScrollTo(0));
+	}
+
+	if (btnBigInt) {
+		btnBigInt.addEventListener("click", (event) => {
+			event.preventDefault();
+			handlers.big_onchange(1);
+		});
+	}
+
+	if (btnSmallInt) {
+		btnSmallInt.addEventListener("click", (event) => {
+			event.preventDefault();
+			handlers.big_onchange(0);
+		});
 	}
 
 	if (resultContainer && state.os === 0) {

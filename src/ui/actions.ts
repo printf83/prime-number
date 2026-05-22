@@ -260,143 +260,211 @@ export function getParamFromUrl(): void {
 }
 
 export function calcRangePrime(): void {
-	let zero: number | bigint = 0;
-	if (state.big) {
-		const minElement = document.getElementById(
-			"min",
-		) as HTMLInputElement | null;
-		const maxElement = document.getElementById(
-			"max",
-		) as HTMLInputElement | null;
-		const colElement = document.getElementById(
-			"col",
-		) as HTMLInputElement | null;
-		const minValue = parseBigIntInput(minElement?.value ?? "");
-		const maxValue = parseBigIntInput(maxElement?.value ?? "");
-		const colValue = parseBigIntInput(colElement?.value ?? "");
+    let zero: number | bigint = 0;
 
-		if (minValue === null || maxValue === null || colValue === null) {
-			genUI(
-				`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
-			);
-			return;
-		}
+    if (state.big) {
+        const minElement = document.getElementById("min") as HTMLInputElement | null;
+        const maxElement = document.getElementById("max") as HTMLInputElement | null;
+        const colElement = document.getElementById("col") as HTMLInputElement | null;
+        const minValue = parseBigIntInput(minElement?.value ?? "");
+        const maxValue = parseBigIntInput(maxElement?.value ?? "");
+        const colValue = parseBigIntInput(colElement?.value ?? "");
 
-		state.min = minValue;
-		state.max = maxValue;
-		state.col = colValue;
-		zero = 0n;
-	} else {
-		const minElement = document.getElementById(
-			"min",
-		) as HTMLInputElement | null;
-		const maxElement = document.getElementById(
-			"max",
-		) as HTMLInputElement | null;
-		const colElement = document.getElementById(
-			"col",
-		) as HTMLInputElement | null;
-		const minValue = parseIntInput(minElement?.value ?? "");
-		const maxValue = parseIntInput(maxElement?.value ?? "");
-		const colValue = parseIntInput(colElement?.value ?? "");
+        if (minValue === null || maxValue === null || colValue === null) {
+            genUI(
+                `${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+                function () {
+                    attachShowRangePrimeEvents({
+                        showStart,
+                        showRangePrimeOutput,
+                        showTooltip,
+                        big_onchange: big_onchange,
+                        doScrollTo,
+                    });
+                },
+            );
+            return;
+        }
 
-		if (minValue === null || maxValue === null || colValue === null) {
-			genUI(
-				`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
-			);
-			return;
-		}
+        state.min = minValue;
+        state.max = maxValue;
+        state.col = colValue;
+        zero = 0n;
+    } else {
+        const minElement = document.getElementById("min") as HTMLInputElement | null;
+        const maxElement = document.getElementById("max") as HTMLInputElement | null;
+        const colElement = document.getElementById("col") as HTMLInputElement | null;
+        const minValue = parseIntInput(minElement?.value ?? "");
+        const maxValue = parseIntInput(maxElement?.value ?? "");
+        const colValue = parseIntInput(colElement?.value ?? "");
 
-		state.min = minValue;
-		state.max = maxValue;
-		state.col = colValue;
-		zero = 0;
-	}
+        if (minValue === null || maxValue === null || colValue === null) {
+            genUI(
+                `${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+                function () {
+                    attachShowRangePrimeEvents({
+                        showStart,
+                        showRangePrimeOutput,
+                        showTooltip,
+                        big_onchange: big_onchange,
+                        doScrollTo,
+                    });
+                },
+            );
+            return;
+        }
 
-	state.os = parseInt(getRadioValue("os") ?? "0", 10);
-	state.ot = (
-		(document.getElementById("ot") as HTMLInputElement) || {
-			checked: false,
-		}
-	).checked
-		? 1
-		: 0;
+        state.min = minValue;
+        state.max = maxValue;
+        state.col = colValue;
+        zero = 0;
+    }
 
-	if (state.min === null || state.max === null || state.col === null) {
-		genUI(
-			`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
-		);
-		return;
-	}
+    state.os = parseInt(getRadioValue("os") ?? "0", 10);
+    state.ot = ((document.getElementById("ot") as HTMLInputElement) || { checked: false }).checked ? 1 : 0;
 
-	if (state.max > zero && state.col > zero) {
-		if (state.min > zero && state.min <= state.max) {
-			if (window.Worker) {
-				const timerId = genId();
-				const progressId = state.pr ? genId() : null;
+    if (state.min === null || state.max === null || state.col === null) {
+        genUI(
+            `${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+            function () {
+                attachShowRangePrimeEvents({
+                    showStart,
+                    showRangePrimeOutput,
+                    showTooltip,
+                    big_onchange: big_onchange,
+                    doScrollTo,
+                });
+            },
+        );
+        return;
+    }
 
-				genUI(
-					`
-				${header()}
-				Finding prime number in <b>${formatNumber(state.big ? (state.max as bigint) - (state.min as bigint) + 1n : (state.max as number) - (state.min as number) + 1)}</b> numbers ${timerIndicator(timerId)}
-				${loading4()}<br/>
-				${progressIndicator(progressId)}<br/>
-				${loading3}<br/><br/>
-				${btnTryAgain}
-				`,
-					function () {
-						secTimer(timerId, 1);
-						const start = window.performance.now();
+    if (state.max > zero && state.col > zero) {
+        if (state.min > zero && state.min <= state.max) {
+            if (window.Worker) {
+                const timerId = genId();
+                const progressId = state.pr ? genId() : null;
 
-						runWorker(
-							"prime",
-							[state.min, state.max, state.pr],
-							function (e) {
-								if (e) {
-									const payload = e;
-									state.result = payload.result;
-									state.primeFound = payload.count;
-									const processTime =
-										window.performance.now() - start;
+                genUI(
+                    `
+                ${header()}
+                Finding prime number in <b>${formatNumber(
+                    state.big
+                        ? (state.max as bigint) - (state.min as bigint) + 1n
+                        : (state.max as number) - (state.min as number) + 1,
+                )}</b> numbers ${timerIndicator(timerId)}
+                ${loading4()}<br/>
+                ${progressIndicator(progressId)}<br/>
+                ${loading3}<br/><br/>
+                ${btnTryAgain}
+                `,
+                    function () {
+                        secTimer(timerId, 1);
+                        const start = window.performance.now();
 
-									genUI(`
-									${header()}
-									We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
-								`);
-								} else {
-									genUI(
-										`${errorHeader()}Fail to find prime number<br/><br/>${btnTryAgain}`,
-									);
-								}
-							},
-							function (e) {
-								genUI(
-									`${errorHeader()}Fail to find prime number. ${e}<br/><br/>${btnTryAgain}`,
-								);
-							},
-							function (e) {
-								updateProgress(progressId, e);
-							},
-						);
-					},
-				);
-			} else {
-				genUI(
-					`${errorHeader()}Web Worker not available<br/><br/>${btnTryAgain}`,
-				);
-			}
-		} else {
-			genUI(
-				`${errorHeader()}Min must be a positive integer and less or equal with Max<br/><br/>${btnTryAgain}`,
-			);
-		}
-	} else {
-		genUI(
-			`${errorHeader()}Max and Col must be a positive integer<br/><br/>${btnTryAgain}`,
-		);
-	}
+                        runWorker(
+                            "prime",
+                            [state.min, state.max, state.pr],
+                            function (e) {
+                                if (e) {
+                                    const payload = e;
+                                    state.result = payload.result;
+                                    state.primeFound = payload.count;
+                                    const processTime = window.performance.now() - start;
+
+                                    genUI(
+                                        `
+                                    ${header()}
+                                    We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
+                                    `,
+                                        function () {
+                                            attachShowRangePrimeEvents({
+                                                showStart,
+                                                showRangePrimeOutput,
+                                                showTooltip,
+                                                big_onchange: big_onchange,
+                                                doScrollTo,
+                                            });
+                                        },
+                                    );
+                                } else {
+                                    genUI(
+                                        `${errorHeader()}Fail to find prime number<br/><br/>${btnTryAgain}`,
+                                        function () {
+                                            attachShowRangePrimeEvents({
+                                                showStart,
+                                                showRangePrimeOutput,
+                                                showTooltip,
+                                                big_onchange: big_onchange,
+                                                doScrollTo,
+                                            });
+                                        },
+                                    );
+                                }
+                            },
+                            function (e) {
+                                genUI(
+                                    `${errorHeader()}Fail to find prime number. ${e}<br/><br/>${btnTryAgain}`,
+                                    function () {
+                                        attachShowRangePrimeEvents({
+                                            showStart,
+                                            showRangePrimeOutput,
+                                            showTooltip,
+                                            big_onchange: big_onchange,
+                                            doScrollTo,
+                                        });
+                                    },
+                                );
+                            },
+                            function (e) {
+                                updateProgress(progressId, e);
+                            },
+                        );
+                    },
+                );
+            } else {
+                genUI(
+                    `${errorHeader()}Web Worker not available<br/><br/>${btnTryAgain}`,
+                    function () {
+                        attachShowRangePrimeEvents({
+                            showStart,
+                            showRangePrimeOutput,
+                            showTooltip,
+                            big_onchange: big_onchange,
+                            doScrollTo,
+                        });
+                    },
+                );
+            }
+        } else {
+            genUI(
+                `${errorHeader()}Min must be a positive integer and less or equal with Max<br/><br/>${btnTryAgain}`,
+                function () {
+                    attachShowRangePrimeEvents({
+                        showStart,
+                        showRangePrimeOutput,
+                        showTooltip,
+                        big_onchange: big_onchange,
+                        doScrollTo,
+                    });
+                },
+            );
+        }
+    } else {
+        genUI(
+            `${errorHeader()}Max and Col must be a positive integer<br/><br/>${btnTryAgain}`,
+            function () {
+                attachShowRangePrimeEvents({
+                    showStart,
+                    showRangePrimeOutput,
+                    showTooltip,
+                    big_onchange: big_onchange,
+                    doScrollTo,
+                });
+            },
+        );
+    }
 }
-
 function mw(maxValue: number | bigint) {
 	if (state.big) {
 		switch (true) {
@@ -463,6 +531,7 @@ export function showRangePrimeOutput(): void {
 				showStart,
 				showRangePrimeOutput,
 				showTooltip,
+				big_onchange: big_onchange,
 				doScrollTo,
 			});
 			secTimer(timerId, 1);
@@ -503,6 +572,7 @@ export function showRangePrimeOutput(): void {
 									showStart,
 									showRangePrimeOutput,
 									showTooltip,
+									big_onchange: big_onchange,
 									doScrollTo,
 								}),
 						);
@@ -514,6 +584,7 @@ export function showRangePrimeOutput(): void {
 									showStart,
 									showRangePrimeOutput,
 									showTooltip,
+									big_onchange: big_onchange,
 									doScrollTo,
 								}),
 						);
