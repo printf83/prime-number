@@ -329,6 +329,7 @@ button:hover {
 	font-size: 0.9rem;
 	line-height: 1.2;
 	color: #fff;
+	overflow: hidden;
 }
 
 .result-item.prime {
@@ -337,7 +338,7 @@ button:hover {
 }
 
 .result-item.composite {
-	font-weight: bold;
+	/* font-weight: bold; */
 	background-color: rgba(255, 255, 255, 0.12);
 }
 
