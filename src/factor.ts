@@ -74,7 +74,14 @@
 
 			postMessage({ type: "data", data: result });
 		} catch (err) {
-			postMessage(err);
+			postMessage({
+				type: "error",
+				error: String(
+					err && typeof err === "object" && "message" in err
+						? (err as Error).message
+						: err,
+				),
+			});
 		}
 	};
 })();

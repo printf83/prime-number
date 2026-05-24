@@ -25,7 +25,11 @@ export interface WorkerParamsMap {
 }
 
 export interface WorkerResultMap {
-	prime: { result: (number | bigint)[] | Uint8Array; count: number };
+	prime: {
+		result: (number | bigint)[] | Uint8Array;
+		count: number;
+		countOnly?: boolean;
+	};
 	singleprime: (number | bigint)[];
 	factor: (number | bigint)[];
 	joinresult: string;
@@ -33,7 +37,8 @@ export interface WorkerResultMap {
 
 export type WorkerMessage<T> =
 	| { type: "progress"; data: number }
-	| { type: "data"; data: T };
+	| { type: "data"; data: T }
+	| { type: "error"; error: string };
 
 const workerConstructors = {
 	prime: PrimeWorker,
@@ -69,14 +74,28 @@ export function runWorker<T extends WorkerScript>(
 	worker.onmessage = function (
 		e: MessageEvent<WorkerMessage<WorkerResultMap[T]>>,
 	): void {
-		if (e.data.type === "progress") {
-			if (typeof onprogress === "function") {
-				onprogress(e.data.data);
-			}
-		} else {
-			if (typeof callback === "function") {
-				callback(e.data.data);
-			}
+		switch (e.data.type) {
+			case "progress":
+				if (typeof onprogress === "function") {
+					onprogress(e.data.data);
+				}
+				break;
+			case "data":
+				if (typeof callback === "function") {
+					callback(e.data.data);
+				}
+				break;
+			case "error":
+				if (typeof onerror === "function") {
+					onerror(e.data.error);
+				}
+				break;
+		}
+	};
+
+	worker.onmessageerror = function (): void {
+		if (typeof onerror === "function") {
+			onerror("Worker message could not be deserialized.");
 		}
 	};
 	wk.onerror = function (e) {

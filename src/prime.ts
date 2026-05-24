@@ -22,12 +22,17 @@
 		if (limit >= 1) sieve[1] = 0;
 
 		const primes: number[] = [];
-		for (let p = 2; p <= limit; p++) {
+		if (limit >= 2) {
+			primes.push(2);
+		}
+
+		const maxP = Math.floor(Math.sqrt(limit));
+		for (let p = 3; p <= limit; p += 2) {
 			if (sieve[p]) {
 				primes.push(p);
-				const step = p * p;
-				if (step <= limit) {
-					for (let j = step; j <= limit; j += p) {
+				if (p <= maxP) {
+					const step = p * p;
+					for (let j = step; j <= limit; j += 2 * p) {
 						sieve[j] = 0;
 					}
 				}
@@ -41,49 +46,90 @@
 		try {
 			const [min, max, pr] = e.data as [number, number, number];
 
-			const length = max - min + 1;
-			const result = new Uint8Array(length);
-			result.fill(1);
-
-			if (min <= 1) {
-				for (let n = min; n <= Math.min(max, 1); n++) {
-					result[n - min] = 0;
-				}
-			}
+			const rangeSize = max - min + 1;
+			const chunkSize = 1000000;
+			const maxFullResults = 2000000;
+			const returnFullResults = rangeSize <= maxFullResults;
 
 			const limit = Math.floor(Math.sqrt(max));
 			const basePrimes = simpleSieve(limit);
-			const totalSteps = basePrimes.length + 1;
-			const prDiv = progressDiv(totalSteps);
+			const totalChunks = Math.floor(
+				(rangeSize + chunkSize - 1) / chunkSize,
+			);
+			const prDiv = progressDiv(totalChunks);
 
-			for (let i = 0; i < basePrimes.length; i++) {
-				const p = basePrimes[i];
-				let start = Math.max(p * p, Math.ceil(min / p) * p);
-				if (start < min) {
-					start += p;
+			let count = 0;
+			const result = returnFullResults
+				? new Uint8Array(rangeSize)
+				: new Uint8Array(0);
+			if (returnFullResults) {
+				result.fill(1);
+			}
+
+			let chunkIndex = 0;
+			for (
+				let chunkStart = min;
+				chunkStart <= max;
+				chunkStart += chunkSize, chunkIndex += 1
+			) {
+				const chunkEnd = Math.min(max, chunkStart + chunkSize - 1);
+				const chunkLength = chunkEnd - chunkStart + 1;
+				const chunk = new Uint8Array(chunkLength);
+				chunk.fill(1);
+
+				if (chunkStart <= 1) {
+					const stop = Math.min(chunkEnd, 1);
+					for (let n = chunkStart; n <= stop; n++) {
+						chunk[n - chunkStart] = 0;
+					}
 				}
 
-				for (let n = start; n <= max; n += p) {
-					result[n - min] = 0;
+				for (let i = 0; i < basePrimes.length; i++) {
+					const p = basePrimes[i];
+					let start = p * p;
+					const from = Math.ceil(chunkStart / p) * p;
+					if (from > start) {
+						start = from;
+					}
+					if (start < chunkStart) {
+						start += p;
+					}
+
+					for (let n = start; n <= chunkEnd; n += p) {
+						chunk[n - chunkStart] = 0;
+					}
+				}
+
+				for (let i = 0; i < chunkLength; i++) {
+					count += chunk[i];
+				}
+
+				if (returnFullResults) {
+					result.set(chunk, chunkStart - min);
 				}
 
 				if (pr === 1) {
-					progress(i + 1, totalSteps, prDiv);
+					progress(chunkIndex + 1, totalChunks, prDiv);
 				}
 			}
 
 			if (pr === 1) {
-				progress(totalSteps, totalSteps, prDiv);
+				progress(totalChunks, totalChunks, prDiv);
 			}
-
-			const count = result.reduce((acc, value) => acc + value, 0);
 
 			postMessage({
 				type: "data",
-				data: { result, count },
+				data: { result, count, countOnly: !returnFullResults },
 			});
 		} catch (err) {
-			postMessage(err);
+			postMessage({
+				type: "error",
+				error: String(
+					err && typeof err === "object" && "message" in err
+						? (err as Error).message
+						: err,
+				),
+			});
 		}
 	};
 })();

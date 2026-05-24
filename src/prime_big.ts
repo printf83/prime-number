@@ -46,12 +46,17 @@
 		}
 
 		const primes: number[] = [];
-		for (let p = 2; p <= limit; p++) {
+		if (limit >= 2) {
+			primes.push(2);
+		}
+
+		const maxP = Math.floor(Math.sqrt(limit));
+		for (let p = 3; p <= limit; p += 2) {
 			if (sieve[p]) {
 				primes.push(p);
-				const step = p * p;
-				if (step <= limit) {
-					for (let j = step; j <= limit; j += p) {
+				if (p <= maxP) {
+					const step = p * p;
+					for (let j = step; j <= limit; j += 2 * p) {
 						sieve[j] = 0;
 					}
 				}
@@ -65,53 +70,100 @@
 		try {
 			const [min, max, pr] = e.data as [bigint, bigint, number];
 
-			const length = Number(max - min + 1n);
-			const result = new Uint8Array(length);
-			result.fill(1);
-
-			if (min <= 1n) {
-				for (let n = min; n <= (max < 1n ? max : 1n); n++) {
-					result[Number(n - min)] = 0;
-				}
-			}
+			const rangeSize = max - min + 1n;
+			const chunkSize = 1000000n;
+			const maxFullResults = 2000000n;
+			const returnFullResults = rangeSize <= maxFullResults;
 
 			const limit = bigintSqrt(max);
-			const basePrimes = simpleSieve(Number(limit));
-			const totalSteps = BigInt(basePrimes.length) + 1n;
-			const prDiv = progressDiv(totalSteps);
+			if (limit > BigInt(Number.MAX_SAFE_INTEGER)) {
+				throw new Error("Range too large to compute base primes");
+			}
 
-			for (let i = 0; i < basePrimes.length; i++) {
-				const p = BigInt(basePrimes[i]);
-				let start = p * p;
-				const from = ((min + p - 1n) / p) * p;
-				if (from > start) {
-					start = from;
+			const limitNumber = Number(limit);
+			if (!Number.isSafeInteger(limitNumber) || limitNumber > 20000000) {
+				throw new Error("Range is too large to compute in the browser");
+			}
+
+			const basePrimes = simpleSieve(limitNumber);
+			const totalChunks = (rangeSize + chunkSize - 1n) / chunkSize;
+			const prDiv = progressDiv(totalChunks);
+
+			let count = 0;
+			const result = returnFullResults
+				? new Uint8Array(Number(rangeSize))
+				: new Uint8Array(0);
+			if (returnFullResults) {
+				result.fill(1);
+			}
+
+			let chunkIndex = 0n;
+			for (
+				let chunkStart = min;
+				chunkStart <= max;
+				chunkStart += chunkSize, chunkIndex += 1n
+			) {
+				const chunkEnd =
+					max < chunkStart + chunkSize - 1n
+						? max
+						: chunkStart + chunkSize - 1n;
+				const chunkLength = Number(chunkEnd - chunkStart + 1n);
+				const chunk = new Uint8Array(chunkLength);
+				chunk.fill(1);
+
+				if (chunkStart <= 1n) {
+					const stop = chunkEnd < 1n ? chunkEnd : 1n;
+					for (let n = chunkStart; n <= stop; n++) {
+						chunk[Number(n - chunkStart)] = 0;
+					}
 				}
 
-				for (let n = start; n <= max; n += p) {
-					result[Number(n - min)] = 0;
+				for (let i = 0; i < basePrimes.length; i++) {
+					const p = BigInt(basePrimes[i]);
+					let start = p * p;
+					const from = ((chunkStart + p - 1n) / p) * p;
+					if (from > start) {
+						start = from;
+					}
+					if (start < chunkStart) {
+						start += p;
+					}
+
+					for (let n = start; n <= chunkEnd; n += p) {
+						chunk[Number(n - chunkStart)] = 0;
+					}
+				}
+
+				for (let i = 0; i < chunkLength; i++) {
+					count += chunk[i];
+				}
+
+				if (returnFullResults) {
+					result.set(chunk, Number(chunkStart - min));
 				}
 
 				if (pr === 1) {
-					progress(BigInt(i + 1), totalSteps, prDiv);
+					progress(chunkIndex + 1n, totalChunks, prDiv);
 				}
 			}
 
 			if (pr === 1) {
-				progress(totalSteps, totalSteps, prDiv);
+				progress(totalChunks, totalChunks, prDiv);
 			}
-
-			const count = Array.from(result).reduce(
-				(acc, value) => acc + value,
-				0,
-			);
 
 			postMessage({
 				type: "data",
-				data: { result, count },
+				data: { result, count, countOnly: !returnFullResults },
 			});
 		} catch (err) {
-			postMessage(err);
+			postMessage({
+				type: "error",
+				error: String(
+					err && typeof err === "object" && "message" in err
+						? (err as Error).message
+						: err,
+				),
+			});
 		}
 	};
 })();

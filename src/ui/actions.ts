@@ -12,6 +12,7 @@ import {
 	getRadioValue,
 	monitorRenderTime,
 	secTimer,
+	setInnerHtml,
 	showSinglePrimeOutput,
 	updateProgress,
 } from "../dom";
@@ -72,6 +73,16 @@ export function calcSinglePrime(): void {
 
 			state.snum = currentNum;
 
+			const singlePrimeStart = window.performance.now();
+
+			function updateSinglePrimeTimeLabel(): void {
+				const timeText = `Complete in ${formatTime(
+					window.performance.now() - singlePrimeStart,
+				)}`;
+				setInnerHtml("single_time_1", timeText);
+				setInnerHtml("single_time_2", timeText);
+			}
+
 			monitorRenderTime("root", "single_time_1", "single_time_2");
 
 			runWorker(
@@ -104,6 +115,7 @@ export function calcSinglePrime(): void {
 									} be divided with <br/>${e}</small><br/><small id="single_time_2">${loading2}</small>`,
 										);
 									}
+									updateSinglePrimeTimeLabel();
 								},
 								function (e) {
 									showSinglePrimeOutput(
@@ -113,13 +125,16 @@ export function calcSinglePrime(): void {
 							);
 						} else {
 							showSinglePrimeOutput(`Fail to find prime number`);
+							updateSinglePrimeTimeLabel();
 						}
 					} else {
 						showSinglePrimeOutput(`Fail to find prime number`);
+						updateSinglePrimeTimeLabel();
 					}
 				},
 				function (e) {
 					showSinglePrimeOutput(`Fail to find prime number. ${e}`);
+					updateSinglePrimeTimeLabel();
 				},
 				function (e) {
 					updateProgress(progressId, e);
@@ -133,6 +148,7 @@ export function calcSinglePrime(): void {
 
 export function showStart(): void {
 	hideTooltip();
+	state.countOnly = false;
 
 	genUI(
 		`
@@ -410,6 +426,8 @@ export function calcRangePrime(): void {
 									const payload = e;
 									state.result = payload.result;
 									state.primeFound = payload.count;
+									state.countOnly =
+										payload.countOnly === true;
 									const processTime =
 										window.performance.now() - start;
 
@@ -552,6 +570,28 @@ export function showRangePrimeOutput(): void {
 	);
 	const rowHeight = 30;
 	const maxRows = state.maxRows || 200000;
+
+	if (state.countOnly) {
+		genUI(
+			`
+			${header()} 
+			Found <b>${formatNumber(state.primeFound)} prime number${
+				state.primeFound === 1 ? "" : "s"
+			}</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b>.<br/>
+			The range is too large to render in this browser. Narrow the range to see the primes.<br/><br/>
+			${btnTryAgain}
+			`,
+			function () {
+				attachShowRangePrimeEvents({
+					showStart,
+					showRangePrimeOutput,
+					showTooltip,
+					big_onchange: big_onchange,
+				});
+			},
+		);
+		return;
+	}
 
 	const primeValues: Array<number | bigint> = [];
 	if (state.os === 1) {
@@ -903,6 +943,18 @@ export function showTooltip(e: Event): void {
 	if (target) {
 		const rawText = target.innerText.trim().replace(/,/g, "");
 		const num = state.big ? BigInt(rawText) : parseInt(rawText, 10);
+		const tooltipStart = window.performance.now();
+
+		function updateTooltipTimeLabel(): void {
+			const tooltipTimeElem = document.getElementById(
+				"tooltip_time",
+			) as HTMLElement | null;
+			if (tooltipTimeElem) {
+				tooltipTimeElem.innerHTML =
+					"Complete in " +
+					formatTime(window.performance.now() - tooltipStart);
+			}
+		}
 
 		const timerId = genId();
 		const progressId = genId();
@@ -933,11 +985,13 @@ export function showTooltip(e: Event): void {
 										target,
 										`<h3>${formatNumber(state.result[state.result.length - 1])}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><span id="tooltip_time">${loading2}</span>`,
 									);
+									updateTooltipTimeLabel();
 								} else {
 									genTooltip(
 										target,
 										`<h3>${formatNumber(state.result[state.result.length - 1])}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${e}</small><br/><span id="tooltip_time">${loading2}</span>`,
 									);
+									updateTooltipTimeLabel();
 								}
 							},
 							function (e) {
@@ -951,13 +1005,16 @@ export function showTooltip(e: Event): void {
 						);
 					} else {
 						genTooltip(target, `Fail to find prime number`);
+						updateTooltipTimeLabel();
 					}
 				} else {
 					genTooltip(target, `Fail to find prime number`);
+					updateTooltipTimeLabel();
 				}
 			},
 			function (e) {
 				genTooltip(target, `Fail to find prime number. ${e}`);
+				updateTooltipTimeLabel();
 			},
 			function (e) {
 				updateProgress(progressId, e);
