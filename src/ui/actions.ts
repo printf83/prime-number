@@ -11,8 +11,8 @@ import {
 	header,
 	header2,
 } from "./builders";
-import { calcSinglePrimeImpl } from "./singleprime";
-import { calcRangePrimeImpl } from "./rangeprime";
+import { calcSinglePrimeImpl, cleanupSinglePrimeTimers } from "./singleprime";
+import { calcRangePrimeImpl, cleanupRangePrimeTimer } from "./rangeprime";
 import {
 	showRangePrimeOutputImpl,
 	cleanupResultResizeListener,
@@ -68,6 +68,8 @@ export function big_onchange(val: string | number): void {
 
 export function showStart(): void {
 	cleanupResultResizeListener();
+	cleanupSinglePrimeTimers();
+	cleanupRangePrimeTimer();
 	stopWorker();
 	state.result = [];
 	state.snum = state.big ? 1n : 1;

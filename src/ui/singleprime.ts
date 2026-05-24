@@ -25,7 +25,22 @@ function getSinglePrimeMethod(): string {
 	return "Miller-Rabin";
 }
 
+let currentSinglePrimeTimerCancel: (() => void) | null = null;
+let currentSinglePrimeRenderTimeCancel: (() => void) | null = null;
+
+export function cleanupSinglePrimeTimers(): void {
+	if (currentSinglePrimeTimerCancel) {
+		currentSinglePrimeTimerCancel();
+		currentSinglePrimeTimerCancel = null;
+	}
+	if (currentSinglePrimeRenderTimeCancel) {
+		currentSinglePrimeRenderTimeCancel();
+		currentSinglePrimeRenderTimeCancel = null;
+	}
+}
+
 export function calcSinglePrimeImpl(): void {
+	cleanupSinglePrimeTimers();
 	stopWorker();
 	const zero = state.big ? 0n : 0;
 	const numElement = document.getElementById(
@@ -52,7 +67,10 @@ export function calcSinglePrimeImpl(): void {
 			${progressIndicator(progressId)} 
 			`);
 		initSinglePrimeFactorTable();
-		secTimer(timerId, 1);
+		if (currentSinglePrimeTimerCancel) {
+			currentSinglePrimeTimerCancel();
+		}
+		currentSinglePrimeTimerCancel = secTimer(timerId, 1);
 
 		state.snum = currentNum;
 
@@ -93,7 +111,14 @@ export function calcSinglePrimeImpl(): void {
 			factorBody.insertAdjacentHTML("beforeend", row);
 		}
 
-		monitorRenderTime("root", "single_time_1", "single_time_2");
+		if (currentSinglePrimeRenderTimeCancel) {
+			currentSinglePrimeRenderTimeCancel();
+		}
+		currentSinglePrimeRenderTimeCancel = monitorRenderTime(
+			"root",
+			"single_time_1",
+			"single_time_2",
+		);
 
 		runWorker(
 			"singleprime",

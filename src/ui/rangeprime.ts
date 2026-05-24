@@ -46,7 +46,17 @@ function getRangePrimeMethod(
 	return "Segmented Sieve";
 }
 
+export let currentRangePrimeTimerCancel: (() => void) | null = null;
+
+export function cleanupRangePrimeTimer(): void {
+	if (currentRangePrimeTimerCancel) {
+		currentRangePrimeTimerCancel();
+		currentRangePrimeTimerCancel = null;
+	}
+}
+
 export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
+	cleanupRangePrimeTimer();
 	const { showStart, showRangePrimeOutput, showTooltip, big_onchange } =
 		callbacks;
 	stopWorker();
@@ -166,7 +176,10 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
                 ${btnCancel}
                 `,
 					function () {
-						secTimer(timerId, 1);
+						if (currentRangePrimeTimerCancel) {
+							currentRangePrimeTimerCancel();
+						}
+						currentRangePrimeTimerCancel = secTimer(timerId, 1);
 						const start = window.performance.now();
 
 						const btnCancelElement = document.getElementById(

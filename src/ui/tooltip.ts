@@ -21,11 +21,16 @@ function getSinglePrimeMethod(): string {
 
 let currentTooltipWorkerJob: WorkerJob | null = null;
 let currentTooltipTimerCancel: (() => void) | null = null;
+let currentTooltipRenderTimeCancel: (() => void) | null = null;
 
 export function hideTooltip(): void {
 	if (currentTooltipTimerCancel) {
 		currentTooltipTimerCancel();
 		currentTooltipTimerCancel = null;
+	}
+	if (currentTooltipRenderTimeCancel) {
+		currentTooltipRenderTimeCancel();
+		currentTooltipRenderTimeCancel = null;
 	}
 	const tooltip_container = document.getElementById("tooltip_container");
 	const tooltipWasVisible =
@@ -124,7 +129,14 @@ export function showTooltip(e: Event): void {
 		}
 		currentTooltipTimerCancel = secTimer(timerId, 1);
 
-		monitorRenderTime("tooltip", "tooltip_time", "tooltip_time");
+		if (currentTooltipRenderTimeCancel) {
+			currentTooltipRenderTimeCancel();
+		}
+		currentTooltipRenderTimeCancel = monitorRenderTime(
+			"tooltip",
+			"tooltip_time",
+			"tooltip_time",
+		);
 		currentTooltipWorkerJob = {
 			script: "singleprime",
 			params: [num, state.pr],

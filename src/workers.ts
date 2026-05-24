@@ -130,6 +130,14 @@ export function getCurrentWorkerJob(): WorkerJob | null {
 	return currentWorkerJob;
 }
 
+function terminateWorkerIfFinished(worker: Worker): void {
+	if (wk === worker) {
+		stopWorker();
+	} else {
+		worker.terminate();
+	}
+}
+
 export function isCurrentWorkerJob<T extends WorkerScript>(
 	script: T,
 	params: WorkerParamsMap[T],
@@ -183,12 +191,24 @@ export function runWorker<T extends WorkerScript>(
 				break;
 			case "data":
 				if (typeof callback === "function") {
-					callback(e.data.data);
+					try {
+						callback(e.data.data);
+					} finally {
+						terminateWorkerIfFinished(worker);
+					}
+				} else {
+					terminateWorkerIfFinished(worker);
 				}
 				break;
 			case "error":
 				if (typeof onerror === "function") {
-					onerror(e.data.error);
+					try {
+						onerror(e.data.error);
+					} finally {
+						terminateWorkerIfFinished(worker);
+					}
+				} else {
+					terminateWorkerIfFinished(worker);
 				}
 				break;
 		}

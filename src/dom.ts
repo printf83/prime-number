@@ -130,22 +130,26 @@ export function monitorRenderTime(
 	target: string,
 	outputid1: string,
 	outputid2: string,
-): void {
+): () => void {
 	const elem = document.getElementById(target);
 
-	if (elem) {
-		const start = window.performance.now();
-		const cancel = addResizeListener(elem, function () {
-			const duration = window.performance.now() - start;
-			const sduration = formatTime(duration);
-
-			setTimeout(function () {
-				setInnerHtml(outputid1, `Complete in ${sduration}`);
-				setInnerHtml(outputid2, `Complete in ${sduration}`);
-			}, 100);
-			cancel();
-		});
+	if (!elem) {
+		return function () {};
 	}
+
+	const start = window.performance.now();
+	const cancel = addResizeListener(elem, function () {
+		const duration = window.performance.now() - start;
+		const sduration = formatTime(duration);
+
+		setTimeout(function () {
+			setInnerHtml(outputid1, `Complete in ${sduration}`);
+			setInnerHtml(outputid2, `Complete in ${sduration}`);
+		}, 100);
+		cancel();
+	});
+
+	return cancel;
 }
 
 export function updateProgress(id: string | null, value: number): void {
