@@ -50,6 +50,11 @@ import {
 						}
 						progress(x, max, prDiv);
 					}
+
+					result.push(num);
+					const uniqueResult = Array.from(new Set(result));
+					uniqueResult.sort((a, b) => a - b);
+					postMessage({ type: "data", data: uniqueResult });
 				} else {
 					for (let x = min; x <= max; x++) {
 						if (num % x === 0) {
@@ -65,13 +70,13 @@ import {
 							});
 						}
 					}
+
+					result.push(num);
+					const uniqueResult = Array.from(new Set(result));
+					uniqueResult.sort((a, b) => a - b);
+
+					postMessage({ type: "data", data: uniqueResult });
 				}
-
-				result.push(num);
-				const uniqueResult = Array.from(new Set(result));
-				uniqueResult.sort((a, b) => a - b);
-
-				postMessage({ type: "data", data: uniqueResult });
 			}
 		} catch (err) {
 			postMessage({

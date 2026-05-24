@@ -58,6 +58,107 @@ export function isProbablyPrime(num: bigint): boolean {
 	return millerRabin(num, bases);
 }
 
+export function gcdBigInt(a: bigint, b: bigint): bigint {
+	return b === 0n ? (a < 0n ? -a : a) : gcdBigInt(b, a % b);
+}
+
+export function randomBigInt(max: bigint): bigint {
+	if (max <= 0n) {
+		return 0n;
+	}
+
+	let bits = max.toString(2).length;
+	let value = 0n;
+	while (value <= 0n || value >= max) {
+		value = 0n;
+		let generated = 0;
+		while (generated < bits) {
+			const random53 = BigInt(
+				Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
+			);
+			value = (value << 53n) ^ random53;
+			generated += 53;
+		}
+		value = value % max;
+	}
+
+	return value;
+}
+
+export function pollardsRho(n: bigint): bigint {
+	if (n % 2n === 0n) return 2n;
+	if (n % 3n === 0n) return 3n;
+
+	let c = randomBigInt(n - 1n) + 1n;
+	let x = randomBigInt(n - 2n) + 2n;
+	let y = x;
+	let d = 1n;
+
+	while (d === 1n) {
+		x = (modPow(x, 2n, n) + c) % n;
+		y = (modPow(y, 2n, n) + c) % n;
+		y = (modPow(y, 2n, n) + c) % n;
+		d = gcdBigInt(x > y ? x - y : y - x, n);
+		if (d === n) {
+			return pollardsRho(n);
+		}
+	}
+
+	return d;
+}
+
+export function factorBigInt(num: bigint): bigint[] {
+	if (num === 1n) return [];
+	if (isProbablyPrime(num)) return [num];
+
+	const divisor = pollardsRho(num);
+	const left = factorBigInt(divisor);
+	const right = factorBigInt(num / divisor);
+	return [...left, ...right];
+}
+
+export function getDivisorsFromPrimeFactors(factors: bigint[]): bigint[] {
+	const counts = new Map<bigint, number>();
+	for (const factor of factors) {
+		counts.set(factor, (counts.get(factor) ?? 0) + 1);
+	}
+
+	const entries = Array.from(counts.entries());
+	const divisors: bigint[] = [];
+
+	function generate(index: number, current: bigint): void {
+		if (index === entries.length) {
+			divisors.push(current);
+			return;
+		}
+
+		const [prime, count] = entries[index];
+		let value = 1n;
+		for (let i = 0; i <= count; i += 1) {
+			generate(index + 1, current * value);
+			value *= prime;
+		}
+	}
+
+	generate(0, 1n);
+	return divisors.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+export function getDivisorPairsFromPrimeFactors(
+	n: bigint,
+	primeFactors: bigint[],
+): Array<[bigint, bigint]> {
+	const divisors = getDivisorsFromPrimeFactors(primeFactors);
+	const pairs: Array<[bigint, bigint]> = [];
+	for (const divisor of divisors) {
+		const quotient = n / divisor;
+		if (divisor <= quotient) {
+			pairs.push([divisor, quotient]);
+		}
+	}
+	return pairs;
+}
+
 export function progressDivNumber(max: number, div = 100): number {
 	return max > div ? Math.floor(max / div) : div;
 }

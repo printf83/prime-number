@@ -72,18 +72,27 @@ export function showTooltip(e: Event): void {
 
 		const foundFactorPairs = new Map<number | bigint, number | bigint>();
 
-		function updateTooltipFactors(): void {
-			const entries = Array.from(foundFactorPairs.entries());
-			if (entries.length === 0) {
-				setInnerHtml("tooltip_factors", "");
+		function initTooltipFactorTable(): void {
+			setInnerHtml(
+				"tooltip_factors",
+				`<small>It can be divided with</small><div class="scrollable"><table class="prime-divisors"><tbody id="tooltip_factors_body"></tbody></table></div>`,
+			);
+		}
+
+		function appendTooltipFactorRow(
+			divisor: number | bigint,
+			quotient: number | bigint,
+		): void {
+			const factorBody = document.getElementById(
+				"tooltip_factors_body",
+			) as HTMLElement | null;
+			if (!factorBody) {
 				return;
 			}
-			entries.sort((a, b) => {
-				const left = state.big ? BigInt(a[0]) : Number(a[0]);
-				const right = state.big ? BigInt(b[0]) : Number(b[0]);
-				return left < right ? -1 : left > right ? 1 : 0;
-			});
-			setInnerHtml("tooltip_factors", renderDivisorTable(entries));
+			const row = `<tr><td>÷</td><td>${formatNumber(divisor)}</td><td>=</td><td>${formatNumber(
+				quotient,
+			)}</td></tr>`;
+			factorBody.insertAdjacentHTML("beforeend", row);
 		}
 
 		const timerId = genId();
@@ -98,6 +107,7 @@ export function showTooltip(e: Event): void {
 			${progressIndicator(progressId)}
 			`,
 		);
+		initTooltipFactorTable();
 		secTimer(timerId, 1);
 
 		monitorRenderTime("tooltip", "tooltip_time", "tooltip_time");
@@ -171,8 +181,10 @@ export function showTooltip(e: Event): void {
 						detail.factors.length === 2
 					) {
 						const [divisor, quotient] = detail.factors;
-						foundFactorPairs.set(divisor, quotient);
-						updateTooltipFactors();
+						if (!foundFactorPairs.has(divisor)) {
+							foundFactorPairs.set(divisor, quotient);
+							appendTooltipFactorRow(divisor, quotient);
+						}
 					}
 				} else {
 					updateProgress(progressId, e as number);

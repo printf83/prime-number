@@ -5,7 +5,6 @@ import {
 	genId,
 	parseBigIntInput,
 	parseIntInput,
-	renderDivisorTable,
 } from "../utils";
 import {
 	monitorRenderTime,
@@ -52,6 +51,7 @@ export function calcSinglePrimeImpl(): void {
 			${loading4()}<br/>
 			${progressIndicator(progressId)} 
 			`);
+		initSinglePrimeFactorTable();
 		secTimer(timerId, 1);
 
 		state.snum = currentNum;
@@ -70,18 +70,27 @@ export function calcSinglePrimeImpl(): void {
 			setInnerHtml("singleprime_status", status);
 		}
 
-		function updateSinglePrimeFactors(): void {
-			const entries = Array.from(foundFactorPairs.entries());
-			if (entries.length === 0) {
-				setInnerHtml("singleprime_factors", "");
+		function initSinglePrimeFactorTable(): void {
+			setInnerHtml(
+				"singleprime_factors",
+				`<small>It can be divided with</small><div class="scrollable"><table class="prime-divisors"><tbody id="singleprime_factors_body"></tbody></table></div>`,
+			);
+		}
+
+		function appendSinglePrimeFactorRow(
+			divisor: number | bigint,
+			quotient: number | bigint,
+		): void {
+			const factorBody = document.getElementById(
+				"singleprime_factors_body",
+			) as HTMLElement | null;
+			if (!factorBody) {
 				return;
 			}
-			entries.sort((a, b) => {
-				const left = state.big ? BigInt(a[0]) : Number(a[0]);
-				const right = state.big ? BigInt(b[0]) : Number(b[0]);
-				return left < right ? -1 : left > right ? 1 : 0;
-			});
-			setInnerHtml("singleprime_factors", renderDivisorTable(entries));
+			const row = `<tr><td>÷</td><td>${formatNumber(divisor)}</td><td>=</td><td>${formatNumber(
+				quotient,
+			)}</td></tr>`;
+			factorBody.insertAdjacentHTML("beforeend", row);
 		}
 
 		monitorRenderTime("root", "single_time_1", "single_time_2");
@@ -162,8 +171,10 @@ export function calcSinglePrimeImpl(): void {
 						detail.factors.length === 2
 					) {
 						const [divisor, quotient] = detail.factors;
-						foundFactorPairs.set(divisor, quotient);
-						updateSinglePrimeFactors();
+						if (!foundFactorPairs.has(divisor)) {
+							foundFactorPairs.set(divisor, quotient);
+							appendSinglePrimeFactorRow(divisor, quotient);
+						}
 					}
 				} else {
 					updateProgress(progressId, e as number);

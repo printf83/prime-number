@@ -10,6 +10,7 @@ A small browser app that checks numbers for primality and renders prime lists us
 - Vite development server and production build
 - Accessible UI using semantic buttons, ARIA progress indicators, and tooltip roles
 - Supports both JavaScript `number` mode and `BigInt` mode
+- Incremental single-prime factorization UI with live progress and scrollable divisor tables
 - Modular UI code split into builders, events, and actions
 
 ## Getting Started
@@ -82,6 +83,8 @@ pnpm lint
 
 - Normal prime range searches now use a segmented Sieve of Eratosthenes for much better performance
 - BigInt mode is available for values outside the safe JavaScript integer range, but ordinary `number` mode is still faster for typical ranges
+- Single-prime checks now update incrementally with divisor row rendering rather than rebuilding the full factor display each time
+- Tooltip prime checks show live progress and append factor rows as they are discovered
 - Vite is used as the build/dev server; no manual `dist/` worker path generation is required
 - Web workers are loaded as modules with Vite-compatible URLs
 - The app avoids inline `javascript:void(0)` and anchor-only click handlers

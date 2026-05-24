@@ -344,7 +344,7 @@ button:hover {
 .scrollable {
 	overflow-x: auto;
 	overscroll-behavior-x: overlay;
-	max-height: 25vh;
+	max-height: 40vh;
 }
 
 .scrollable table {
