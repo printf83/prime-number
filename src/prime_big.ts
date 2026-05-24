@@ -43,7 +43,7 @@ import {
 
 			const rangeSize = max - min + 1n;
 			const chunkSize = 1000000n;
-			const maxFullResults = 2000000n;
+			const maxFullResults = 2147483647n;
 			const returnFullResults = rangeSize <= maxFullResults;
 			const smallRangeThreshold = 1000n;
 			if (rangeSize <= smallRangeThreshold) {
@@ -75,7 +75,7 @@ import {
 
 				postMessage({
 					type: "data",
-					data: { result, count, countOnly: !returnFullResults },
+					data: { result, count, resultTooHuge: !returnFullResults },
 				});
 				return;
 			}
@@ -157,7 +157,7 @@ import {
 
 			postMessage({
 				type: "data",
-				data: { result, count, countOnly: !returnFullResults },
+				data: { result, count, resultTooHuge: !returnFullResults },
 			});
 		} catch (err) {
 			postMessage({

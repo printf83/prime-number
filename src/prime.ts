@@ -20,7 +20,7 @@ import {
 
 			const rangeSize = max - min + 1;
 			const chunkSize = 1000000;
-			const maxFullResults = 2000000;
+			const maxFullResults = 2147483647;
 			const returnFullResults = rangeSize <= maxFullResults;
 
 			const limit = Math.floor(Math.sqrt(max));
@@ -91,7 +91,7 @@ import {
 
 			postMessage({
 				type: "data",
-				data: { result, count, countOnly: !returnFullResults },
+				data: { result, count, resultTooHuge: !returnFullResults },
 			});
 		} catch (err) {
 			postMessage({

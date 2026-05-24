@@ -17,7 +17,6 @@ export const state = {
 	ot: 1,
 	snum: 1 as number | bigint,
 	pr: 1,
-	countOnly: false,
 };
 
 declare global {

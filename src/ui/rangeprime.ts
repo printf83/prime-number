@@ -187,14 +187,31 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 									const payload = e;
 									state.result = payload.result;
 									state.primeFound = payload.count;
-									state.countOnly =
-										payload.countOnly === true;
 									const processTime =
 										window.performance.now() - start;
 									const method = getRangePrimeMethod(
 										state.min,
 										state.max,
 									);
+
+									if (payload.resultTooHuge) {
+										genUI(
+											`
+                                    ${header()}
+                                    We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b> using <b>${method}</b>.<br/>
+                                    The range is too large to render in this browser. Narrow the range to see the primes.<br/><br/>${btnTryAgain}
+                                    `,
+											function () {
+												attachShowRangePrimeEvents({
+													showStart,
+													showRangePrimeOutput,
+													showTooltip,
+													big_onchange,
+											});
+											},
+										);
+										return;
+									}
 
 									genUI(
 										`

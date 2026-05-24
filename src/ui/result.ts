@@ -32,28 +32,6 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		state.big ? Number(state.col as bigint) : Number(state.col as number),
 	);
 
-	if (state.countOnly) {
-		genUI(
-			`
-			${header()} 
-			Found <b>${formatNumber(state.primeFound)} prime number${
-				state.primeFound === 1 ? "" : "s"
-			}</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b>.<br/>
-			The range is too large to render in this browser. Narrow the range to see the primes.<br/><br/>
-			${btnTryAgain}
-			`,
-			function () {
-				attachShowRangePrimeEvents({
-					showStart,
-					showRangePrimeOutput: showRangePrimeOutput,
-					showTooltip,
-					big_onchange,
-				});
-			},
-		);
-		return;
-	}
-
 	const primeValues: Array<number | bigint> = [];
 	if (state.os === 1) {
 		for (let index = 0; index < resultArray.length; index++) {

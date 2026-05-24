@@ -66,7 +66,6 @@ export function big_onchange(val: string | number): void {
 export function showStart(): void {
 	stopWorker();
 	state.result = [];
-	state.countOnly = false;
 	state.snum = state.big ? 1n : 1;
 	hideTooltip();
 

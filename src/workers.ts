@@ -28,7 +28,7 @@ export interface WorkerResultMap {
 	prime: {
 		result: (number | bigint)[] | Uint8Array;
 		count: number;
-		countOnly?: boolean;
+		resultTooHuge?: boolean;
 	};
 	singleprime: (number | bigint)[];
 	factor: (number | bigint)[];
