@@ -18,8 +18,16 @@ import {
 			const [num, pr] = e.data as [number, number];
 
 			if (isProbablyPrime(BigInt(num))) {
+				postMessage({
+					type: "progress",
+					data: { progress: 100, prime: true },
+				});
 				postMessage({ type: "data", data: [1, num] });
 			} else {
+				postMessage({
+					type: "progress",
+					data: { progress: 0, prime: false, factors: [1] },
+				});
 				const result: number[] = [1];
 				const max = Math.sqrt(num);
 				const min = 2;
@@ -29,16 +37,32 @@ import {
 
 					for (let x = min; x <= max; x++) {
 						if (num % x === 0) {
-							result.push(x);
-							result.push(num / x);
+							const pair = [x, num / x];
+							result.push(...pair);
+							postMessage({
+								type: "progress",
+								data: {
+									progress: Math.floor((x / max) * 100),
+									prime: false,
+									factors: pair,
+								},
+							});
 						}
 						progress(x, max, prDiv);
 					}
 				} else {
 					for (let x = min; x <= max; x++) {
 						if (num % x === 0) {
-							result.push(x);
-							result.push(num / x);
+							const pair = [x, num / x];
+							result.push(...pair);
+							postMessage({
+								type: "progress",
+								data: {
+									progress: 0,
+									prime: false,
+									factors: pair,
+								},
+							});
 						}
 					}
 				}

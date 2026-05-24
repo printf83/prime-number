@@ -4,6 +4,7 @@ import {
 	genTooltip,
 	monitorRenderTime,
 	secTimer,
+	setInnerHtml,
 	updateProgress,
 } from "../dom";
 import { runWorker } from "../workers";
@@ -65,12 +66,47 @@ export function showTooltip(e: Event): void {
 			}
 		}
 
+		function updateTooltipStatus(status: string): void {
+			setInnerHtml("tooltip_status", status);
+		}
+
+		const foundFactorPairs = new Map<string, string>();
+
+		function updateTooltipFactors(): void {
+			const entries = Array.from(foundFactorPairs.entries());
+			if (entries.length === 0) {
+				setInnerHtml("tooltip_factors", "");
+				return;
+			}
+			entries.sort((a, b) => {
+				const left = state.big ? BigInt(a[0]) : Number(a[0]);
+				const right = state.big ? BigInt(b[0]) : Number(b[0]);
+				return left < right ? -1 : left > right ? 1 : 0;
+			});
+			const rows = entries
+				.map(
+					([divisor, quotient]) =>
+						`<tr><td>÷</td><td>${formatNumber(
+							divisor as unknown as number | bigint,
+						)}</td><td>=</td><td>${formatNumber(
+							quotient as unknown as number | bigint,
+						)}</td></tr>`,
+				)
+				.join("");
+			setInnerHtml(
+				"tooltip_factors",
+				`<small>It can be divided with<div class="scrollable"><table><tbody>${rows}</tbody></table></div></small>`,
+			);
+		}
+
 		const timerId = genId();
 		const progressId = genId();
 		genTooltip(
 			target,
 			`
-			<h3>${formatNumber(num)}</h3> Checking ${timerIndicator(timerId)}
+			<h3>${formatNumber(num)}</h3>
+			<div id="tooltip_status">Checking ${timerIndicator(timerId)}</div>
+			<div id="tooltip_factors"></div>
 			${loading4()}<br/>
 			${progressIndicator(progressId)}
 			`,
@@ -124,9 +160,33 @@ export function showTooltip(e: Event): void {
 				genTooltip(target, `Fail to find prime number. ${e}`);
 				updateTooltipTimeLabel();
 			},
-			function (e) {
+			function (e: unknown) {
 				if (typeof e === "object" && e !== null && "progress" in e) {
-					updateProgress(progressId, e.progress);
+					const detail = e as {
+						progress: number;
+						prime?: boolean;
+						factors?: (number | bigint)[];
+					};
+					updateProgress(progressId, detail.progress);
+					if (typeof detail.prime === "boolean") {
+						if (detail.prime) {
+							updateTooltipStatus(
+								`<b class="font-success">Is a prime number</b>`,
+							);
+						} else {
+							updateTooltipStatus(
+								`<b class="font-danger">Is NOT a prime number</b>`,
+							);
+						}
+					}
+					if (
+						Array.isArray(detail.factors) &&
+						detail.factors.length === 2
+					) {
+						const [divisor, quotient] = detail.factors;
+						foundFactorPairs.set(String(divisor), String(quotient));
+						updateTooltipFactors();
+					}
 				} else {
 					updateProgress(progressId, e as number);
 				}

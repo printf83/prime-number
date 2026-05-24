@@ -354,7 +354,28 @@ button:hover {
 .scrollable td {
 	text-align: right;
 }
+.prime-divisors {
+	border-collapse: collapse;
+	margin-top: 0.35rem;
+	font-size: 0.85rem;
+}
 
+.prime-divisors td {
+	padding: 0.25rem 0.5rem;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.prime-divisors tr:last-child td {
+	border-bottom: none;
+}
+
+.prime-divisors td:first-child {
+	padding-left: 0;
+}
+
+.prime-divisors td:last-child {
+	padding-right: 0;
+}
 .d-flex b,
 .d-flex i {
 	width: auto;

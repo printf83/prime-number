@@ -207,7 +207,7 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 													showRangePrimeOutput,
 													showTooltip,
 													big_onchange,
-											});
+												});
 											},
 										);
 										return;
@@ -254,14 +254,21 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 									},
 								);
 							},
-							function (e) {
+							function (e: unknown) {
 								if (
 									typeof e === "object" &&
 									e !== null &&
 									"count" in e
 								) {
-									updateCurrentCount(currentCountId, e.count);
-									updateProgress(progressId, e.progress);
+									const detail = e as {
+										count: number;
+										progress: number;
+									};
+									updateCurrentCount(
+										currentCountId,
+										detail.count,
+									);
+									updateProgress(progressId, detail.progress);
 								} else {
 									updateProgress(progressId, e as number);
 								}

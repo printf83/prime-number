@@ -17,6 +17,35 @@ import { createBigIntProgressEmitter, progressDivBigInt } from "./common";
 		return `<span class="font-danger">Error!</span>`;
 	}
 
+	function renderFactorRows(
+		data: bigint[],
+		num: bigint,
+		pr: number,
+		progressEmitter: (x: bigint, max: bigint, div: bigint) => void,
+	): string {
+		const tmp: string[] = [];
+		const max = BigInt(
+			Math.floor(data.length > 2 ? data.length / 2 : data.length),
+		);
+		const prDiv = pr === 1 ? progressDiv(max) : 0n;
+
+		for (let x = 0n; x < max; x++) {
+			tmp.push(`
+                    <tr>
+                        <td>÷</td>
+                        <td>${formatNumber(data[Number(x)])}</td>
+                        <td>=</td>
+                        <td>${formatNumber(num / BigInt(data[Number(x)]))}</td>
+                    </tr>
+                `);
+			if (pr === 1) {
+				progressEmitter(x, max, prDiv);
+			}
+		}
+
+		return `<tbody>${tmp.join("")}</tbody>`;
+	}
+
 	self.onmessage = function (e: MessageEvent<unknown>): void {
 		try {
 			const [data, num, os, pr] = e.data as [
@@ -37,34 +66,9 @@ import { createBigIntProgressEmitter, progressDivBigInt } from "./common";
 					Math.floor(data.length > 2 ? data.length / 2 : data.length),
 				);
 
-				if (pr === 1) {
-					const prDiv = progressDiv(max);
+				const rows = renderFactorRows(data, num, pr, progress);
 
-					for (let x = 0n; x < max; x++) {
-						tmp.push(`
-                    <tr>
-                        <td>&#247;</td>
-                        <td>${formatNumber(data[Number(x)])}</td>
-                        <td>=</td>
-                        <td>${formatNumber(num / BigInt(data[Number(x)]))}</td>
-                    </tr>
-                `);
-						progress(x, max, prDiv);
-					}
-				} else {
-					for (let x = 0n; x < max; x++) {
-						tmp.push(`
-                    <tr>
-                        <td>&#247;</td>
-                        <td>${formatNumber(data[Number(x)])}</td>
-                        <td>=</td>
-                        <td>${formatNumber(num / BigInt(data[Number(x)]))}</td>
-                    </tr>
-                `);
-					}
-				}
-
-				result = `<div class="scrollable"><table>${tmp.join("")}</table></div>`;
+				result = `<div class="scrollable"><table>${rows}</table></div>`;
 			}
 
 			postMessage({ type: "data", data: result });

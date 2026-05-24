@@ -35,8 +35,27 @@ export interface WorkerResultMap {
 	joinresult: string;
 }
 
+export type WorkerProgressData =
+	| number
+	| {
+			progress: number;
+			count?: number;
+			prime?: boolean;
+			factors?: (number | bigint)[];
+	  };
+
 export type WorkerMessage<T> =
-	| { type: "progress"; data: number | { progress: number; count: number } }
+	| {
+			type: "progress";
+			data:
+				| number
+				| {
+						progress: number;
+						count?: number;
+						prime?: boolean;
+						factors?: (number | bigint)[];
+				  };
+	  }
 	| { type: "data"; data: T }
 	| { type: "error"; error: string };
 
@@ -60,7 +79,7 @@ export function runWorker<T extends WorkerScript>(
 	params: WorkerParamsMap[T],
 	callback: (data: WorkerResultMap[T]) => void,
 	onerror?: (e: string) => void,
-	onprogress?: (e: number | { progress: number; count: number }) => void,
+	onprogress?: (e: WorkerProgressData) => void,
 ): void {
 	stopWorker();
 

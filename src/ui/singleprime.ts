@@ -43,9 +43,11 @@ export function calcSinglePrimeImpl(): void {
 	if (currentNum > zero) {
 		const timerId = genId();
 		const progressId = state.pr ? genId() : null;
+		const foundFactorPairs = new Map<string, string>();
 
 		showSinglePrimeOutput(`
-			Checking ${timerIndicator(timerId)}
+			<div id="singleprime_status">Checking ${timerIndicator(timerId)}</div>
+			<div id="singleprime_factors"></div>
 			${loading4()}<br/>
 			${progressIndicator(progressId)} 
 			`);
@@ -61,6 +63,37 @@ export function calcSinglePrimeImpl(): void {
 			)}`;
 			setInnerHtml("single_time_1", timeText);
 			setInnerHtml("single_time_2", timeText);
+		}
+
+		function updateSinglePrimeStatus(status: string): void {
+			setInnerHtml("singleprime_status", status);
+		}
+
+		function updateSinglePrimeFactors(): void {
+			const entries = Array.from(foundFactorPairs.entries());
+			if (entries.length === 0) {
+				setInnerHtml("singleprime_factors", "");
+				return;
+			}
+			entries.sort((a, b) => {
+				const left = state.big ? BigInt(a[0]) : Number(a[0]);
+				const right = state.big ? BigInt(b[0]) : Number(b[0]);
+				return left < right ? -1 : left > right ? 1 : 0;
+			});
+			const rows = entries
+				.map(
+					([divisor, quotient]) =>
+						`<tr><td>÷</td><td>${formatNumber(
+							divisor as unknown as number | bigint,
+						)}</td><td>=</td><td>${formatNumber(
+							quotient as unknown as number | bigint,
+						)}</td></tr>`,
+				)
+				.join("");
+			setInnerHtml(
+				"singleprime_factors",
+				`<small>It can be divided with<div class="scrollable"><table><tbody>${rows}</tbody></table></div></small>`,
+			);
 		}
 
 		monitorRenderTime("root", "single_time_1", "single_time_2");
@@ -117,9 +150,33 @@ export function calcSinglePrimeImpl(): void {
 				showSinglePrimeOutput(`Fail to find prime number. ${e}`);
 				updateSinglePrimeTimeLabel();
 			},
-			function (e) {
+			function (e: unknown) {
 				if (typeof e === "object" && e !== null && "progress" in e) {
-					updateProgress(progressId, e.progress);
+					const detail = e as {
+						progress: number;
+						prime?: boolean;
+						factors?: (number | bigint)[];
+					};
+					updateProgress(progressId, detail.progress);
+					if (typeof detail.prime === "boolean") {
+						if (detail.prime) {
+							updateSinglePrimeStatus(
+								`<h4>${formatNumber(currentNum)}</h4><b class="font-success">Is a prime number</b>`,
+							);
+						} else {
+							updateSinglePrimeStatus(
+								`<h4>${formatNumber(currentNum)}</h4><b class="font-danger">Is NOT a prime number</b>`,
+							);
+						}
+					}
+					if (
+						Array.isArray(detail.factors) &&
+						detail.factors.length === 2
+					) {
+						const [divisor, quotient] = detail.factors;
+						foundFactorPairs.set(String(divisor), String(quotient));
+						updateSinglePrimeFactors();
+					}
 				} else {
 					updateProgress(progressId, e as number);
 				}
