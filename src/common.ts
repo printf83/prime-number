@@ -67,7 +67,7 @@ export function randomBigInt(max: bigint): bigint {
 		return 0n;
 	}
 
-	let bits = max.toString(2).length;
+	const bits = max.toString(2).length;
 	let value = 0n;
 	while (value <= 0n || value >= max) {
 		value = 0n;
@@ -89,7 +89,7 @@ export function pollardsRho(n: bigint): bigint {
 	if (n % 2n === 0n) return 2n;
 	if (n % 3n === 0n) return 3n;
 
-	let c = randomBigInt(n - 1n) + 1n;
+	const c = randomBigInt(n - 1n) + 1n;
 	let x = randomBigInt(n - 2n) + 2n;
 	let y = x;
 	let d = 1n;

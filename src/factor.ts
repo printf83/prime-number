@@ -59,10 +59,6 @@ import { createNumberProgressEmitter, progressDivNumber } from "./common";
 					.join(", ")
 					.replace(/, ((?:.(?!, ))+)$/, " and $1");
 			} else {
-				const tmp: string[] = [];
-				const max =
-					data.length > 2 ? Math.floor(data.length / 2) : data.length;
-
 				const rows = renderFactorRows(data, num, pr, progress);
 
 				result = `<div class="scrollable"><table>${rows}</table></div>`;

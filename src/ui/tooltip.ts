@@ -1,5 +1,5 @@
 import { state } from "../state";
-import { formatNumber, formatTime, genId, renderDivisorTable } from "../utils";
+import { formatNumber, formatTime, genId } from "../utils";
 import {
 	genTooltip,
 	monitorRenderTime,

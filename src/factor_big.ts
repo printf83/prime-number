@@ -61,11 +61,6 @@ import { createBigIntProgressEmitter, progressDivBigInt } from "./common";
 					.join(", ")
 					.replace(/, ((?:.(?!, ))+)$/, " and $1");
 			} else {
-				const tmp: string[] = [];
-				const max = BigInt(
-					Math.floor(data.length > 2 ? data.length / 2 : data.length),
-				);
-
 				const rows = renderFactorRows(data, num, pr, progress);
 
 				result = `<div class="scrollable"><table>${rows}</table></div>`;
