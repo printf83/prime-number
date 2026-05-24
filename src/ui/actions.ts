@@ -44,8 +44,10 @@ import {
 import { attachShowRangePrimeEvents, attachShowStartEvents } from "./events";
 
 let tooltipOutsideClickListenerAdded = false;
+let tooltipOutsideClickListener: ((event: Event) => void) | null = null;
 
 export function calcSinglePrime(): void {
+	stopWorker();
 	const zero = state.big ? 0n : 0;
 	const numElement = document.getElementById(
 		"num",
@@ -60,95 +62,96 @@ export function calcSinglePrime(): void {
 	}
 
 	if (currentNum > zero) {
-		if (currentNum !== state.snum) {
-			const timerId = genId();
-			const progressId = state.pr ? genId() : null;
+		const timerId = genId();
+		const progressId = state.pr ? genId() : null;
 
-			showSinglePrimeOutput(`
+		showSinglePrimeOutput(`
 				Checking ${timerIndicator(timerId)}
 				${loading4()}<br/>
 				${progressIndicator(progressId)} 
 				`);
-			secTimer(timerId, 1);
+		secTimer(timerId, 1);
 
-			state.snum = currentNum;
+		state.snum = currentNum;
 
-			const singlePrimeStart = window.performance.now();
+		const singlePrimeStart = window.performance.now();
 
-			function updateSinglePrimeTimeLabel(): void {
-				const timeText = `Complete in ${formatTime(
-					window.performance.now() - singlePrimeStart,
-				)}`;
-				setInnerHtml("single_time_1", timeText);
-				setInnerHtml("single_time_2", timeText);
-			}
+		function updateSinglePrimeTimeLabel(): void {
+			const timeText = `Complete in ${formatTime(
+				window.performance.now() - singlePrimeStart,
+			)}`;
+			setInnerHtml("single_time_1", timeText);
+			setInnerHtml("single_time_2", timeText);
+		}
 
-			monitorRenderTime("root", "single_time_1", "single_time_2");
+		monitorRenderTime("root", "single_time_1", "single_time_2");
 
-			runWorker(
-				"singleprime",
-				[state.snum, state.pr],
-				function (e) {
-					if (e) {
-						state.result = e;
-						if (state.result) {
-							runWorker(
-								"factor",
-								[state.result, state.snum, state.ot, state.pr],
-								function (e) {
-									const lastNumber =
-										state.result[state.result.length - 1];
+		runWorker(
+			"singleprime",
+			[state.snum, state.pr],
+			function (e) {
+				if (e) {
+					state.result = e;
+					if (state.result) {
+						runWorker(
+							"factor",
+							[state.result, state.snum, state.ot, state.pr],
+							function (e) {
+								const lastNumber =
+									state.result[state.result.length - 1];
 
-									if (state.result.length === 2) {
-										showSinglePrimeOutput(
-											`<h4>${formatNumber(lastNumber)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><small id="single_time_1">${loading2}</small>`,
-										);
-									} else {
-										showSinglePrimeOutput(
-											`${
-												state.result.length > 30
-													? `<small id="single_time_1">${loading2}</small><br/><br/>`
-													: ``
-											}
+								if (state.result.length === 2) {
+									showSinglePrimeOutput(
+										`<h4>${formatNumber(lastNumber)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><small id="single_time_1">${loading2}</small>`,
+									);
+								} else {
+									showSinglePrimeOutput(
+										`${
+											state.result.length > 30
+												? `<small id="single_time_1">${loading2}</small><br/><br/>`
+												: ``
+										}
 									<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
 										state.result.length === 1 ? ` only` : ``
 									} be divided with <br/>${e}</small><br/><small id="single_time_2">${loading2}</small>`,
-										);
-									}
-									updateSinglePrimeTimeLabel();
-								},
-								function (e) {
-									showSinglePrimeOutput(
-										`Fail to find prime number. ${e}`,
 									);
-								},
-							);
-						} else {
-							showSinglePrimeOutput(`Fail to find prime number`);
-							updateSinglePrimeTimeLabel();
-						}
+								}
+								updateSinglePrimeTimeLabel();
+							},
+							function (e) {
+								showSinglePrimeOutput(
+									`Fail to find prime number. ${e}`,
+								);
+							},
+						);
 					} else {
 						showSinglePrimeOutput(`Fail to find prime number`);
 						updateSinglePrimeTimeLabel();
 					}
-				},
-				function (e) {
-					showSinglePrimeOutput(`Fail to find prime number. ${e}`);
+				} else {
+					showSinglePrimeOutput(`Fail to find prime number`);
 					updateSinglePrimeTimeLabel();
-				},
-				function (e) {
-					updateProgress(progressId, e);
-				},
-			);
-		}
+				}
+			},
+			function (e) {
+				showSinglePrimeOutput(`Fail to find prime number. ${e}`);
+				updateSinglePrimeTimeLabel();
+			},
+			function (e) {
+				updateProgress(progressId, e);
+			},
+		);
 	} else {
 		showSinglePrimeOutput(`Number must more than 0`);
 	}
 }
 
 export function showStart(): void {
-	hideTooltip();
+	stopWorker();
+	state.result = [];
 	state.countOnly = false;
+	state.snum = state.big ? 1n : 1;
+	hideTooltip();
 
 	genUI(
 		`
@@ -181,10 +184,7 @@ export function showStart(): void {
 				os_onchange,
 			});
 			os_onchange();
-			setTimeout(function () {
-				state.snum = state.big ? 0n : 0;
-				calcSinglePrime();
-			}, 100);
+			calcSinglePrime();
 		},
 	);
 }
@@ -193,7 +193,7 @@ export function ot_onchange(): void {
 	state.ot = (document.getElementById("ot") as HTMLInputElement).checked
 		? 1
 		: 0;
-	state.snum = state.big ? 0n : 0;
+	state.snum = state.big ? 1n : 1;
 	calcSinglePrime();
 }
 
@@ -291,6 +291,7 @@ export function getParamFromUrl(): void {
 }
 
 export function calcRangePrime(): void {
+	stopWorker();
 	let zero: number | bigint = 0;
 
 	if (state.big) {
@@ -634,7 +635,7 @@ export function showRangePrimeOutput(): void {
 			});
 
 			if (!tooltipOutsideClickListenerAdded) {
-				document.addEventListener("click", function (event) {
+				tooltipOutsideClickListener = function (event: Event) {
 					const target = event.target as Node | null;
 					const tooltipContainer = document.getElementById(
 						"tooltip_container",
@@ -651,7 +652,17 @@ export function showRangePrimeOutput(): void {
 					}
 
 					hideTooltip();
-				});
+				};
+				document.addEventListener(
+					"pointerdown",
+					tooltipOutsideClickListener,
+					true,
+				);
+				document.addEventListener(
+					"click",
+					tooltipOutsideClickListener,
+					true,
+				);
 				tooltipOutsideClickListenerAdded = true;
 			}
 
@@ -874,12 +885,34 @@ export function showRangePrimeOutput(): void {
 
 export function hideTooltip(): void {
 	const tooltip_container = document.getElementById("tooltip_container");
+	const tooltipWasVisible =
+		tooltip_container &&
+		getComputedStyle(tooltip_container).display !== "none" &&
+		tooltip_container.getAttribute("aria-hidden") !== "true";
+
 	if (tooltip_container) {
 		tooltip_container.style.display = "none";
 		tooltip_container.setAttribute("aria-hidden", "true");
 	}
 
-	stopWorker();
+	if (tooltipWasVisible) {
+		stopWorker();
+	}
+
+	if (tooltipOutsideClickListener !== null) {
+		document.removeEventListener(
+			"pointerdown",
+			tooltipOutsideClickListener,
+			true,
+		);
+		document.removeEventListener(
+			"click",
+			tooltipOutsideClickListener,
+			true,
+		);
+		tooltipOutsideClickListener = null;
+		tooltipOutsideClickListenerAdded = false;
+	}
 }
 
 export function showTooltip(e: Event): void {
