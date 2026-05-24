@@ -72,7 +72,88 @@ const workerConstructors = {
 
 type WorkerConstructorKey = keyof typeof workerConstructors;
 
+export type WorkerJob = {
+	[K in WorkerScript]: {
+		script: K;
+		params: WorkerParamsMap[K];
+	};
+}[WorkerScript];
+
 let wk: Worker | null = null;
+let currentWorkerJob: WorkerJob | null = null;
+
+function areParamsEqual(
+	a: readonly unknown[] | Uint8Array,
+	b: readonly unknown[] | Uint8Array,
+): boolean {
+	if (a === b) {
+		return true;
+	}
+
+	if (a.length !== b.length) {
+		return false;
+	}
+
+	for (let index = 0; index < a.length; index += 1) {
+		const aValue = a[index];
+		const bValue = b[index];
+
+		if (aValue === bValue) {
+			continue;
+		}
+
+		if (
+			Array.isArray(aValue) &&
+			Array.isArray(bValue) &&
+			areParamsEqual(aValue, bValue)
+		) {
+			continue;
+		}
+
+		if (
+			aValue instanceof Uint8Array &&
+			bValue instanceof Uint8Array &&
+			areParamsEqual(aValue, bValue)
+		) {
+			continue;
+		}
+
+		if (!Object.is(aValue, bValue)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+export function getCurrentWorkerJob(): WorkerJob | null {
+	return currentWorkerJob;
+}
+
+export function isCurrentWorkerJob<T extends WorkerScript>(
+	script: T,
+	params: WorkerParamsMap[T],
+): boolean {
+	return (
+		currentWorkerJob !== null &&
+		currentWorkerJob.script === script &&
+		areParamsEqual(
+			currentWorkerJob.params as readonly unknown[],
+			params as readonly unknown[],
+		)
+	);
+}
+
+export function stopWorkerIfCurrentJob<T extends WorkerScript>(
+	script: T,
+	params: WorkerParamsMap[T],
+): boolean {
+	if (isCurrentWorkerJob(script, params)) {
+		stopWorker();
+		return true;
+	}
+	return false;
+}
 
 export function runWorker<T extends WorkerScript>(
 	script: T,
@@ -89,6 +170,7 @@ export function runWorker<T extends WorkerScript>(
 
 	const worker = new WorkerConstructor();
 	wk = worker;
+	currentWorkerJob = { script, params } as WorkerJob;
 	worker.postMessage(params);
 	worker.onmessage = function (
 		e: MessageEvent<WorkerMessage<WorkerResultMap[T]>>,
@@ -129,4 +211,5 @@ export function stopWorker() {
 		wk.terminate();
 		wk = null;
 	}
+	currentWorkerJob = null;
 }

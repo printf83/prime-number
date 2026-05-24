@@ -194,30 +194,54 @@ export function getParam(): URLSearchParams {
 	return new URLSearchParams(window.location.search);
 }
 
-export function secTimer(id: string, d: number): void {
-	setTimeout(function () {
-		const elem = document.getElementById(id);
-		if (elem) {
-			d = d ? d : 1;
+export function secTimer(id: string, d: number): () => void {
+	let timeoutId: number | null = null;
+	let cancelled = false;
 
-			const h = Math.floor(d / 3600);
-			const m = Math.floor((d % 3600) / 60);
-			const s = Math.floor((d % 3600) % 60);
-
-			const hDisplay = h > 0 ? `${h} hrs` : null;
-			const mDisplay = m > 0 ? `${m} min` : null;
-			const sDisplay = s > 0 ? `${s} sec` : null;
-
-			const text = formatList(
-				[hDisplay, mDisplay, sDisplay].filter(
-					(value): value is string => Boolean(value),
-				),
-			);
-
-			elem.innerHTML = `since ${text} ago `;
-			secTimer(id, ++d);
+	function cancel(): void {
+		cancelled = true;
+		if (timeoutId !== null) {
+			clearTimeout(timeoutId);
+			timeoutId = null;
 		}
-	}, 1000);
+	}
+
+	function tick(count: number): void {
+		if (cancelled) {
+			return;
+		}
+
+		timeoutId = window.setTimeout(function () {
+			if (cancelled) {
+				return;
+			}
+
+			const elem = document.getElementById(id);
+			if (elem) {
+				count = count ? count : 1;
+
+				const h = Math.floor(count / 3600);
+				const m = Math.floor((count % 3600) / 60);
+				const s = Math.floor((count % 3600) % 60);
+
+				const hDisplay = h > 0 ? `${h} hrs` : null;
+				const mDisplay = m > 0 ? `${m} min` : null;
+				const sDisplay = s > 0 ? `${s} sec` : null;
+
+				const text = formatList(
+					[hDisplay, mDisplay, sDisplay].filter(
+						(value): value is string => Boolean(value),
+					),
+				);
+
+				elem.innerHTML = `since ${text} ago `;
+				tick(count + 1);
+			}
+		}, 1000);
+	}
+
+	tick(d);
+	return cancel;
 }
 
 export function getMemory() {

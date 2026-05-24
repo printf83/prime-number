@@ -7,7 +7,7 @@ import {
 	setInnerHtml,
 	updateProgress,
 } from "../dom";
-import { runWorker } from "../workers";
+import { runWorker, stopWorkerIfCurrentJob, WorkerJob } from "../workers";
 import {
 	loading2,
 	loading4,
@@ -19,7 +19,14 @@ function getSinglePrimeMethod(): string {
 	return "Miller-Rabin";
 }
 
+let currentTooltipWorkerJob: WorkerJob | null = null;
+let currentTooltipTimerCancel: (() => void) | null = null;
+
 export function hideTooltip(): void {
+	if (currentTooltipTimerCancel) {
+		currentTooltipTimerCancel();
+		currentTooltipTimerCancel = null;
+	}
 	const tooltip_container = document.getElementById("tooltip_container");
 	const tooltipWasVisible =
 		tooltip_container &&
@@ -31,8 +38,12 @@ export function hideTooltip(): void {
 		tooltip_container.setAttribute("aria-hidden", "true");
 	}
 
-	if (tooltipWasVisible) {
-		// do not stop the worker working on the background tooltip check
+	if (tooltipWasVisible && currentTooltipWorkerJob) {
+		stopWorkerIfCurrentJob(
+			currentTooltipWorkerJob.script,
+			currentTooltipWorkerJob.params,
+		);
+		currentTooltipWorkerJob = null;
 	}
 }
 
@@ -108,9 +119,16 @@ export function showTooltip(e: Event): void {
 			`,
 		);
 		initTooltipFactorTable();
-		secTimer(timerId, 1);
+		if (currentTooltipTimerCancel) {
+			currentTooltipTimerCancel();
+		}
+		currentTooltipTimerCancel = secTimer(timerId, 1);
 
 		monitorRenderTime("tooltip", "tooltip_time", "tooltip_time");
+		currentTooltipWorkerJob = {
+			script: "singleprime",
+			params: [num, state.pr],
+		};
 		runWorker(
 			"singleprime",
 			[num, state.pr],
@@ -118,6 +136,10 @@ export function showTooltip(e: Event): void {
 				if (e) {
 					state.result = e;
 					if (state.result) {
+						currentTooltipWorkerJob = {
+							script: "factor",
+							params: [state.result, num, state.ot, state.pr],
+						};
 						runWorker(
 							"factor",
 							[state.result, num, state.ot, state.pr],

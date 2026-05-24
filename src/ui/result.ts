@@ -21,6 +21,15 @@ interface ResultCallbacks {
 }
 
 const ROW_HEIGHT = 25;
+let currentResultResizeHandler: EventListenerOrEventListenerObject | null =
+	null;
+
+export function cleanupResultResizeListener(): void {
+	if (currentResultResizeHandler !== null) {
+		window.removeEventListener("resize", currentResultResizeHandler);
+		currentResultResizeHandler = null;
+	}
+}
 
 export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 	const { showStart, showRangePrimeOutput, showTooltip, big_onchange } =
@@ -203,7 +212,9 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 			}
 
 			updatePageMetrics();
+			cleanupResultResizeListener();
 			window.addEventListener("resize", onResize);
+			currentResultResizeHandler = onResize;
 			const btnScrollFirstElement = document.getElementById(
 				"btn-scroll-first",
 			) as HTMLButtonElement | null;

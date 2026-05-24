@@ -13,7 +13,10 @@ import {
 } from "./builders";
 import { calcSinglePrimeImpl } from "./singleprime";
 import { calcRangePrimeImpl } from "./rangeprime";
-import { showRangePrimeOutputImpl } from "./result";
+import {
+	showRangePrimeOutputImpl,
+	cleanupResultResizeListener,
+} from "./result";
 import {
 	hideTooltip as hideTooltipImpl,
 	showTooltip as showTooltipImpl,
@@ -64,6 +67,7 @@ export function big_onchange(val: string | number): void {
 }
 
 export function showStart(): void {
+	cleanupResultResizeListener();
 	stopWorker();
 	state.result = [];
 	state.snum = state.big ? 1n : 1;
