@@ -10,7 +10,7 @@ import {
 	const progress = createBigIntProgressEmitter((value) => {
 		postMessage({
 			type: "progress",
-			data: { progress: Number(value), count },
+			data: { progress: Number(value) },
 		});
 	});
 
@@ -55,7 +55,7 @@ import {
 					result.fill(0);
 				}
 
-				const prDiv = progressDiv(rangeSize);
+				const prDiv = progressDiv(rangeSize, rangeSize / 1000n);
 				for (let i = 0n; i < rangeSize; i += 1n) {
 					const n = min + i;
 					if (n > 1n && isProbablyPrime(n)) {
@@ -92,6 +92,8 @@ import {
 			const basePrimes = simpleSieve(limitNumber);
 			const totalChunks = (rangeSize + chunkSize - 1n) / chunkSize;
 			const prDiv = progressDiv(totalChunks);
+			const updateCountIntervalMs = 250;
+			let lastCountUpdateTime = performance.now();
 
 			count = 0;
 			const result = returnFullResults
@@ -147,7 +149,24 @@ import {
 				}
 
 				if (pr === 1) {
-					progress(chunkIndex + 1n, totalChunks, prDiv);
+					const currentChunk = chunkIndex + 1n;
+					const now = performance.now();
+					if (
+						now - lastCountUpdateTime >= updateCountIntervalMs ||
+						currentChunk === totalChunks
+					) {
+						lastCountUpdateTime = now;
+						postMessage({
+							type: "progress",
+							data: {
+								progress: Number(
+									(currentChunk * 100n) / totalChunks,
+								),
+								count,
+							},
+						});
+					}
+					progress(currentChunk, totalChunks, prDiv);
 				}
 			}
 

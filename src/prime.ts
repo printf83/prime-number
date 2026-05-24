@@ -7,7 +7,7 @@ import {
 (function () {
 	let count = 0;
 	const progress = createNumberProgressEmitter((value) => {
-		postMessage({ type: "progress", data: { progress: value, count } });
+		postMessage({ type: "progress", data: { progress: value } });
 	});
 
 	function progressDiv(max: number, div = 100): number {
@@ -28,7 +28,9 @@ import {
 			const totalChunks = Math.floor(
 				(rangeSize + chunkSize - 1) / chunkSize,
 			);
-			const prDiv = progressDiv(totalChunks);
+			const prDiv = progressDiv(totalChunks, totalChunks / 1000);
+			const updateCountIntervalMs = 250;
+			let lastCountUpdateTime = performance.now();
 
 			count = 0;
 			const result = returnFullResults
@@ -81,6 +83,23 @@ import {
 				}
 
 				if (pr === 1) {
+					const currentChunk = chunkIndex + 1;
+					const now = performance.now();
+					if (
+						now - lastCountUpdateTime >= updateCountIntervalMs ||
+						currentChunk === totalChunks
+					) {
+						lastCountUpdateTime = now;
+						postMessage({
+							type: "progress",
+							data: {
+								progress: Math.floor(
+									(currentChunk / totalChunks) * 100,
+								),
+								count,
+							},
+						});
+					}
 					progress(chunkIndex + 1, totalChunks, prDiv);
 				}
 			}

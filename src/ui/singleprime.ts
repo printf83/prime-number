@@ -137,7 +137,7 @@ export function calcSinglePrimeImpl(): void {
 									getSinglePrimeMethod();
 								if (state.result.length === 2) {
 									showSinglePrimeOutput(
-										`<h4>${formatNumber(lastNumber)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><small id="single_time_1">${loading2}</small>`,
+										`<h4>${formatNumber(lastNumber)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><br/><small id="single_time_1">${loading2}</small>`,
 									);
 								} else {
 									showSinglePrimeOutput(

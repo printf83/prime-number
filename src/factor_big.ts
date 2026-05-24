@@ -1,21 +1,13 @@
-import { createBigIntProgressEmitter, progressDivBigInt } from "./common";
+import {
+	createBigIntProgressEmitter,
+	progressDivBigIntDefault,
+} from "./common";
+import { formatNumber } from "./utils";
 
 (function () {
 	const progress = createBigIntProgressEmitter((value) => {
 		postMessage({ type: "progress", data: value });
 	});
-
-	function progressDiv(max: bigint, div = 100n): bigint {
-		return progressDivBigInt(max, div);
-	}
-
-	function formatNumber(num: bigint): string {
-		if (num === 0n || num) {
-			return num.toLocaleString("en-US");
-		}
-
-		return `<span class="font-danger">Error!</span>`;
-	}
 
 	function renderFactorRows(
 		data: bigint[],
@@ -27,7 +19,7 @@ import { createBigIntProgressEmitter, progressDivBigInt } from "./common";
 		const max = BigInt(
 			Math.floor(data.length > 2 ? data.length / 2 : data.length),
 		);
-		const prDiv = pr === 1 ? progressDiv(max) : 0n;
+		const prDiv = pr === 1 ? progressDivBigIntDefault(max) : 0n;
 
 		for (let x = 0n; x < max; x++) {
 			tmp.push(`

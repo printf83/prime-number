@@ -281,7 +281,12 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 										currentCountId,
 										detail.count,
 									);
-									updateProgress(progressId, detail.progress);
+									if (progressId !== null) {
+										updateProgress(
+											progressId,
+											detail.progress,
+										);
+									}
 								} else {
 									updateProgress(progressId, e as number);
 								}

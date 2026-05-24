@@ -1,21 +1,10 @@
 import { createNumberProgressEmitter, progressDivNumber } from "./common";
+import { formatNumber } from "./utils";
 
 (function () {
 	const progress = createNumberProgressEmitter((value) => {
 		postMessage({ type: "progress", data: value });
 	});
-
-	function progressDiv(max: number, div = 100): number {
-		return progressDivNumber(max, div);
-	}
-
-	function formatNumber(num: number): string {
-		if (num === 0 || num) {
-			return num.toLocaleString("en-US");
-		}
-
-		return `<span class="font-danger">Error!</span>`;
-	}
 
 	function renderFactorRows(
 		data: number[],
@@ -25,7 +14,7 @@ import { createNumberProgressEmitter, progressDivNumber } from "./common";
 	): string {
 		const tmp: string[] = [];
 		const max = data.length > 2 ? Math.floor(data.length / 2) : data.length;
-		const prDiv = pr === 1 ? progressDiv(max) : 0;
+		const prDiv = pr === 1 ? progressDivNumber(max) : 0;
 
 		for (let x = 0; x < max; x++) {
 			tmp.push(`

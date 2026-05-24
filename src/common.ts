@@ -160,11 +160,23 @@ export function getDivisorPairsFromPrimeFactors(
 }
 
 export function progressDivNumber(max: number, div = 100): number {
-	return max > div ? Math.floor(max / div) : div;
+	const normalizedDiv = div <= 0 ? 1 : div;
+	if (max > normalizedDiv) {
+		return Math.max(1, Math.floor(max / normalizedDiv));
+	}
+	return 1;
 }
 
 export function progressDivBigInt(max: bigint, div = 100n): bigint {
-	return max > div ? max / div : div;
+	const normalizedDiv = div <= 0n ? 1n : div;
+	if (max > normalizedDiv) {
+		return max / normalizedDiv;
+	}
+	return 1n;
+}
+
+export function progressDivBigIntDefault(max: bigint): bigint {
+	return progressDivBigInt(max, 100n);
 }
 
 export function simpleSieve(limit: number): number[] {
@@ -201,6 +213,14 @@ export function createNumberProgressEmitter(
 	let lastProgress = -1;
 	return function progress(x: number, max: number, div: number): void {
 		if (div === 0) return;
+		if (x === max) {
+			const curProgress = 100;
+			if (lastProgress !== curProgress) {
+				lastProgress = curProgress;
+				onProgress(curProgress);
+			}
+			return;
+		}
 		if (x % div === 0) {
 			const curProgress = Math.floor((x / max) * 100);
 			if (lastProgress !== curProgress) {
@@ -217,6 +237,14 @@ export function createBigIntProgressEmitter(
 	let lastProgress = -1n;
 	return function progress(x: bigint, max: bigint, div: bigint): void {
 		if (div === 0n) return;
+		if (x === max) {
+			const curProgress = 100n;
+			if (lastProgress !== curProgress) {
+				lastProgress = curProgress;
+				onProgress(Number(curProgress));
+			}
+			return;
+		}
 		if (x % div === 0n) {
 			const curProgress = (x * 100n) / max;
 			if (lastProgress !== curProgress) {
