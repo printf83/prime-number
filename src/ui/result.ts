@@ -20,6 +20,8 @@ interface ResultCallbacks {
 	big_onchange: (val: string | number) => void;
 }
 
+const ROW_HEIGHT = 25;
+
 export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 	const { showStart, showRangePrimeOutput, showTooltip, big_onchange } =
 		callbacks;
@@ -74,17 +76,14 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		`
 		${header()} 
 		Showing <b>${formatNumber(visibleCount)} numbers</b> in a paged view.<br/>
-		Use the fake scrollbar or buttons to page through results.
+		Use the paging buttons below to move through results.
 		<div class="result_container">
 			<div class="result-viewport">
 				<div class="result-inner"></div>
 			</div>
-			<div class="result-paging">
-				<div class="paging-track" id="paging_track">
-					<div class="paging-thumb" id="paging_thumb"></div>
-				</div>
-				<div class="paging-label" id="paging_label">Page 1</div>
-			</div>
+		</div>
+		<div class="result-page-info">
+			<div class="paging-label" id="paging_label">Page 1 of 1</div>
 		</div>
 		<div class="result-scroll-controls">
 			${btnScrollFirst}${btnScrollPrev10}${btnScrollPrev}${btnTryAgain}${btnScrollNext}${btnScrollNext10}${btnScrollLast}
@@ -104,21 +103,13 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 			const inner = document.querySelector(
 				".result-inner",
 			) as HTMLElement | null;
-			const scrollbarTrack = document.getElementById(
-				"paging_track",
-			) as HTMLElement | null;
-			const scrollbarThumb = document.getElementById(
-				"paging_thumb",
-			) as HTMLElement | null;
 			const pageLabel = document.getElementById(
 				"paging_label",
 			) as HTMLElement | null;
 
-			if (!viewport || !inner || !scrollbarTrack || !scrollbarThumb) {
+			if (!viewport || !inner) {
 				return;
 			}
-
-			let rowHeight = 30;
 
 			function getValue(index: number): number | bigint {
 				return state.big
@@ -159,21 +150,12 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 				return `<div class="result-row">${items.join("")}</div>`;
 			}
 
-			function measureRowHeight(): number {
-				const sample = document.createElement("div");
-				sample.style.visibility = "hidden";
-				sample.style.position = "relative";
-				sample.style.width = "100%";
-				sample.innerHTML = renderRow(0);
-				inner!.appendChild(sample);
-				const height = Math.ceil(sample.getBoundingClientRect().height);
-				inner!.removeChild(sample);
-				return Math.max(30, height);
-			}
-
-			rowHeight = measureRowHeight();
 			viewport.style.overflow = "hidden";
 			inner.style.position = "relative";
+			inner.style.height = "100%";
+			viewport.style.overflow = "hidden";
+			inner.style.position = "relative";
+			inner.style.height = "100%";
 
 			const content = document.createElement("div");
 			content.className = "result-content";
@@ -183,31 +165,37 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 			content.style.width = "100%";
 			inner.appendChild(content);
 
-			const rowsPerPage = Math.max(
-				1,
-				Math.floor(viewport.clientHeight / rowHeight),
-			);
-			const pageCount = Math.max(1, Math.ceil(totalRows / rowsPerPage));
-			let currentPage = 0;
-			let isDragging = false;
-
-			function updateScrollbar(): void {
-				const trackHeight = scrollbarTrack!.clientHeight;
-				const thumbHeight = Math.max(
-					20,
-					Math.floor(trackHeight / pageCount),
+			function getViewportContentHeight(): number {
+				const viewportStyle = getComputedStyle(viewport!);
+				return (
+					viewport!.clientHeight -
+					parseFloat(viewportStyle.paddingTop) -
+					parseFloat(viewportStyle.paddingBottom)
 				);
-				const maxTop = trackHeight - thumbHeight;
-				const top =
-					pageCount > 1
-						? Math.round((currentPage / (pageCount - 1)) * maxTop)
-						: 0;
-				scrollbarThumb!.style.height = `${thumbHeight}px`;
-				scrollbarThumb!.style.transform = `translateY(${top}px)`;
-				if (pageLabel) {
-					pageLabel.textContent = `Page ${currentPage + 1} of ${pageCount}`;
+			}
+
+			let rowsPerPage = 1;
+			let pageCount = 1;
+			let currentPage = 0;
+
+			function updatePageMetrics(): void {
+				const viewportContentHeight = getViewportContentHeight();
+				rowsPerPage = Math.max(
+					1,
+					Math.floor(viewportContentHeight / ROW_HEIGHT),
+				);
+				pageCount = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+				if (currentPage >= pageCount) {
+					currentPage = pageCount - 1;
 				}
 			}
+
+			function updatePageLabel(): void {
+				if (pageLabel) {
+					pageLabel.textContent = `Page ${formatNumber(currentPage + 1)} of ${formatNumber(pageCount)}`;
+				}
+			}
+
 			function render(): void {
 				const firstRow = currentPage * rowsPerPage;
 				const lastRow = Math.min(totalRows, firstRow + rowsPerPage);
@@ -219,9 +207,25 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 
 				content.style.transform = "translateY(0)";
 				content.innerHTML = html;
-				updateScrollbar();
+				updatePageLabel();
 			}
 
+			let resizePending = false;
+			function onResize(): void {
+				if (resizePending) {
+					return;
+				}
+				resizePending = true;
+				window.requestAnimationFrame(() => {
+					resizePending = false;
+					updatePageMetrics();
+					render();
+					updateScrollButtons();
+				});
+			}
+
+			updatePageMetrics();
+			window.addEventListener("resize", onResize);
 			const btnScrollFirstElement = document.getElementById(
 				"btn-scroll-first",
 			) as HTMLButtonElement | null;
@@ -306,38 +310,6 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 					goToPage(currentPage + 1),
 				);
 			}
-
-			function trackPageForPosition(clientY: number): number {
-				const trackRect = scrollbarTrack!.getBoundingClientRect();
-				const ratio = Math.max(
-					Math.min(1, (clientY - trackRect.top) / trackRect.height),
-				);
-				return Math.min(pageCount - 1, Math.floor(ratio * pageCount));
-			}
-
-			scrollbarTrack.addEventListener("click", (event) => {
-				const page = trackPageForPosition(
-					(event as MouseEvent).clientY,
-				);
-				goToPage(page);
-			});
-
-			scrollbarThumb.addEventListener("pointerdown", (event) => {
-				isDragging = true;
-				scrollbarThumb.setPointerCapture(event.pointerId);
-			});
-
-			document.addEventListener("pointermove", (event) => {
-				if (!isDragging) {
-					return;
-				}
-				const page = trackPageForPosition(event.clientY);
-				goToPage(page);
-			});
-
-			document.addEventListener("pointerup", () => {
-				isDragging = false;
-			});
 
 			render();
 			updateScrollButtons();
