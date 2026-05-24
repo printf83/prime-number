@@ -12,4 +12,4 @@
                         <td>=</td>
                         <td>${r(a/i[t])}</td>
                     </tr>
-                `);c=`<div class="scrollable"><table>${e.join(``)}</table></div>`}postMessage({type:`data`,data:c})}catch(e){postMessage(e)}}})()})();
+                `);c=`<div class="scrollable"><table>${e.join(``)}</table></div>`}postMessage({type:`data`,data:c})}catch(e){postMessage({type:`error`,error:String(e&&typeof e==`object`&&`message`in e?e.message:e)})}}})()})();
