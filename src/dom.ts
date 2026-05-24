@@ -1,5 +1,5 @@
 import { PerformanceWithMemory } from "./state";
-import { formatList, formatTime } from "./utils";
+import { formatList, formatNumber, formatTime } from "./utils";
 
 export function runCallback(callback?: () => void): void {
 	if (typeof callback === "function") {
@@ -160,6 +160,19 @@ export function updateProgress(id: string | null, value: number): void {
 		if (progressContainer) {
 			progressContainer.setAttribute("aria-valuenow", value.toFixed(0));
 		}
+	}
+}
+
+export function updateCurrentCount(id: string | null, count: number): void {
+	if (!id) {
+		return;
+	}
+
+	const elem = document.getElementById(id);
+	if (elem) {
+		elem.innerHTML = `Currently found <b>${formatNumber(count)}</b> prime number${
+			count === 1 ? "" : "s"
+		}`;
 	}
 }
 

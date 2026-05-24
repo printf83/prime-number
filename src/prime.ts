@@ -5,8 +5,9 @@ import {
 } from "./common";
 
 (function () {
+	let count = 0;
 	const progress = createNumberProgressEmitter((value) => {
-		postMessage({ type: "progress", data: value });
+		postMessage({ type: "progress", data: { progress: value, count } });
 	});
 
 	function progressDiv(max: number, div = 100): number {
@@ -29,7 +30,7 @@ import {
 			);
 			const prDiv = progressDiv(totalChunks);
 
-			let count = 0;
+			count = 0;
 			const result = returnFullResults
 				? new Uint8Array(rangeSize)
 				: new Uint8Array(0);

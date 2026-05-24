@@ -6,8 +6,12 @@ import {
 } from "./common";
 
 (function () {
+	let count = 0;
 	const progress = createBigIntProgressEmitter((value) => {
-		postMessage({ type: "progress", data: value });
+		postMessage({
+			type: "progress",
+			data: { progress: Number(value), count },
+		});
 	});
 
 	function progressDiv(max: bigint, div = 100n): bigint {
@@ -43,7 +47,7 @@ import {
 			const returnFullResults = rangeSize <= maxFullResults;
 			const smallRangeThreshold = 1000n;
 			if (rangeSize <= smallRangeThreshold) {
-				let count = 0;
+				count = 0;
 				const result = returnFullResults
 					? new Uint8Array(Number(rangeSize))
 					: new Uint8Array(0);
@@ -89,7 +93,7 @@ import {
 			const totalChunks = (rangeSize + chunkSize - 1n) / chunkSize;
 			const prDiv = progressDiv(totalChunks);
 
-			let count = 0;
+			count = 0;
 			const result = returnFullResults
 				? new Uint8Array(Number(rangeSize))
 				: new Uint8Array(0);

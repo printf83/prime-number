@@ -74,6 +74,12 @@ export function progressIndicator(id: string | null) {
 		: "";
 }
 
+export function currentCountIndicator(id: string | null) {
+	return id
+		? `<div id="${id}">Currently found <b>0</b> prime numbers</div>`
+		: "";
+}
+
 export const btnTryAgain = ctlButton("btn-try-again", "Try Again");
 export const btnCancel = ctlButton("btn-cancel", "Cancel");
 export const btnScrollFirst = ctlButton("btn-scroll-first", "&#8676;");

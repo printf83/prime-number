@@ -36,7 +36,7 @@ export interface WorkerResultMap {
 }
 
 export type WorkerMessage<T> =
-	| { type: "progress"; data: number }
+	| { type: "progress"; data: number | { progress: number; count: number } }
 	| { type: "data"; data: T }
 	| { type: "error"; error: string };
 
@@ -60,7 +60,7 @@ export function runWorker<T extends WorkerScript>(
 	params: WorkerParamsMap[T],
 	callback: (data: WorkerResultMap[T]) => void,
 	onerror?: (e: string) => void,
-	onprogress?: (e: number) => void,
+	onprogress?: (e: number | { progress: number; count: number }) => void,
 ): void {
 	stopWorker();
 

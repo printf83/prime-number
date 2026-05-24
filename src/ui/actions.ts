@@ -14,6 +14,7 @@ import {
 	secTimer,
 	setInnerHtml,
 	showSinglePrimeOutput,
+	updateCurrentCount,
 	updateProgress,
 } from "../dom";
 import { runWorker, stopWorker } from "../workers";
@@ -40,8 +41,24 @@ import {
 	loading4,
 	timerIndicator,
 	progressIndicator,
+	currentCountIndicator,
 } from "./builders";
 import { attachShowRangePrimeEvents, attachShowStartEvents } from "./events";
+
+function getRangePrimeMethod(
+	min: number | bigint,
+	max: number | bigint,
+): string {
+	if (typeof min === "bigint" && typeof max === "bigint") {
+		const rangeSize = max - min + 1n;
+		return rangeSize <= 1000n ? "Miller-Rabin" : "Segmented Sieve";
+	}
+	return "Segmented Sieve";
+}
+
+function getSinglePrimeMethod(): string {
+	return "Miller-Rabin";
+}
 
 let tooltipOutsideClickListenerAdded = false;
 let tooltipOutsideClickListener: ((event: Event) => void) | null = null;
@@ -100,9 +117,11 @@ export function calcSinglePrime(): void {
 								const lastNumber =
 									state.result[state.result.length - 1];
 
+								const singlePrimeMethod =
+									getSinglePrimeMethod();
 								if (state.result.length === 2) {
 									showSinglePrimeOutput(
-										`<h4>${formatNumber(lastNumber)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><small id="single_time_1">${loading2}</small>`,
+										`<h4>${formatNumber(lastNumber)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><small id="single_time_1">${loading2}</small>`,
 									);
 								} else {
 									showSinglePrimeOutput(
@@ -113,7 +132,7 @@ export function calcSinglePrime(): void {
 										}
 									<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
 										state.result.length === 1 ? ` only` : ``
-									} be divided with <br/>${e}</small><br/><small id="single_time_2">${loading2}</small>`,
+									} be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><br/><small id="single_time_2">${loading2}</small>`,
 									);
 								}
 								updateSinglePrimeTimeLabel();
@@ -138,7 +157,11 @@ export function calcSinglePrime(): void {
 				updateSinglePrimeTimeLabel();
 			},
 			function (e) {
-				updateProgress(progressId, e);
+				if (typeof e === "object" && e !== null && "progress" in e) {
+					updateProgress(progressId, e.progress);
+				} else {
+					updateProgress(progressId, e as number);
+				}
 			},
 		);
 	} else {
@@ -391,6 +414,7 @@ export function calcRangePrime(): void {
 			if (window.Worker) {
 				const timerId = genId();
 				const progressId = state.pr ? genId() : null;
+				const currentCountId = genId();
 
 				genUI(
 					`
@@ -401,6 +425,7 @@ export function calcRangePrime(): void {
 						: (state.max as number) - (state.min as number) + 1,
 				)}</b> numbers ${timerIndicator(timerId)}
                 ${loading4()}<br/>
+				${currentCountIndicator(currentCountId)}<br/>
                 ${progressIndicator(progressId)}<br/>
                 ${loading3}<br/><br/>
                 ${btnCancel}
@@ -431,11 +456,15 @@ export function calcRangePrime(): void {
 										payload.countOnly === true;
 									const processTime =
 										window.performance.now() - start;
+									const method = getRangePrimeMethod(
+										state.min,
+										state.max,
+									);
 
 									genUI(
 										`
                                     ${header()}
-                                    We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
+                                    We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b> using <b>${method}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
                                     `,
 										function () {
 											attachShowRangePrimeEvents({
@@ -474,7 +503,16 @@ export function calcRangePrime(): void {
 								);
 							},
 							function (e) {
-								updateProgress(progressId, e);
+								if (
+									typeof e === "object" &&
+									e !== null &&
+									"count" in e
+								) {
+									updateCurrentCount(currentCountId, e.count);
+									updateProgress(progressId, e.progress);
+								} else {
+									updateProgress(progressId, e as number);
+								}
 							},
 						);
 					},
@@ -969,16 +1007,18 @@ export function showTooltip(e: Event): void {
 							"factor",
 							[state.result, num, state.ot, state.pr],
 							function (e) {
+								const singlePrimeMethod =
+									getSinglePrimeMethod();
 								if (state.result.length === 2) {
 									genTooltip(
 										target,
-										`<h3>${formatNumber(state.result[state.result.length - 1])}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><span id="tooltip_time">${loading2}</span>`,
+										`<h3>${formatNumber(state.result[state.result.length - 1])}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><br/><span id="tooltip_time">${loading2}</span>`,
 									);
 									updateTooltipTimeLabel();
 								} else {
 									genTooltip(
 										target,
-										`<h3>${formatNumber(state.result[state.result.length - 1])}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${e}</small><br/><span id="tooltip_time">${loading2}</span>`,
+										`<h3>${formatNumber(state.result[state.result.length - 1])}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><br/><span id="tooltip_time">${loading2}</span>`,
 									);
 									updateTooltipTimeLabel();
 								}
@@ -989,7 +1029,15 @@ export function showTooltip(e: Event): void {
 								);
 							},
 							function (e) {
-								updateProgress(progressId, e);
+								if (
+									typeof e === "object" &&
+									e !== null &&
+									"progress" in e
+								) {
+									updateProgress(progressId, e.progress);
+								} else {
+									updateProgress(progressId, e as number);
+								}
 							},
 						);
 					} else {
@@ -1006,7 +1054,11 @@ export function showTooltip(e: Event): void {
 				updateTooltipTimeLabel();
 			},
 			function (e) {
-				updateProgress(progressId, e);
+				if (typeof e === "object" && e !== null && "progress" in e) {
+					updateProgress(progressId, e.progress);
+				} else {
+					updateProgress(progressId, e as number);
+				}
 			},
 		);
 	} else {
