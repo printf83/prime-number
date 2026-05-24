@@ -1,18 +1,12 @@
-(function () {
-	let lastProgress = 0;
+import { createNumberProgressEmitter, progressDivNumber } from "./common";
 
-	function progress(x: number, max: number, div: number): void {
-		if (x % div === 0) {
-			const curProgress = Math.floor((x / max) * 100);
-			if (lastProgress !== curProgress) {
-				lastProgress = curProgress;
-				postMessage({ type: "progress", data: curProgress });
-			}
-		}
-	}
+(function () {
+	const progress = createNumberProgressEmitter((value) => {
+		postMessage({ type: "progress", data: value });
+	});
 
 	function progressDiv(max: number, div = 100): number {
-		return max > div ? Math.floor(max / div) : div;
+		return progressDivNumber(max, div);
 	}
 
 	self.onmessage = function (e: MessageEvent<unknown>): void {

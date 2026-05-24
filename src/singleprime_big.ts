@@ -1,18 +1,16 @@
-(function () {
-	let lastProgress = 0n;
+import {
+	createBigIntProgressEmitter,
+	isProbablyPrime,
+	progressDivBigInt,
+} from "./common";
 
-	function progress(x: bigint, max: bigint, div: bigint): void {
-		if (x % div === 0n) {
-			const curProgress = (x * 100n) / max;
-			if (lastProgress !== curProgress) {
-				lastProgress = curProgress;
-				postMessage({ type: "progress", data: Number(curProgress) });
-			}
-		}
-	}
+(function () {
+	const progress = createBigIntProgressEmitter((value) => {
+		postMessage({ type: "progress", data: value });
+	});
 
 	function progressDiv(max: bigint, div = 100n): bigint {
-		return max > div ? max / div : div;
+		return progressDivBigInt(max, div);
 	}
 
 	function getSqrt(value: bigint): bigint {
@@ -39,20 +37,11 @@
 		return x0;
 	}
 
-	function isPrime(num: bigint): boolean {
-		if (num === 2n || num === 3n) return true;
-		if (num <= 1n || num % 2n === 0n || num % 3n === 0n) return false;
-		for (let i = 5n; i * i <= num; i += 6n) {
-			if (num % i === 0n || num % (i + 2n) === 0n) return false;
-		}
-		return true;
-	}
-
 	self.onmessage = function (e: MessageEvent<unknown>): void {
 		try {
 			const [num, pr] = e.data as [bigint, number];
 
-			if (isPrime(num)) {
+			if (isProbablyPrime(num)) {
 				postMessage({ type: "data", data: [1n, num] });
 			} else {
 				const result: bigint[] = [1n];

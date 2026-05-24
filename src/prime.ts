@@ -1,45 +1,16 @@
-(function () {
-	let lastProgress = 0;
+import {
+	createNumberProgressEmitter,
+	progressDivNumber,
+	simpleSieve,
+} from "./common";
 
-	function progress(x: number, max: number, div: number): void {
-		if (x % div === 0) {
-			const curProgress = Math.floor((x / max) * 100);
-			if (lastProgress !== curProgress) {
-				lastProgress = curProgress;
-				postMessage({ type: "progress", data: curProgress });
-			}
-		}
-	}
+(function () {
+	const progress = createNumberProgressEmitter((value) => {
+		postMessage({ type: "progress", data: value });
+	});
 
 	function progressDiv(max: number, div = 100): number {
-		return max > div ? Math.floor(max / div) : div;
-	}
-
-	function simpleSieve(limit: number): number[] {
-		const sieve = new Uint8Array(limit + 1);
-		sieve.fill(1);
-		if (limit >= 0) sieve[0] = 0;
-		if (limit >= 1) sieve[1] = 0;
-
-		const primes: number[] = [];
-		if (limit >= 2) {
-			primes.push(2);
-		}
-
-		const maxP = Math.floor(Math.sqrt(limit));
-		for (let p = 3; p <= limit; p += 2) {
-			if (sieve[p]) {
-				primes.push(p);
-				if (p <= maxP) {
-					const step = p * p;
-					for (let j = step; j <= limit; j += 2 * p) {
-						sieve[j] = 0;
-					}
-				}
-			}
-		}
-
-		return primes;
+		return progressDivNumber(max, div);
 	}
 
 	self.onmessage = function (e: MessageEvent<unknown>): void {

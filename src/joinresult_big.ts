@@ -1,18 +1,12 @@
-(function () {
-	let lastProgress = 0n;
+import { createBigIntProgressEmitter, progressDivBigInt } from "./common";
 
-	function progress(x: bigint, max: bigint, div: bigint): void {
-		if (x % div === 0n) {
-			const curProgress = (x * 100n) / max;
-			if (lastProgress !== curProgress) {
-				lastProgress = curProgress;
-				postMessage({ type: "progress", data: Number(curProgress) });
-			}
-		}
-	}
+(function () {
+	const progress = createBigIntProgressEmitter((value) => {
+		postMessage({ type: "progress", data: value });
+	});
 
 	function progressDiv(max: bigint, div = 100n): bigint {
-		return max > div ? max / div : div;
+		return progressDivBigInt(max, div);
 	}
 
 	self.onmessage = function (e: MessageEvent<unknown>): void {

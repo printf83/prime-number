@@ -1,18 +1,17 @@
-(function () {
-	let lastProgress = 0n;
+import {
+	createBigIntProgressEmitter,
+	isProbablyPrime,
+	progressDivBigInt,
+	simpleSieve,
+} from "./common";
 
-	function progress(x: bigint, max: bigint, div: bigint): void {
-		if (x % div === 0n) {
-			const curProgress = (x * 100n) / max;
-			if (lastProgress !== curProgress) {
-				lastProgress = curProgress;
-				postMessage({ type: "progress", data: Number(curProgress) });
-			}
-		}
-	}
+(function () {
+	const progress = createBigIntProgressEmitter((value) => {
+		postMessage({ type: "progress", data: value });
+	});
 
 	function progressDiv(max: bigint, div = 100n): bigint {
-		return max > div ? max / div : div;
+		return progressDivBigInt(max, div);
 	}
 
 	function bigintSqrt(value: bigint): bigint {
@@ -34,38 +33,6 @@
 		return x0;
 	}
 
-	function simpleSieve(limit: number): number[] {
-		const sieve = new Uint8Array(limit + 1);
-		sieve.fill(1);
-
-		if (limit >= 0) {
-			sieve[0] = 0;
-		}
-		if (limit >= 1) {
-			sieve[1] = 0;
-		}
-
-		const primes: number[] = [];
-		if (limit >= 2) {
-			primes.push(2);
-		}
-
-		const maxP = Math.floor(Math.sqrt(limit));
-		for (let p = 3; p <= limit; p += 2) {
-			if (sieve[p]) {
-				primes.push(p);
-				if (p <= maxP) {
-					const step = p * p;
-					for (let j = step; j <= limit; j += 2 * p) {
-						sieve[j] = 0;
-					}
-				}
-			}
-		}
-
-		return primes;
-	}
-
 	self.onmessage = function (e: MessageEvent<unknown>): void {
 		try {
 			const [min, max, pr] = e.data as [bigint, bigint, number];
@@ -74,7 +41,40 @@
 			const chunkSize = 1000000n;
 			const maxFullResults = 2000000n;
 			const returnFullResults = rangeSize <= maxFullResults;
+			const smallRangeThreshold = 1000n;
+			if (rangeSize <= smallRangeThreshold) {
+				let count = 0;
+				const result = returnFullResults
+					? new Uint8Array(Number(rangeSize))
+					: new Uint8Array(0);
+				if (returnFullResults) {
+					result.fill(0);
+				}
 
+				const prDiv = progressDiv(rangeSize);
+				for (let i = 0n; i < rangeSize; i += 1n) {
+					const n = min + i;
+					if (n > 1n && isProbablyPrime(n)) {
+						count += 1;
+						if (returnFullResults) {
+							result[Number(i)] = 1;
+						}
+					}
+					if (pr === 1) {
+						progress(i + 1n, rangeSize, prDiv);
+					}
+				}
+
+				if (pr === 1) {
+					progress(rangeSize, rangeSize, prDiv);
+				}
+
+				postMessage({
+					type: "data",
+					data: { result, count, countOnly: !returnFullResults },
+				});
+				return;
+			}
 			const limit = bigintSqrt(max);
 			if (limit > BigInt(Number.MAX_SAFE_INTEGER)) {
 				throw new Error("Range too large to compute base primes");

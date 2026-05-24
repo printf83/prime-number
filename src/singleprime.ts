@@ -1,34 +1,23 @@
-(function () {
-	let lastProgress = 0;
+import {
+	createNumberProgressEmitter,
+	isProbablyPrime,
+	progressDivNumber,
+} from "./common";
 
-	function progress(x: number, max: number, div: number): void {
-		if (x % div === 0) {
-			const curProgress = Math.floor((x / max) * 100);
-			if (lastProgress !== curProgress) {
-				lastProgress = curProgress;
-				postMessage({ type: "progress", data: curProgress });
-			}
-		}
-	}
+(function () {
+	const progress = createNumberProgressEmitter((value) => {
+		postMessage({ type: "progress", data: value });
+	});
 
 	function progressDiv(max: number, div = 100): number {
-		return max > div ? Math.floor(max / div) : div;
-	}
-
-	function isPrime(num: number): boolean {
-		if (num === 2 || num === 3) return true;
-		if (num <= 1 || num % 2 === 0 || num % 3 === 0) return false;
-		for (let i = 5; i * i <= num; i += 6) {
-			if (num % i === 0 || num % (i + 2) === 0) return false;
-		}
-		return true;
+		return progressDivNumber(max, div);
 	}
 
 	self.onmessage = function (e: MessageEvent<unknown>): void {
 		try {
 			const [num, pr] = e.data as [number, number];
 
-			if (isPrime(num)) {
+			if (isProbablyPrime(BigInt(num))) {
 				postMessage({ type: "data", data: [1, num] });
 			} else {
 				const result: number[] = [1];
