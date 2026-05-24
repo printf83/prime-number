@@ -518,57 +518,13 @@ export function calcRangePrime(): void {
 		);
 	}
 }
-function mw(maxValue: number | bigint) {
-	if (state.big) {
-		switch (true) {
-			case maxValue <= 9n:
-				return 0;
-			case maxValue <= 99n:
-				return 1;
-			case maxValue <= 999n:
-				return 2;
-			case maxValue <= 9999n:
-				return 3;
-			case maxValue <= 99999n:
-				return 4;
-			case maxValue <= 999999n:
-				return 5;
-			case maxValue <= 9999999n:
-				return 6;
-			default:
-				return 7;
-		}
-	}
-
-	switch (true) {
-		case maxValue <= 9:
-			return 0;
-		case maxValue <= 99:
-			return 1;
-		case maxValue <= 999:
-			return 2;
-		case maxValue <= 9999:
-			return 3;
-		case maxValue <= 99999:
-			return 4;
-		case maxValue <= 999999:
-			return 5;
-		case maxValue <= 9999999:
-			return 6;
-		default:
-			return 7;
-	}
-}
-
 export function showRangePrimeOutput(): void {
-	const timerId = genId();
 	const resultArray = state.result as number[] | Uint8Array;
 	const visibleCount = state.os === 0 ? resultArray.length : state.primeFound;
 	const col = Math.max(
 		1,
 		state.big ? Number(state.col as bigint) : Number(state.col as number),
 	);
-	const rowHeight = 30;
 	const maxRows = state.maxRows || 200000;
 
 	if (state.countOnly) {

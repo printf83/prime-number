@@ -53,6 +53,9 @@ export function addResizeListener(
 		mozRequestAnimationFrame?: typeof window.requestAnimationFrame;
 		webkitRequestAnimationFrame?: typeof window.requestAnimationFrame;
 		msRequestAnimationFrame?: typeof window.requestAnimationFrame;
+		mozCancelAnimationFrame?: typeof window.cancelAnimationFrame;
+		webkitCancelAnimationFrame?: typeof window.cancelAnimationFrame;
+		msCancelAnimationFrame?: typeof window.cancelAnimationFrame;
 	};
 
 	const win = window as RequestAnimationFrameWindow;
@@ -63,14 +66,13 @@ export function addResizeListener(
 		win.msRequestAnimationFrame;
 	const cancelAnimationFrameFn =
 		win.cancelAnimationFrame ||
-		(win as any).mozCancelAnimationFrame ||
-		(win as any).webkitCancelAnimationFrame ||
-		(win as any).msCancelAnimationFrame;
-
-	let wid = getComputedStyle(elem).width;
-	let hei = getComputedStyle(elem).height;
-	let rafId: number | null = null;
+		win.mozCancelAnimationFrame ||
+		win.webkitCancelAnimationFrame ||
+		win.msCancelAnimationFrame;
 	let cancelled = false;
+	let rafId: number | null = null;
+	let wid = "";
+	let hei = "";
 
 	function cleanup(): void {
 		cancelled = true;

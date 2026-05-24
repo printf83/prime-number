@@ -1,4 +1,3 @@
-import { state } from "../state";
 import { stopWorker } from "../workers";
 
 export interface ShowStartEventHandlers {
