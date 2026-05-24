@@ -164,6 +164,7 @@ small {
 	align-items: center;
 	overflow-x: auto;
 	overscroll-behavior-x: overlay;
+	margin-top: 1rem;
 }
 
 .result-scroll-controls {
