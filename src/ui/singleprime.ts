@@ -1,0 +1,131 @@
+import { state } from "../state";
+import {
+	formatNumber,
+	formatTime,
+	genId,
+	parseBigIntInput,
+	parseIntInput,
+} from "../utils";
+import {
+	monitorRenderTime,
+	secTimer,
+	setInnerHtml,
+	showSinglePrimeOutput,
+	updateProgress,
+} from "../dom";
+import { runWorker, stopWorker } from "../workers";
+import {
+	loading2,
+	loading4,
+	progressIndicator,
+	timerIndicator,
+} from "./builders";
+
+function getSinglePrimeMethod(): string {
+	return "Miller-Rabin";
+}
+
+export function calcSinglePrimeImpl(): void {
+	stopWorker();
+	const zero = state.big ? 0n : 0;
+	const numElement = document.getElementById(
+		"num",
+	) as HTMLInputElement | null;
+	const currentNum = state.big
+		? parseBigIntInput(numElement?.value ?? "")
+		: parseIntInput(numElement?.value ?? "");
+
+	if (currentNum === null) {
+		showSinglePrimeOutput(`Please enter a valid number`);
+		return;
+	}
+
+	if (currentNum > zero) {
+		const timerId = genId();
+		const progressId = state.pr ? genId() : null;
+
+		showSinglePrimeOutput(`
+			Checking ${timerIndicator(timerId)}
+			${loading4()}<br/>
+			${progressIndicator(progressId)} 
+			`);
+		secTimer(timerId, 1);
+
+		state.snum = currentNum;
+
+		const singlePrimeStart = window.performance.now();
+
+		function updateSinglePrimeTimeLabel(): void {
+			const timeText = `Complete in ${formatTime(
+				window.performance.now() - singlePrimeStart,
+			)}`;
+			setInnerHtml("single_time_1", timeText);
+			setInnerHtml("single_time_2", timeText);
+		}
+
+		monitorRenderTime("root", "single_time_1", "single_time_2");
+
+		runWorker(
+			"singleprime",
+			[state.snum, state.pr],
+			function (e) {
+				if (e) {
+					state.result = e;
+					if (state.result) {
+						runWorker(
+							"factor",
+							[state.result, state.snum, state.ot, state.pr],
+							function (e) {
+								const lastNumber =
+									state.result[state.result.length - 1];
+								const singlePrimeMethod =
+									getSinglePrimeMethod();
+								if (state.result.length === 2) {
+									showSinglePrimeOutput(
+										`<h4>${formatNumber(lastNumber)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><small id="single_time_1">${loading2}</small>`,
+									);
+								} else {
+									showSinglePrimeOutput(
+										`${
+											state.result.length > 30
+												? `<small id="single_time_1">${loading2}</small><br/><br/>`
+												: ``
+										}
+									<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
+										state.result.length === 1 ? ` only` : ``
+									} be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><br/><small id="single_time_2">${loading2}</small>`,
+									);
+								}
+								updateSinglePrimeTimeLabel();
+							},
+							function (e) {
+								showSinglePrimeOutput(
+									`Fail to find prime number. ${e}`,
+								);
+							},
+						);
+					} else {
+						showSinglePrimeOutput(`Fail to find prime number`);
+						updateSinglePrimeTimeLabel();
+					}
+				} else {
+					showSinglePrimeOutput(`Fail to find prime number`);
+					updateSinglePrimeTimeLabel();
+				}
+			},
+			function (e) {
+				showSinglePrimeOutput(`Fail to find prime number. ${e}`);
+				updateSinglePrimeTimeLabel();
+			},
+			function (e) {
+				if (typeof e === "object" && e !== null && "progress" in e) {
+					updateProgress(progressId, e.progress);
+				} else {
+					updateProgress(progressId, e as number);
+				}
+			},
+		);
+	} else {
+		showSinglePrimeOutput(`Number must more than 0`);
+	}
+}

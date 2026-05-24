@@ -5,7 +5,6 @@ export interface ShowStartEventHandlers {
 	calcRangePrime: () => void;
 	ot_onchange: () => void;
 	pr_onchange: () => void;
-	maxRows_onchange: () => void;
 	big_onchange: (val: string | number) => void;
 	os_onchange: () => void;
 }
@@ -43,14 +42,6 @@ export function attachShowStartEvents(handlers: ShowStartEventHandlers): void {
 
 	if (prCheckbox) {
 		prCheckbox.addEventListener("change", handlers.pr_onchange);
-	}
-
-	const maxRowsElement = document.getElementById(
-		"max_rows",
-	) as HTMLInputElement | null;
-
-	if (maxRowsElement) {
-		maxRowsElement.addEventListener("change", handlers.maxRows_onchange);
 	}
 
 	if (bigIntButtons.length > 0) {
