@@ -1,5 +1,5 @@
 import { state } from "../state";
-import { formatNumber, formatTime, genId } from "../utils";
+import { formatNumber, formatTime, genId, renderDivisorTable } from "../utils";
 import {
 	genTooltip,
 	monitorRenderTime,
@@ -70,7 +70,7 @@ export function showTooltip(e: Event): void {
 			setInnerHtml("tooltip_status", status);
 		}
 
-		const foundFactorPairs = new Map<string, string>();
+		const foundFactorPairs = new Map<number | bigint, number | bigint>();
 
 		function updateTooltipFactors(): void {
 			const entries = Array.from(foundFactorPairs.entries());
@@ -83,20 +83,7 @@ export function showTooltip(e: Event): void {
 				const right = state.big ? BigInt(b[0]) : Number(b[0]);
 				return left < right ? -1 : left > right ? 1 : 0;
 			});
-			const rows = entries
-				.map(
-					([divisor, quotient]) =>
-						`<tr><td>÷</td><td>${formatNumber(
-							divisor as unknown as number | bigint,
-						)}</td><td>=</td><td>${formatNumber(
-							quotient as unknown as number | bigint,
-						)}</td></tr>`,
-				)
-				.join("");
-			setInnerHtml(
-				"tooltip_factors",
-				`<small>It can be divided with<div class="scrollable"><table><tbody>${rows}</tbody></table></div></small>`,
-			);
+			setInnerHtml("tooltip_factors", renderDivisorTable(entries));
 		}
 
 		const timerId = genId();
@@ -184,7 +171,7 @@ export function showTooltip(e: Event): void {
 						detail.factors.length === 2
 					) {
 						const [divisor, quotient] = detail.factors;
-						foundFactorPairs.set(String(divisor), String(quotient));
+						foundFactorPairs.set(divisor, quotient);
 						updateTooltipFactors();
 					}
 				} else {

@@ -5,6 +5,7 @@ import {
 	genId,
 	parseBigIntInput,
 	parseIntInput,
+	renderDivisorTable,
 } from "../utils";
 import {
 	monitorRenderTime,
@@ -43,7 +44,7 @@ export function calcSinglePrimeImpl(): void {
 	if (currentNum > zero) {
 		const timerId = genId();
 		const progressId = state.pr ? genId() : null;
-		const foundFactorPairs = new Map<string, string>();
+		const foundFactorPairs = new Map<number | bigint, number | bigint>();
 
 		showSinglePrimeOutput(`
 			<div id="singleprime_status">Checking ${timerIndicator(timerId)}</div>
@@ -80,20 +81,7 @@ export function calcSinglePrimeImpl(): void {
 				const right = state.big ? BigInt(b[0]) : Number(b[0]);
 				return left < right ? -1 : left > right ? 1 : 0;
 			});
-			const rows = entries
-				.map(
-					([divisor, quotient]) =>
-						`<tr><td>÷</td><td>${formatNumber(
-							divisor as unknown as number | bigint,
-						)}</td><td>=</td><td>${formatNumber(
-							quotient as unknown as number | bigint,
-						)}</td></tr>`,
-				)
-				.join("");
-			setInnerHtml(
-				"singleprime_factors",
-				`<small>It can be divided with<div class="scrollable"><table><tbody>${rows}</tbody></table></div></small>`,
-			);
+			setInnerHtml("singleprime_factors", renderDivisorTable(entries));
 		}
 
 		monitorRenderTime("root", "single_time_1", "single_time_2");
@@ -174,7 +162,7 @@ export function calcSinglePrimeImpl(): void {
 						detail.factors.length === 2
 					) {
 						const [divisor, quotient] = detail.factors;
-						foundFactorPairs.set(String(divisor), String(quotient));
+						foundFactorPairs.set(divisor, quotient);
 						updateSinglePrimeFactors();
 					}
 				} else {

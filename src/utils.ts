@@ -6,6 +6,28 @@ export function formatNumber(num: number | bigint): string {
 	return `<span class="font-danger">Error!</span>`;
 }
 
+export type DivisorPair = [number | bigint, number | bigint];
+
+export function renderDivisorRow(
+	divisor: number | bigint,
+	quotient: number | bigint,
+): string {
+	return `
+		<tr>
+			<td>÷</td>
+			<td>${formatNumber(divisor)}</td>
+			<td>=</td>
+			<td>${formatNumber(quotient)}</td>
+		</tr>
+	`;
+}
+
+export function renderDivisorTable(rows: DivisorPair[]): string {
+	return `<small>It can be divided with<br/><br/><div class="scrollable"><table class="prime-divisors"><tbody>${rows
+		.map(([divisor, quotient]) => renderDivisorRow(divisor, quotient))
+		.join("")}</tbody></table></div></small>`;
+}
+
 export function parseIntInput(value: string): number | null {
 	const n = parseInt(value, 10);
 	return Number.isNaN(n) ? null : n;
