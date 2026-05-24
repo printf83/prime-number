@@ -19,6 +19,13 @@ import { runWorker, stopWorker } from "../workers";
 import {
 	btnShowResult,
 	btnTryAgain,
+	btnCancel,
+	btnScrollFirst,
+	btnScrollPrev10,
+	btnScrollPrev,
+	btnScrollNext,
+	btnScrollNext10,
+	btnScrollLast,
 	ctlButton,
 	ctlCheckbox,
 	ctlNumber,
@@ -34,6 +41,8 @@ import {
 	progressIndicator,
 } from "./builders";
 import { attachShowRangePrimeEvents, attachShowStartEvents } from "./events";
+
+let tooltipOutsideClickListenerAdded = false;
 
 export function calcSinglePrime(): void {
 	const zero = state.big ? 0n : 0;
@@ -219,7 +228,7 @@ export function getParamFromUrl(): void {
 	if (u_pr) {
 		state.pr = parseInt(u_pr, 10);
 	} else {
-		state.pr = 0;
+		state.pr = 1;
 	}
 
 	if (state.big) {
@@ -377,11 +386,21 @@ export function calcRangePrime(): void {
                 ${loading4()}<br/>
                 ${progressIndicator(progressId)}<br/>
                 ${loading3}<br/><br/>
-                ${btnTryAgain}
+                ${btnCancel}
                 `,
 					function () {
 						secTimer(timerId, 1);
 						const start = window.performance.now();
+
+						const btnCancelElement = document.getElementById(
+							"btn-cancel",
+						) as HTMLButtonElement | null;
+						if (btnCancelElement) {
+							btnCancelElement.addEventListener("click", () => {
+								stopWorker();
+								showStart();
+							});
+						}
 
 						runWorker(
 							"prime",
@@ -580,7 +599,8 @@ export function showRangePrimeOutput(): void {
 			${header()} 
 			Too many results to render safely in the browser.<br/>
 			Reduce the range or use a smaller column count, or increase the Max render rows setting on the start page.<br/>
-			Current limit: <b>${formatNumber(maxRows)}</b> rows.<br/><br/>
+			Current limit: <b>${formatNumber(maxRows)}</b> rows.<br/>
+			Current count: <b>${formatNumber(totalRows)}</b> rows.<br/><br/>
 			${btnTryAgain}
 			`,
 			function () {
@@ -604,8 +624,10 @@ export function showRangePrimeOutput(): void {
 			<div class="result-viewport">
 				<div class="result-inner"></div>
 			</div>
-		</div><br/>
-		${btnTryAgain}
+		</div>
+		<div class="result-scroll-controls">
+			${btnScrollFirst}${btnScrollPrev10}${btnScrollPrev}${btnTryAgain}${btnScrollNext}${btnScrollNext10}${btnScrollLast}
+		</div>
 		`,
 		function () {
 			attachShowRangePrimeEvents({
@@ -614,6 +636,28 @@ export function showRangePrimeOutput(): void {
 				showTooltip,
 				big_onchange: big_onchange,
 			});
+
+			if (!tooltipOutsideClickListenerAdded) {
+				document.addEventListener("click", function (event) {
+					const target = event.target as Node | null;
+					const tooltipContainer = document.getElementById(
+						"tooltip_container",
+					) as HTMLElement | null;
+					const resultContainer = document.querySelector(
+						".result_container",
+					) as HTMLElement | null;
+
+					if (
+						tooltipContainer?.contains(target) ||
+						resultContainer?.contains(target)
+					) {
+						return;
+					}
+
+					hideTooltip();
+				});
+				tooltipOutsideClickListenerAdded = true;
+			}
 
 			const viewport = document.querySelector(
 				".result-viewport",
@@ -714,8 +758,120 @@ export function showRangePrimeOutput(): void {
 				content.innerHTML = html;
 			}
 
-			viewport.addEventListener("scroll", render);
+			const view = viewport;
+
+			function clampScroll(value: number): number {
+				return Math.min(
+					Math.max(value, 0),
+					Math.max(0, view.scrollHeight - view.clientHeight),
+				);
+			}
+
+			function scrollBy(delta: number): void {
+				view.scrollTop = clampScroll(view.scrollTop + delta);
+			}
+
+			function scrollByPercent(factor: number): void {
+				scrollBy(
+					Math.round(
+						(view.scrollHeight - view.clientHeight) * factor,
+					),
+				);
+			}
+
+			const btnScrollFirst = document.getElementById(
+				"btn-scroll-first",
+			) as HTMLButtonElement | null;
+			const btnScrollPrev10 = document.getElementById(
+				"btn-scroll-prev10",
+			) as HTMLButtonElement | null;
+			const btnScrollPrev = document.getElementById(
+				"btn-scroll-prev",
+			) as HTMLButtonElement | null;
+			const btnScrollNext = document.getElementById(
+				"btn-scroll-next",
+			) as HTMLButtonElement | null;
+			const btnScrollNext10 = document.getElementById(
+				"btn-scroll-next10",
+			) as HTMLButtonElement | null;
+			const btnScrollLast = document.getElementById(
+				"btn-scroll-last",
+			) as HTMLButtonElement | null;
+
+			function updateScrollButtons(): void {
+				const atTop = view.scrollTop <= 0;
+				const atBottom =
+					view.scrollTop >= clampScroll(view.scrollHeight);
+
+				if (btnScrollFirst) {
+					btnScrollFirst.disabled = atTop;
+				}
+				if (btnScrollPrev10) {
+					btnScrollPrev10.disabled = atTop;
+				}
+				if (btnScrollPrev) {
+					btnScrollPrev.disabled = atTop;
+				}
+				if (btnScrollNext) {
+					btnScrollNext.disabled = atBottom;
+				}
+				if (btnScrollNext10) {
+					btnScrollNext10.disabled = atBottom;
+				}
+				if (btnScrollLast) {
+					btnScrollLast.disabled = atBottom;
+				}
+			}
+
+			if (btnScrollFirst) {
+				btnScrollFirst.addEventListener("click", () => {
+					view.scrollTop = 0;
+					updateScrollButtons();
+				});
+			}
+
+			if (btnScrollLast) {
+				btnScrollLast.addEventListener("click", () => {
+					view.scrollTop = clampScroll(view.scrollHeight);
+					updateScrollButtons();
+				});
+			}
+
+			if (btnScrollPrev10) {
+				btnScrollPrev10.addEventListener("click", () => {
+					scrollByPercent(-0.1);
+					updateScrollButtons();
+				});
+			}
+
+			if (btnScrollNext10) {
+				btnScrollNext10.addEventListener("click", () => {
+					scrollByPercent(0.1);
+					updateScrollButtons();
+				});
+			}
+
+			if (btnScrollPrev) {
+				btnScrollPrev.addEventListener("click", () => {
+					scrollBy(-view.clientHeight);
+					updateScrollButtons();
+				});
+			}
+
+			if (btnScrollNext) {
+				btnScrollNext.addEventListener("click", () => {
+					scrollBy(view.clientHeight);
+					updateScrollButtons();
+				});
+			}
+
+			viewport.addEventListener("scroll", () => {
+				render();
+				updateScrollButtons();
+			});
+
 			render();
+			updateScrollButtons();
 		},
 	);
 }

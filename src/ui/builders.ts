@@ -75,6 +75,13 @@ export function progressIndicator(id: string | null) {
 }
 
 export const btnTryAgain = ctlButton("btn-try-again", "Try Again");
+export const btnCancel = ctlButton("btn-cancel", "Cancel");
+export const btnScrollFirst = ctlButton("btn-scroll-first", "&#8676;");
+export const btnScrollPrev10 = ctlButton("btn-scroll-prev10", "&#8606;");
+export const btnScrollPrev = ctlButton("btn-scroll-prev", "&#8592;");
+export const btnScrollNext = ctlButton("btn-scroll-next", "&#8594;");
+export const btnScrollNext10 = ctlButton("btn-scroll-next10", "&#8608;");
+export const btnScrollLast = ctlButton("btn-scroll-last", "&#8677;");
 export const btnShowResult = ctlButton("btn-show-result", "Show Result");
 export const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
 export const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;

@@ -13,10 +13,10 @@ export const state = {
 	max: 99999 as number | bigint,
 	col: 6 as number | bigint,
 	maxRows: 200000,
-	os: 1,
+	os: 0,
 	ot: 1,
 	snum: 1 as number | bigint,
-	pr: 0,
+	pr: 1,
 };
 
 declare global {

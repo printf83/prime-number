@@ -14,8 +14,7 @@
 		"noEmitOnError": false,
 		"rootDir": "src",
 		"outDir": "dist",
-		"allowJs": false,
-		"moduleResolution": "bundler"
+		"allowJs": false
 	},
 	"include": ["src/**/*.ts"]
 }

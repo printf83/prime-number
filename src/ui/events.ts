@@ -1,4 +1,5 @@
 import { state } from "../state";
+import { stopWorker } from "../workers";
 
 export interface ShowStartEventHandlers {
 	calcSinglePrime: () => void;
@@ -99,7 +100,18 @@ export function attachShowRangePrimeEvents(
 
 	if (btnTryAgainList.length > 0) {
 		btnTryAgainList.forEach((button) => {
-			button.addEventListener("click", handlers.showStart);
+			button.addEventListener("click", () => {
+				stopWorker();
+				handlers.showStart();
+			});
+		});
+	}
+
+	const btnCancel = document.getElementById("btn-cancel");
+	if (btnCancel) {
+		btnCancel.addEventListener("click", () => {
+			stopWorker();
+			handlers.showStart();
 		});
 	}
 
