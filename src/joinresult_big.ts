@@ -80,7 +80,7 @@ import { createBigIntProgressEmitter, progressDivBigInt } from "./common";
 					}
 				}
 
-				result = `<small>${tmp.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1")}</small>`;
+				result = `<div class="small">${tmp.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1")}</div>`;
 			}
 
 			postMessage({ type: "data", data: result });

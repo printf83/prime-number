@@ -3,7 +3,7 @@ export function formatNumber(num: number | bigint): string {
 		return num.toLocaleString("en-US");
 	}
 
-	return `<span class="font-danger">Error!</span>`;
+	return `<div class="font-danger">Error!</div>`;
 }
 
 export type DivisorPair = [number | bigint, number | bigint];
@@ -23,9 +23,9 @@ export function renderDivisorRow(
 }
 
 export function renderDivisorTable(rows: DivisorPair[]): string {
-	return `<small>It can be divided with<br/><br/><div class="scrollable"><table class="prime-divisors"><tbody>${rows
+	return `<div class="small"><span>It can be divided with</span><div class="scrollable"><table class="prime-divisors"><tbody>${rows
 		.map(([divisor, quotient]) => renderDivisorRow(divisor, quotient))
-		.join("")}</tbody></table></div></small>`;
+		.join("")}</tbody></table></div></div>`;
 }
 
 export function parseIntInput(value: string): number | null {

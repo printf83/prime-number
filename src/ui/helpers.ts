@@ -1,34 +1,46 @@
 import { state } from "../state";
 import { getRadioValue } from "../dom";
 
-export function ot_onchange(): void {
-	state.ot = (document.getElementById("ot") as HTMLInputElement).checked
-		? 1
-		: 0;
-	state.snum = state.big ? 1n : 1;
+export function onShowCalculationChange(): void {
+	state.showCalculation = (
+		document.getElementById("showCalculation") as HTMLInputElement
+	).checked;
 }
 
-export function pr_onchange(): void {
-	state.pr = (document.getElementById("pr") as HTMLInputElement).checked
-		? 1
-		: 0;
+export function onShowProgressChange(): void {
+	state.showProgress = (
+		document.getElementById("showProgress") as HTMLInputElement
+	).checked;
 }
 
-export function os_onchange(): void {
-	parseInt(getRadioValue("os") ?? "0", 10);
+export function onShowPrimeOnlyChange(): void {
+	state.showPrimeOnly =
+		parseInt(getRadioValue("showPrimeOnly") ?? "0", 10) === 1;
 }
 
 export function getParamFromUrl(): void {
 	const queryString = window.location.search;
 	const urlParams = new URLSearchParams(queryString);
-	const u_big = urlParams.get("big");
-	const u_pr = urlParams.get("pr");
-	const u_num = urlParams.get("num");
-	const u_min = urlParams.get("min");
-	const u_max = urlParams.get("max");
-	const u_col = urlParams.get("col");
-	const u_os = urlParams.get("os");
-	const u_ot = urlParams.get("ot");
+	const u_big = urlParams.get("bigInt") ?? urlParams.get("big");
+	const u_pr = urlParams.get("showProgress") ?? urlParams.get("pr");
+	const u_num =
+		urlParams.get("singleNumber") ??
+		urlParams.get("number") ??
+		urlParams.get("num");
+	const u_min =
+		urlParams.get("searchFrom") ??
+		urlParams.get("minimum") ??
+		urlParams.get("min");
+	const u_max =
+		urlParams.get("searchTo") ??
+		urlParams.get("maximum") ??
+		urlParams.get("max");
+	const u_col =
+		urlParams.get("resultColumns") ??
+		urlParams.get("columns") ??
+		urlParams.get("col");
+	const u_os = urlParams.get("showPrimeOnly") ?? urlParams.get("os");
+	const u_ot = urlParams.get("showCalculation") ?? urlParams.get("ot");
 
 	if (u_big) {
 		state.big = parseInt(u_big, 10);
@@ -37,14 +49,12 @@ export function getParamFromUrl(): void {
 	}
 
 	if (u_pr) {
-		state.pr = parseInt(u_pr, 10);
-	} else {
-		state.pr = 1;
+		state.showProgress = parseInt(u_pr, 10) === 1;
 	}
 
 	if (state.big) {
 		if (u_num) {
-			state.snum = BigInt(u_num);
+			state.singleNumber = BigInt(u_num);
 		}
 
 		if (u_min) {
@@ -56,11 +66,11 @@ export function getParamFromUrl(): void {
 		}
 
 		if (u_col) {
-			state.col = BigInt(u_col);
+			state.columns = BigInt(u_col);
 		}
 	} else {
 		if (u_num) {
-			state.snum = parseInt(u_num);
+			state.singleNumber = parseInt(u_num);
 		}
 
 		if (u_min) {
@@ -72,15 +82,15 @@ export function getParamFromUrl(): void {
 		}
 
 		if (u_col) {
-			state.col = parseInt(u_col);
+			state.columns = parseInt(u_col);
 		}
 	}
 
 	if (u_os) {
-		state.os = parseInt(u_os, 10);
+		state.showPrimeOnly = parseInt(u_os, 10) === 1;
 	}
 
 	if (u_ot) {
-		state.ot = parseInt(u_ot, 10);
+		state.showCalculation = parseInt(u_ot, 10) === 1;
 	}
 }

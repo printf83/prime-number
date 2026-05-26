@@ -3,25 +3,30 @@ import { stopWorker } from "../workers";
 export interface ShowStartEventHandlers {
 	calcSinglePrime: () => void;
 	calcRangePrime: () => void;
-	ot_onchange: () => void;
-	pr_onchange: () => void;
-	big_onchange: (val: string | number) => void;
-	os_onchange: () => void;
+	onShowCalculationChange: () => void;
+	onShowProgressChange: () => void;
+	onBigIntModeChange: (val: string | number) => void;
+	onShowPrimeOnlyChange: () => void;
 }
 
 export function attachShowStartEvents(handlers: ShowStartEventHandlers): void {
 	const numElement = document.getElementById(
-		"num",
+		"singleNumber",
 	) as HTMLInputElement | null;
 	const startButton = document.getElementById("btn-start-calc");
-	const otCheckbox = document.getElementById("ot") as HTMLInputElement | null;
-	const prCheckbox = document.getElementById("pr") as HTMLInputElement | null;
+	const otCheckbox = document.getElementById(
+		"showCalculation",
+	) as HTMLInputElement | null;
+	const prCheckbox = document.getElementById(
+		"showProgress",
+	) as HTMLInputElement | null;
 	const bigIntButtons =
 		document.querySelectorAll<HTMLButtonElement>("#btn-bigint");
 	const smallIntButtons =
 		document.querySelectorAll<HTMLButtonElement>("#btn-smallint");
-	const osInputs =
-		document.querySelectorAll<HTMLInputElement>('input[name="os"]');
+	const osInputs = document.querySelectorAll<HTMLInputElement>(
+		'input[name="showPrimeOnly"]',
+	);
 
 	if (numElement) {
 		numElement.addEventListener("change", handlers.calcSinglePrime);
@@ -37,18 +42,18 @@ export function attachShowStartEvents(handlers: ShowStartEventHandlers): void {
 	}
 
 	if (otCheckbox) {
-		otCheckbox.addEventListener("change", handlers.ot_onchange);
+		otCheckbox.addEventListener("change", handlers.onShowCalculationChange);
 	}
 
 	if (prCheckbox) {
-		prCheckbox.addEventListener("change", handlers.pr_onchange);
+		prCheckbox.addEventListener("change", handlers.onShowProgressChange);
 	}
 
 	if (bigIntButtons.length > 0) {
 		bigIntButtons.forEach((button) => {
 			button.addEventListener("click", function (event) {
 				event.preventDefault();
-				handlers.big_onchange(0);
+				handlers.onBigIntModeChange(0);
 			});
 		});
 	}
@@ -57,13 +62,13 @@ export function attachShowStartEvents(handlers: ShowStartEventHandlers): void {
 		smallIntButtons.forEach((button) => {
 			button.addEventListener("click", function (event) {
 				event.preventDefault();
-				handlers.big_onchange(1);
+				handlers.onBigIntModeChange(1);
 			});
 		});
 	}
 
 	osInputs.forEach((input) => {
-		input.addEventListener("change", handlers.os_onchange);
+		input.addEventListener("change", handlers.onShowPrimeOnlyChange);
 	});
 }
 
@@ -71,7 +76,7 @@ export interface ShowRangePrimeEventHandlers {
 	showStart: () => void;
 	showRangePrimeOutput: () => void;
 	showTooltip: (e: Event) => void;
-	big_onchange: (val: string | number) => void;
+	onBigIntModeChange: (val: string | number) => void;
 }
 
 export function attachShowRangePrimeEvents(
@@ -113,7 +118,7 @@ export function attachShowRangePrimeEvents(
 		btnBigIntList.forEach((button) => {
 			button.addEventListener("click", (event) => {
 				event.preventDefault();
-				handlers.big_onchange(1);
+				handlers.onBigIntModeChange(1);
 			});
 		});
 	}
@@ -122,7 +127,7 @@ export function attachShowRangePrimeEvents(
 		btnSmallIntList.forEach((button) => {
 			button.addEventListener("click", (event) => {
 				event.preventDefault();
-				handlers.big_onchange(0);
+				handlers.onBigIntModeChange(0);
 			});
 		});
 	}

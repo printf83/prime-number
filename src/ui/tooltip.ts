@@ -5,6 +5,10 @@ import {
 	monitorRenderTime,
 	secTimer,
 	setInnerHtml,
+	attachNumberCopyHandler,
+	createPrimeResultHtml,
+	initPrimeFactorTable,
+	appendPrimeFactorRow,
 	updateProgress,
 } from "../dom";
 import { runWorker, stopWorkerIfCurrentJob, WorkerJob } from "../workers";
@@ -86,29 +90,21 @@ export function showTooltip(e: Event): void {
 			setInnerHtml("tooltip_status", status);
 		}
 
+		function attachTooltipNumberCopyHandler(value: string): void {
+			attachNumberCopyHandler("tooltip_number", value, "tooltip_status");
+		}
+
 		const foundFactorPairs = new Map<number | bigint, number | bigint>();
 
 		function initTooltipFactorTable(): void {
-			setInnerHtml(
-				"tooltip_factors",
-				`<small>It can be divided with</small><div class="scrollable"><table class="prime-divisors"><tbody id="tooltip_factors_body"></tbody></table></div>`,
-			);
+			initPrimeFactorTable("tooltip_factors", "tooltip_factors_body");
 		}
 
 		function appendTooltipFactorRow(
 			divisor: number | bigint,
 			quotient: number | bigint,
 		): void {
-			const factorBody = document.getElementById(
-				"tooltip_factors_body",
-			) as HTMLElement | null;
-			if (!factorBody) {
-				return;
-			}
-			const row = `<tr><td>÷</td><td>${formatNumber(divisor)}</td><td>=</td><td>${formatNumber(
-				quotient,
-			)}</td></tr>`;
-			factorBody.insertAdjacentHTML("beforeend", row);
+			appendPrimeFactorRow("tooltip_factors_body", divisor, quotient);
 		}
 
 		const timerId = genId();
@@ -116,13 +112,14 @@ export function showTooltip(e: Event): void {
 		genTooltip(
 			target,
 			`
-			<h3>${formatNumber(num)}</h3>
+			<h3 id="tooltip_number" title="Click to copy number">${formatNumber(num)}</h3>
 			<div id="tooltip_status">Checking ${timerIndicator(timerId)}</div>
 			<div id="tooltip_factors"></div>
-			${loading4()}<br/>
+			${loading4()}
 			${progressIndicator(progressId)}
 			`,
 		);
+		attachTooltipNumberCopyHandler(String(num));
 		initTooltipFactorTable();
 		if (currentTooltipTimerCancel) {
 			currentTooltipTimerCancel();
@@ -135,38 +132,85 @@ export function showTooltip(e: Event): void {
 		currentTooltipRenderTimeCancel = monitorRenderTime(
 			"tooltip",
 			"tooltip_time",
-			"tooltip_time",
 		);
 		currentTooltipWorkerJob = {
 			script: "singleprime",
-			params: [num, state.pr],
+			params: [num, Number(state.showProgress)],
 		};
 		runWorker(
 			"singleprime",
-			[num, state.pr],
+			[num, Number(state.showProgress)],
 			function (e) {
 				if (e) {
 					state.result = e;
 					if (state.result) {
 						currentTooltipWorkerJob = {
 							script: "factor",
-							params: [state.result, num, state.ot, state.pr],
+							params: [
+								state.result,
+								num,
+								Number(state.showCalculation),
+								Number(state.showProgress),
+							],
 						};
 						runWorker(
 							"factor",
-							[state.result, num, state.ot, state.pr],
+							[
+								state.result,
+								num,
+								Number(state.showCalculation),
+								Number(state.showProgress),
+							],
 							function (e) {
 								const singlePrimeMethod =
 									getSinglePrimeMethod();
 								if (state.result.length === 2) {
 									genTooltip(
 										target,
-										`<h3>${formatNumber(state.result[state.result.length - 1])}</h3><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><br/><span id="tooltip_time">${loading2}</span>`,
+										createPrimeResultHtml(
+											"h3",
+											"tooltip_number",
+											formatNumber(
+												state.result[
+													state.result.length - 1
+												],
+											),
+											true,
+											`<div><span class="small">It can only be divided with ${e}</span></div>`,
+											singlePrimeMethod,
+											`<div><span id="tooltip_time">${loading2}</span></div>`,
+										),
+									);
+									attachTooltipNumberCopyHandler(
+										String(
+											state.result[
+												state.result.length - 1
+											],
+										),
 									);
 								} else {
 									genTooltip(
 										target,
-										`<h3>${formatNumber(state.result[state.result.length - 1])}</h3><b class="font-danger">Is NOT a prime number</b><br/><small>It can be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><br/><span id="tooltip_time">${loading2}</span>`,
+										createPrimeResultHtml(
+											"h3",
+											"tooltip_number",
+											formatNumber(
+												state.result[
+													state.result.length - 1
+												],
+											),
+											false,
+											`<div class="small"><span>It can be divided with</span> ${e}</div>`,
+											singlePrimeMethod,
+											`<div><span id="tooltip_time">${loading2}</span></div>`,
+										),
+									);
+									attachTooltipNumberCopyHandler(
+										String(
+											state.result[
+												state.result.length - 1
+											],
+										),
 									);
 								}
 								updateTooltipTimeLabel();
@@ -202,11 +246,11 @@ export function showTooltip(e: Event): void {
 					if (typeof detail.prime === "boolean") {
 						if (detail.prime) {
 							updateTooltipStatus(
-								`<b class="font-success">Is a prime number</b>`,
+								`<div class="font-success">Is a prime number</div>`,
 							);
 						} else {
 							updateTooltipStatus(
-								`<b class="font-danger">Is NOT a prime number</b>`,
+								`<div class="font-danger">Is NOT a prime number</div>`,
 							);
 						}
 					}

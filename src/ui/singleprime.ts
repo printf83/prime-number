@@ -11,6 +11,11 @@ import {
 	secTimer,
 	setInnerHtml,
 	showSinglePrimeOutput,
+	attachNumberCopyHandler,
+	createPrimeResultHtml,
+	createPrimeStatusHtml,
+	initPrimeFactorTable,
+	appendPrimeFactorRow,
 	updateProgress,
 } from "../dom";
 import { runWorker, stopWorker } from "../workers";
@@ -44,7 +49,7 @@ export function calcSinglePrimeImpl(): void {
 	stopWorker();
 	const zero = state.big ? 0n : 0;
 	const numElement = document.getElementById(
-		"num",
+		"singleNumber",
 	) as HTMLInputElement | null;
 	const currentNum = state.big
 		? parseBigIntInput(numElement?.value ?? "")
@@ -57,13 +62,13 @@ export function calcSinglePrimeImpl(): void {
 
 	if (currentNum > zero) {
 		const timerId = genId();
-		const progressId = state.pr ? genId() : null;
+		const progressId = state.showProgress ? genId() : null;
 		const foundFactorPairs = new Map<number | bigint, number | bigint>();
 
 		showSinglePrimeOutput(`
 			<div id="singleprime_status">Checking ${timerIndicator(timerId)}</div>
 			<div id="singleprime_factors"></div>
-			${loading4()}<br/>
+			${loading4()}
 			${progressIndicator(progressId)} 
 			`);
 		initSinglePrimeFactorTable();
@@ -72,7 +77,7 @@ export function calcSinglePrimeImpl(): void {
 		}
 		currentSinglePrimeTimerCancel = secTimer(timerId, 1);
 
-		state.snum = currentNum;
+		state.singleNumber = currentNum;
 
 		const singlePrimeStart = window.performance.now();
 
@@ -80,18 +85,21 @@ export function calcSinglePrimeImpl(): void {
 			const timeText = `Complete in ${formatTime(
 				window.performance.now() - singlePrimeStart,
 			)}`;
-			setInnerHtml("single_time_1", timeText);
-			setInnerHtml("single_time_2", timeText);
+			setInnerHtml("single_time", timeText);
 		}
 
 		function updateSinglePrimeStatus(status: string): void {
 			setInnerHtml("singleprime_status", status);
 		}
 
+		function attachSinglePrimeCopyHandler(value: string): void {
+			attachNumberCopyHandler("singleprime_number", value);
+		}
+
 		function initSinglePrimeFactorTable(): void {
-			setInnerHtml(
+			initPrimeFactorTable(
 				"singleprime_factors",
-				`<small>It can be divided with</small><div class="scrollable"><table class="prime-divisors"><tbody id="singleprime_factors_body"></tbody></table></div>`,
+				"singleprime_factors_body",
 			);
 		}
 
@@ -99,16 +107,7 @@ export function calcSinglePrimeImpl(): void {
 			divisor: number | bigint,
 			quotient: number | bigint,
 		): void {
-			const factorBody = document.getElementById(
-				"singleprime_factors_body",
-			) as HTMLElement | null;
-			if (!factorBody) {
-				return;
-			}
-			const row = `<tr><td>÷</td><td>${formatNumber(divisor)}</td><td>=</td><td>${formatNumber(
-				quotient,
-			)}</td></tr>`;
-			factorBody.insertAdjacentHTML("beforeend", row);
+			appendPrimeFactorRow("singleprime_factors_body", divisor, quotient);
 		}
 
 		if (currentSinglePrimeRenderTimeCancel) {
@@ -116,20 +115,24 @@ export function calcSinglePrimeImpl(): void {
 		}
 		currentSinglePrimeRenderTimeCancel = monitorRenderTime(
 			"root",
-			"single_time_1",
-			"single_time_2",
+			"single_time",
 		);
 
 		runWorker(
 			"singleprime",
-			[state.snum, state.pr],
+			[state.singleNumber, Number(state.showProgress)],
 			function (e) {
 				if (e) {
 					state.result = e;
 					if (state.result) {
 						runWorker(
 							"factor",
-							[state.result, state.snum, state.ot, state.pr],
+							[
+								state.result,
+								state.singleNumber,
+								Number(state.showCalculation),
+								Number(state.showProgress),
+							],
 							function (e) {
 								const lastNumber =
 									state.result[state.result.length - 1];
@@ -137,18 +140,38 @@ export function calcSinglePrimeImpl(): void {
 									getSinglePrimeMethod();
 								if (state.result.length === 2) {
 									showSinglePrimeOutput(
-										`<h4>${formatNumber(lastNumber)}</h4><b class="font-success">Is a prime number</b><br/><small>It can only be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><br/><small id="single_time_1">${loading2}</small>`,
+										createPrimeResultHtml(
+											"h4",
+											"singleprime_number",
+											formatNumber(lastNumber),
+											true,
+											`<span class="small">It can only be divided with ${e}</span>`,
+											singlePrimeMethod,
+											"",
+										),
+									);
+									attachSinglePrimeCopyHandler(
+										String(lastNumber),
 									);
 								} else {
 									showSinglePrimeOutput(
-										`${
-											state.result.length > 30
-												? `<small id="single_time_1">${loading2}</small><br/><br/>`
-												: ``
-										}
-									<h4>${formatNumber(lastNumber)}</h4><b class="font-danger">Is NOT a prime number</b><br/><small>It can${
-										state.result.length === 1 ? ` only` : ``
-									} be divided with <br/>${e}</small><br/><small>Using ${singlePrimeMethod}</small><br/><small id="single_time_2">${loading2}</small>`,
+										createPrimeResultHtml(
+											"h4",
+											"singleprime_number",
+											formatNumber(lastNumber),
+											false,
+											`
+											<span class="small">It can${
+												state.result.length === 1
+													? ` only`
+													: ``
+											} be divided with ${e}</span>`,
+											singlePrimeMethod,
+											`<div><span class="small" id="single_time">${loading2}</span></div>`,
+										),
+									);
+									attachSinglePrimeCopyHandler(
+										String(lastNumber),
 									);
 								}
 								updateSinglePrimeTimeLabel();
@@ -183,12 +206,24 @@ export function calcSinglePrimeImpl(): void {
 					if (typeof detail.prime === "boolean") {
 						if (detail.prime) {
 							updateSinglePrimeStatus(
-								`<h4>${formatNumber(currentNum)}</h4><b class="font-success">Is a prime number</b>`,
+								createPrimeStatusHtml(
+									"h4",
+									"singleprime_number",
+									formatNumber(currentNum),
+									true,
+								),
 							);
+							attachSinglePrimeCopyHandler(String(currentNum));
 						} else {
 							updateSinglePrimeStatus(
-								`<h4>${formatNumber(currentNum)}</h4><b class="font-danger">Is NOT a prime number</b>`,
+								createPrimeStatusHtml(
+									"h4",
+									"singleprime_number",
+									formatNumber(currentNum),
+									false,
+								),
 							);
+							attachSinglePrimeCopyHandler(String(currentNum));
 						}
 					}
 					if (

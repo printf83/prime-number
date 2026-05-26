@@ -3,18 +3,18 @@ import { PerformanceWithMemory } from "./state";
 import {
 	calcRangePrime,
 	getParam,
-	big_onchange,
-	ot_onchange,
-	pr_onchange,
+	onBigIntModeChange,
+	onShowCalculationChange,
+	onShowProgressChange,
 	showRangePrimeOutput,
 	showStart,
 	showTooltip,
 } from "./ui";
 
 window.showStart = showStart;
-window.ot_onchange = ot_onchange;
-window.pr_onchange = pr_onchange;
-window.big_onchange = big_onchange;
+window.onShowCalculationChange = onShowCalculationChange;
+window.onShowProgressChange = onShowProgressChange;
+window.onBigIntModeChange = onBigIntModeChange;
 window.calcRangePrime = calcRangePrime;
 window.showRangePrimeOutput = showRangePrimeOutput;
 window.showTooltip = showTooltip;

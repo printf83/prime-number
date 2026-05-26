@@ -32,7 +32,7 @@ interface RangePrimeCallbacks {
 	showStart: () => void;
 	showRangePrimeOutput: () => void;
 	showTooltip: (e: Event) => void;
-	big_onchange: (val: string | number) => void;
+	onBigIntModeChange: (val: string | number) => void;
 }
 
 function getRangePrimeMethod(
@@ -57,20 +57,20 @@ export function cleanupRangePrimeTimer(): void {
 
 export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 	cleanupRangePrimeTimer();
-	const { showStart, showRangePrimeOutput, showTooltip, big_onchange } =
+	const { showStart, showRangePrimeOutput, showTooltip, onBigIntModeChange } =
 		callbacks;
 	stopWorker();
 	let zero: number | bigint = 0;
 
 	if (state.big) {
 		const minElement = document.getElementById(
-			"min",
+			"searchFrom",
 		) as HTMLInputElement | null;
 		const maxElement = document.getElementById(
-			"max",
+			"searchTo",
 		) as HTMLInputElement | null;
 		const colElement = document.getElementById(
-			"col",
+			"resultColumns",
 		) as HTMLInputElement | null;
 		const minValue = parseBigIntInput(minElement?.value ?? "");
 		const maxValue = parseBigIntInput(maxElement?.value ?? "");
@@ -78,13 +78,13 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 
 		if (minValue === null || maxValue === null || colValue === null) {
 			genUI(
-				`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+				`${errorHeader()}Please enter valid range values${btnTryAgain}`,
 				function () {
 					attachShowRangePrimeEvents({
 						showStart,
 						showRangePrimeOutput,
 						showTooltip,
-						big_onchange,
+						onBigIntModeChange,
 					});
 				},
 			);
@@ -93,17 +93,17 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 
 		state.min = minValue;
 		state.max = maxValue;
-		state.col = colValue;
+		state.columns = colValue;
 		zero = 0n;
 	} else {
 		const minElement = document.getElementById(
-			"min",
+			"searchFrom",
 		) as HTMLInputElement | null;
 		const maxElement = document.getElementById(
-			"max",
+			"searchTo",
 		) as HTMLInputElement | null;
 		const colElement = document.getElementById(
-			"col",
+			"resultColumns",
 		) as HTMLInputElement | null;
 		const minValue = parseIntInput(minElement?.value ?? "");
 		const maxValue = parseIntInput(maxElement?.value ?? "");
@@ -111,13 +111,13 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 
 		if (minValue === null || maxValue === null || colValue === null) {
 			genUI(
-				`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+				`${errorHeader()}Please enter valid range values${btnTryAgain}`,
 				function () {
 					attachShowRangePrimeEvents({
 						showStart,
 						showRangePrimeOutput,
 						showTooltip,
-						big_onchange,
+						onBigIntModeChange,
 					});
 				},
 			);
@@ -126,39 +126,38 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 
 		state.min = minValue;
 		state.max = maxValue;
-		state.col = colValue;
+		state.columns = colValue;
 		zero = 0;
 	}
 
-	state.os = parseInt(getRadioValue("os") ?? "0", 10);
-	state.ot = (
-		(document.getElementById("ot") as HTMLInputElement) || {
+	state.showPrimeOnly =
+		parseInt(getRadioValue("showPrimeOnly") ?? "0", 10) === 1;
+	state.showCalculation = (
+		(document.getElementById("showCalculation") as HTMLInputElement) || {
 			checked: false,
 		}
-	).checked
-		? 1
-		: 0;
+	).checked;
 
-	if (state.min === null || state.max === null || state.col === null) {
+	if (state.min === null || state.max === null || state.columns === null) {
 		genUI(
-			`${errorHeader()}Please enter valid range values<br/><br/>${btnTryAgain}`,
+			`${errorHeader()}Please enter valid range values${btnTryAgain}`,
 			function () {
 				attachShowRangePrimeEvents({
 					showStart,
 					showRangePrimeOutput,
 					showTooltip,
-					big_onchange,
+					onBigIntModeChange,
 				});
 			},
 		);
 		return;
 	}
 
-	if (state.max > zero && state.col > zero) {
+	if (state.max > zero && state.columns > zero) {
 		if (state.min > zero && state.min <= state.max) {
 			if (window.Worker) {
 				const timerId = genId();
-				const progressId = state.pr ? genId() : null;
+				const progressId = state.showProgress ? genId() : null;
 				const currentCountId = genId();
 
 				genUI(
@@ -169,10 +168,10 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 						? (state.max as bigint) - (state.min as bigint) + 1n
 						: (state.max as number) - (state.min as number) + 1,
 				)}</b> numbers ${timerIndicator(timerId)}
-                ${loading4()}<br/>
-				${currentCountIndicator(currentCountId)}<br/>
-                ${progressIndicator(progressId)}<br/>
-                ${loading3}<br/><br/>
+                ${loading4()}
+				${currentCountIndicator(currentCountId)}
+                ${progressIndicator(progressId)}
+                ${loading3}
                 ${btnCancel}
                 `,
 					function () {
@@ -194,7 +193,7 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 
 						runWorker(
 							"prime",
-							[state.min, state.max, state.pr],
+							[state.min, state.max, Number(state.showProgress)],
 							function (e) {
 								if (e) {
 									const payload = e;
@@ -208,47 +207,61 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 									);
 
 									if (payload.resultTooHuge) {
+										const container =
+											document.getElementById(
+												"container",
+											);
+										if (container) {
+											container.classList.add("result");
+										}
 										genUI(
 											`
                                     ${header()}
-                                    We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b> using <b>${method}</b>.<br/>
-                                    The range is too large to render in this browser. Narrow the range to see the primes.<br/><br/>${btnTryAgain}
+                                    <span>We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b> using <b>${method}</b></span>.
+                                    <span>The range is too large to render in this browser. Narrow the range to see the primes.<span>
+									${btnTryAgain}
                                     `,
 											function () {
 												attachShowRangePrimeEvents({
 													showStart,
 													showRangePrimeOutput,
 													showTooltip,
-													big_onchange,
+													onBigIntModeChange,
 												});
 											},
 										);
 										return;
 									}
 
+									const container =
+										document.getElementById("container");
+									if (container) {
+										container.classList.add("result");
+									}
 									genUI(
 										`
                                     ${header()}
-                                    We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b> using <b>${method}</b>.<br/><br/>${btnShowResult} ${btnTryAgain}
+                                    <span>We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b> using <b>${method}</b>.</span>
+									<div>${btnShowResult} ${btnTryAgain}</div>
                                     `,
 										function () {
 											attachShowRangePrimeEvents({
 												showStart,
 												showRangePrimeOutput,
 												showTooltip,
-												big_onchange,
+												onBigIntModeChange,
 											});
 										},
 									);
 								} else {
 									genUI(
-										`${errorHeader()}Fail to find prime number<br/><br/>${btnTryAgain}`,
+										`${errorHeader()}Fail to find prime number${btnTryAgain}`,
 										function () {
 											attachShowRangePrimeEvents({
 												showStart,
 												showRangePrimeOutput,
 												showTooltip,
-												big_onchange,
+												onBigIntModeChange,
 											});
 										},
 									);
@@ -256,13 +269,13 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 							},
 							function (e) {
 								genUI(
-									`${errorHeader()}Fail to find prime number. ${e}<br/><br/>${btnTryAgain}`,
+									`${errorHeader()}Fail to find prime number. ${e}${btnTryAgain}`,
 									function () {
 										attachShowRangePrimeEvents({
 											showStart,
 											showRangePrimeOutput,
 											showTooltip,
-											big_onchange,
+											onBigIntModeChange,
 										});
 									},
 								);
@@ -296,39 +309,39 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 				);
 			} else {
 				genUI(
-					`${errorHeader()}Web Worker not available<br/><br/>${btnTryAgain}`,
+					`${errorHeader()}Web Worker not available${btnTryAgain}`,
 					function () {
 						attachShowRangePrimeEvents({
 							showStart,
 							showRangePrimeOutput,
 							showTooltip,
-							big_onchange,
+							onBigIntModeChange,
 						});
 					},
 				);
 			}
 		} else {
 			genUI(
-				`${errorHeader()}Min must be a positive integer and less or equal with Max<br/><br/>${btnTryAgain}`,
+				`${errorHeader()}Min must be a positive integer and less or equal with Max${btnTryAgain}`,
 				function () {
 					attachShowRangePrimeEvents({
 						showStart,
 						showRangePrimeOutput,
 						showTooltip,
-						big_onchange,
+						onBigIntModeChange,
 					});
 				},
 			);
 		}
 	} else {
 		genUI(
-			`${errorHeader()}Max and Col must be a positive integer<br/><br/>${btnTryAgain}`,
+			`${errorHeader()}Max and Col must be a positive integer${btnTryAgain}`,
 			function () {
 				attachShowRangePrimeEvents({
 					showStart,
 					showRangePrimeOutput,
 					showTooltip,
-					big_onchange,
+					onBigIntModeChange,
 				});
 			},
 		);

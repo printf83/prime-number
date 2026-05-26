@@ -29,7 +29,7 @@ export function showSinglePrimeOutput(
 	html: string,
 	callback?: () => void,
 ): void {
-	setInnerHtml("num_result", html, callback);
+	setInnerHtml("singleNumberResult", html, callback);
 }
 
 export function genTooltip(target: HTMLElement, html: string): void {
@@ -42,6 +42,111 @@ export function genTooltip(target: HTMLElement, html: string): void {
 			tooltip_container.style.display = "block";
 			tooltip_container.setAttribute("aria-hidden", "false");
 		}
+	});
+}
+
+export function createPrimeResultHtml(
+	tag: string,
+	id: string,
+	number: string,
+	isPrime: boolean,
+	resultHtml: string,
+	method: string,
+	timeHTtml: string,
+): string {
+	return `<${tag} id="${id}">${number}</${tag}><div><b class="${
+		isPrime ? "font-success" : "font-danger"
+	}">${isPrime ? "Is a prime number" : "Is NOT a prime number"}</b></div>${resultHtml}<div class="small">Using ${method}</div><div>${timeHTtml}</div>`;
+}
+
+export function createPrimeStatusHtml(
+	tag: string,
+	id: string,
+	number: string,
+	isPrime: boolean,
+): string {
+	return `<${tag} id="${id}">${number}</${tag}><span><b class="${
+		isPrime ? "font-success" : "font-danger"
+	}">${isPrime ? "Is a prime number" : "Is NOT a prime number"}</b></span>`;
+}
+
+export function primeFactorTableHtml(bodyId: string): string {
+	return `<div class="small"><span>It can be divided with</span><div class="scrollable"><table class="prime-divisors"><tbody id="${bodyId}"></tbody></table></div></div>`;
+}
+
+export function initPrimeFactorTable(
+	containerId: string,
+	bodyId: string,
+): void {
+	setInnerHtml(containerId, primeFactorTableHtml(bodyId));
+}
+
+export function appendPrimeFactorRow(
+	bodyId: string,
+	divisor: number | bigint,
+	quotient: number | bigint,
+): void {
+	const factorBody = document.getElementById(bodyId) as HTMLElement | null;
+	if (!factorBody) {
+		return;
+	}
+	const row = `<tr><td>÷</td><td>${formatNumber(divisor)}</td><td>=</td><td>${formatNumber(
+		quotient,
+	)}</td></tr>`;
+	factorBody.insertAdjacentHTML("beforeend", row);
+}
+
+export function attachNumberCopyHandler(
+	id: string,
+	value: string,
+	statusId?: string,
+): void {
+	attachCopyOnClick(
+		id,
+		value,
+		statusId
+			? () =>
+					setInnerHtml(
+						statusId,
+						"<span class='small'>Copied to clipboard</span>",
+					)
+			: undefined,
+		statusId
+			? () =>
+					setInnerHtml(
+						statusId,
+						"<span class='small'>Copy failed</span>",
+					)
+			: undefined,
+	);
+}
+
+export function attachCopyOnClick(
+	id: string,
+	value: string,
+	onSuccess?: () => void,
+	onFailure?: () => void,
+): void {
+	const element = document.getElementById(id) as HTMLElement | null;
+	if (!element) {
+		return;
+	}
+	element.style.cursor = "pointer";
+	element.title = "Click to copy number";
+	element.addEventListener("click", () => {
+		const text = value.replace(/,/g, "");
+		if (!navigator.clipboard?.writeText) {
+			onFailure?.();
+			return;
+		}
+		navigator.clipboard
+			.writeText(text)
+			.then(() => {
+				onSuccess?.();
+			})
+			.catch(() => {
+				onFailure?.();
+			});
 	});
 }
 
@@ -128,8 +233,7 @@ export function addResizeListener(
 
 export function monitorRenderTime(
 	target: string,
-	outputid1: string,
-	outputid2: string,
+	outputid: string,
 ): () => void {
 	const elem = document.getElementById(target);
 
@@ -143,8 +247,7 @@ export function monitorRenderTime(
 		const sduration = formatTime(duration);
 
 		setTimeout(function () {
-			setInnerHtml(outputid1, `Complete in ${sduration}`);
-			setInnerHtml(outputid2, `Complete in ${sduration}`);
+			setInnerHtml(outputid, `Complete in ${sduration}`);
 		}, 100);
 		cancel();
 	});

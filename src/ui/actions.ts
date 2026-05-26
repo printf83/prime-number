@@ -22,9 +22,9 @@ import {
 	showTooltip as showTooltipImpl,
 } from "./tooltip";
 import {
-	ot_onchange,
-	pr_onchange,
-	os_onchange,
+	onShowCalculationChange,
+	onShowProgressChange,
+	onShowPrimeOnlyChange,
 	getParamFromUrl,
 } from "./helpers";
 
@@ -37,7 +37,7 @@ export function calcRangePrime(): void {
 		showStart,
 		showRangePrimeOutput,
 		showTooltip,
-		big_onchange,
+		onBigIntModeChange: onBigIntModeChange,
 	});
 }
 
@@ -46,7 +46,7 @@ export function showRangePrimeOutput(): void {
 		showStart,
 		showTooltip,
 		showRangePrimeOutput,
-		big_onchange,
+		onBigIntModeChange: onBigIntModeChange,
 	});
 }
 
@@ -58,52 +58,60 @@ export function showTooltip(e: Event): void {
 	showTooltipImpl(e);
 }
 
-export { ot_onchange, pr_onchange, os_onchange, getParamFromUrl };
+export {
+	onShowCalculationChange,
+	onShowProgressChange,
+	onShowPrimeOnlyChange,
+	getParamFromUrl,
+};
 export { getParamFromUrl as getParam };
 
-export function big_onchange(val: string | number): void {
+export function onBigIntModeChange(val: string | number): void {
 	state.big = parseInt(String(val), 10);
 	showStart();
 }
 
 export function showStart(): void {
+	const container = document.getElementById("container");
+	if (container) {
+		container.classList.remove("result");
+	}
 	cleanupResultResizeListener();
 	cleanupSinglePrimeTimers();
 	cleanupRangePrimeTimer();
 	stopWorker();
 	state.result = [];
-	state.snum = state.big ? 1n : 1;
 	hideTooltip();
 
 	genUI(
 		`
 		${header()}
-		${ctlNumber("num", state.snum, "Number")}
-		${ctlTextResult("num_result")}
-		${ctlCheckbox("ot", state.ot ? true : false, "Show Calculation")}
-		${ctlCheckbox("pr", state.pr ? true : false, "Show Progress")}
+		${ctlNumber("singleNumber", state.singleNumber, "Number")}
+		${ctlTextResult("singleNumberResult")}
+		${ctlCheckbox("showCalculation", state.showCalculation ? true : false, "Show Calculation")}
+		${ctlCheckbox("showProgress", state.showProgress ? true : false, "Show Progress")}
 		
 		${header2()}
 
-		${ctlNumber("min", state.min, "Minimum")}
-		${ctlNumber("max", state.max, "Maximum")}
+		${ctlNumber("searchFrom", state.min, "Search From")}
+		${ctlNumber("searchTo", state.max, "Search To")}
 
-		${ctlRadio("os_1", "os", 0, state.os === 0 ? true : false, "Show All")}
-		${ctlRadio("os_2", "os", 1, state.os === 1 ? true : false, "Prime Only")}
+		${ctlRadio("showPrimeOnly_1", "showPrimeOnly", 0, state.showPrimeOnly ? false : true, "Show All")}
+		${ctlRadio("showPrimeOnly_2", "showPrimeOnly", 1, state.showPrimeOnly ? true : false, "Prime Only")}
 
-		${ctlNumber("col", state.col, "Col", "col_container")}
+		${ctlNumber("resultColumns", state.columns, "Result Columns", "col_container")}
 		${ctlButton("btn-start-calc", "Start Calculate Prime")}
 		`,
 		function () {
 			attachShowStartEvents({
 				calcSinglePrime,
 				calcRangePrime,
-				ot_onchange,
-				pr_onchange,
-				big_onchange,
-				os_onchange,
+				onShowCalculationChange,
+				onShowProgressChange,
+				onBigIntModeChange,
+				onShowPrimeOnlyChange,
 			});
-			os_onchange();
+			onShowPrimeOnlyChange();
 			calcSinglePrime();
 		},
 	);

@@ -17,7 +17,7 @@ interface ResultCallbacks {
 	showStart: () => void;
 	showRangePrimeOutput: () => void;
 	showTooltip: (e: Event) => void;
-	big_onchange: (val: string | number) => void;
+	onBigIntModeChange: (val: string | number) => void;
 }
 
 const ROW_HEIGHT = 25;
@@ -32,17 +32,25 @@ export function cleanupResultResizeListener(): void {
 }
 
 export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
-	const { showStart, showRangePrimeOutput, showTooltip, big_onchange } =
+	const { showStart, showRangePrimeOutput, showTooltip, onBigIntModeChange } =
 		callbacks;
+	const container = document.getElementById("container");
+	if (container) {
+		container.classList.add("result");
+	}
 	const resultArray = state.result as number[] | Uint8Array;
-	const visibleCount = state.os === 0 ? resultArray.length : state.primeFound;
+	const visibleCount = state.showPrimeOnly
+		? state.primeFound
+		: resultArray.length;
 	const col = Math.max(
 		1,
-		state.big ? Number(state.col as bigint) : Number(state.col as number),
+		state.big
+			? Number(state.columns as bigint)
+			: Number(state.columns as number),
 	);
 
 	const primeValues: Array<number | bigint> = [];
-	if (state.os === 1) {
+	if (state.showPrimeOnly) {
 		for (let index = 0; index < resultArray.length; index++) {
 			if (resultArray[index] === 1) {
 				primeValues.push(
@@ -54,16 +62,15 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		}
 	}
 
-	const totalRows =
-		state.os === 0
-			? Math.ceil(resultArray.length / col)
-			: Math.ceil(primeValues.length / col);
+	const totalRows = state.showPrimeOnly
+		? Math.ceil(primeValues.length / col)
+		: Math.ceil(resultArray.length / col);
 
 	genUI(
 		`
 		${header()} 
-		Showing <b>${formatNumber(visibleCount)} numbers</b> in a paged view.<br/>
-		Use the paging buttons below to move through results.
+		<span>Showing <b>${formatNumber(visibleCount)} numbers</b> in a paged view.</span>
+		<span>Use the paging buttons below to move through results.</span>
 		<div class="result_container">
 			<div class="result-viewport">
 				<div class="result-inner"></div>
@@ -81,9 +88,8 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 				showStart,
 				showRangePrimeOutput: showRangePrimeOutput,
 				showTooltip,
-				big_onchange,
+				onBigIntModeChange,
 			});
-
 			const viewport = document.querySelector(
 				".result-viewport",
 			) as HTMLElement | null;
@@ -108,7 +114,7 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 				const start = row * col;
 				const items: string[] = [];
 
-				if (state.os === 1) {
+				if (state.showPrimeOnly) {
 					for (
 						let index = start;
 						index < Math.min(primeValues.length, start + col);

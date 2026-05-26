@@ -1,24 +1,21 @@
+* {
+	box-sizing: border-box;
+}
+
+:root {
+	--primary-color: #5071a3;
+	--primary-color-light: #6a8ec9;
+	--primary-color-dark: #405d7f;
+	--text-color: #fff;
+	--background-color: #5071a3;
+	--border-radius: 5px;
+	--control-padding: 10px 15px;
+	--control-bg: rgba(0, 0, 0, 0.1);
+	--control-border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
 body {
 	font-family: "Source Sans Pro", sans-serif;
-	/* font-family: "Source Sans Pro", 
-    system-ui,
-        -apple-system,
-        "Segoe UI",
-        Roboto,
-        "Helvetica Neue",
-        Arial,
-        "Noto Sans",
-        "Liberation Sans",
-        sans-serif,
-        "Apple Color Emoji",
-        "Segoe UI Emoji",
-        "Segoe UI Symbol",
-        "Noto Color Emoji"; */
-	/* font-size: 0.95rem;
-    font-weight: 400;
-    line-height: 1.5; */
-	/* color: #212529;
-    background-color: #fff; */
 	padding: 0;
 	-webkit-text-size-adjust: 100%;
 	-webkit-tap-highlight-color: transparent;
@@ -37,28 +34,57 @@ body {
 	margin: 0;
 	padding: 0;
 	background: #5071a3;
-	/* background: linear-gradient(to bottom right, #50a3a2 0%, #53e3a6 100%); */
 	overflow-x: hidden;
 }
 
+.d-flex-column {
+	display: flex;
+	flex-direction: column;
+	row-gap: 0.5rem;
+}
+
+.small {
+	font-size: small !important;
+}
+
 #container {
-	padding: 0 1rem 1rem 1rem;
-	text-align: center;
 	color: #fff;
 	overflow: hidden;
+	padding: 0 1rem;
+	width: 100%;
+	max-width: 450px;
+	margin: 0 auto;
+	text-align: center;
+}
+
+#container.result {
+	width: 100%;
+	max-width: 700px;
+}
+
+@media screen and (max-width: 450px) {
+	#container {
+		width: 100%;
+		max-width: 100%;
+	}
+}
+
+.form-group {
+	display: flex;
+	flex-direction: column;
+	row-gap: 0.25rem;
 }
 
 input[type="number"] {
-	width: 15rem;
-	margin: 0.5rem 0;
+	width: 100%;
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	appearance: none;
 	outline: 0;
-	border: 1px solid rgba(255, 255, 255, 0.4);
-	background-color: rgba(0, 0, 0, 0.1);
-	border-radius: 3px;
-	padding: 10px 15px;
+	border: var(--control-border);
+	background-color: var(--control-bg);
+	border-radius: var(--border-radius);
+	padding: var(--control-padding);
 	display: block;
 	text-align: center;
 	font-size: 18px;
@@ -73,9 +99,9 @@ button {
 	outline: 0;
 	background-color: white;
 	border: 0;
-	padding: 10px 20px;
+	padding: var(--control-padding);
 	color: #5071a3;
-	border-radius: 3px;
+	border-radius: var(--border-radius);
 	cursor: pointer;
 	font-size: 1.45rem;
 	transition-duration: 0.25s;
@@ -104,7 +130,7 @@ label {
 }
 
 h2 {
-	margin: 2.5rem 0.5rem 1.5rem 0.5rem;
+	margin: 2.5rem 0 1.5rem 0;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 	padding-bottom: 1.5rem;
 	font-size: 1.65rem;
@@ -113,23 +139,22 @@ h2 {
 
 #multiple_time_1,
 #multiple_time_2,
-#single_time_1,
-#single_time_2,
-#tooltip_time,
-.note {
+#single_time,
+#tooltip_time {
 	font-size: small;
-	border-radius: 5px;
-	border: 1px solid rgba(255, 255, 255, 0.4);
-	padding: 0.25rem 0.75rem;
+	border-radius: var(--border-radius);
+	border: var(--control-border);
+	padding: var(--control-padding);
 	font-weight: bold;
+	display: inline-block;
 }
 
 #tooltip_time {
 	color: #333;
 	background-color: #fff;
-	margin-top: 1rem;
 	display: inline-block;
 	font-weight: bold;
+	border-radius: var(--border-radius);
 }
 
 small {
@@ -140,12 +165,6 @@ small {
 .pointer {
 	cursor: pointer;
 	margin: 0 0.25rem;
-}
-
-.form-group {
-	display: grid;
-	justify-content: center;
-	align-items: center;
 }
 
 .d-flex {
@@ -164,14 +183,12 @@ small {
 	align-items: flex-start;
 	overflow-x: auto;
 	overscroll-behavior-x: overlay;
-	margin-top: 1rem;
 }
 
 .result-scroll-controls {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
-	margin-top: 1rem;
 	overflow: hidden;
 }
 
@@ -198,13 +215,13 @@ small {
 }
 
 .result-scroll-controls button:first-child {
-	border-top-left-radius: 3px;
-	border-bottom-left-radius: 3px;
+	border-top-left-radius: var(--border-radius);
+	border-bottom-left-radius: var(--border-radius);
 }
 
 .result-scroll-controls button:last-child {
-	border-top-right-radius: 3px;
-	border-bottom-right-radius: 3px;
+	border-top-right-radius: var(--border-radius);
+	border-bottom-right-radius: var(--border-radius);
 }
 
 button:hover {
@@ -294,7 +311,6 @@ button:hover {
 }
 
 .paging-label {
-	margin-top: 1rem;
 	font-size: 0.8rem;
 	text-align: center;
 }
@@ -316,10 +332,6 @@ button:hover {
 }
 
 .result-item {
-	white-space: nowrap;
-}
-
-.result-item {
 	display: inline-flex;
 	justify-content: center;
 	align-items: center;
@@ -330,6 +342,8 @@ button:hover {
 	line-height: 1.2;
 	color: #fff;
 	overflow: hidden;
+	white-space: nowrap;
+	cursor: pointer;
 }
 
 .result-item.prime {
@@ -358,17 +372,14 @@ button:hover {
 
 .scrollable table {
 	font-size: small;
-	margin-top: 0.5rem;
 	border-collapse: separate;
 }
 
 .d-flex b,
 .d-flex i {
 	width: auto;
-	/* border: 1px solid rgba(255, 255, 255, 0.4); */
 	margin: 0.05rem;
 	text-align: center;
-	/* border-radius: 5px; */
 	padding: 0.05rem;
 	font-size: small;
 	display: inline-block;
@@ -446,24 +457,14 @@ a {
 	color: rgba(180, 180, 255, 0.8);
 }
 
-/* num_result */
-#num_result {
-	margin: 0.5rem 0;
-	width: 15rem;
+/* singleNumberResult */
+#singleNumberResult {
 	min-height: 5.7rem;
-	overflow: hidden;
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
-	outline: 0;
-	border: 1px solid rgba(255, 255, 255, 0.4);
-	background-color: rgba(0, 0, 0, 0.1);
-	border-radius: 3px;
-	padding: 10px 15px;
-	display: block;
-	text-align: center;
+	border: var(--control-border);
+	background-color: var(--control-bg);
+	border-radius: var(--border-radius);
+	padding: var(--control-padding);
 	font-size: 18px;
-	color: white;
 	transition-duration: 0.25s;
 	font-weight: 300;
 }
@@ -484,7 +485,7 @@ a {
 	font-size: small;
 	text-align: center;
 	position: absolute;
-	width: 15rem;
+	width: 25rem;
 	min-height: 7.53rem;
 	transform: translate(-50%, -100%);
 }
@@ -531,19 +532,19 @@ h4 {
 
 .progress {
 	height: 5px;
+	width: 100%;
 	max-width: 300px;
-	/* padding:1px; */
-	border: 1px solid rgba(255, 255, 255, 0.4);
-	background-color: rgba(0, 0, 0, 0.1);
+	border: var(--control-border);
+	background-color: var(--control-bg);
 	margin: 1rem auto 0 auto;
-	border-radius: 3px;
+	border-radius: var(--border-radius);
 }
 
 .progress .bar {
 	background-color: rgba(255, 255, 255, 0.8);
 	height: 100%;
 	width: 0;
-	border-radius: 3px;
+	border-radius: var(--border-radius);
 	-webkit-transition: width ease;
 	-moz-transition: width ease;
 	-o-transition: width ease;
@@ -664,8 +665,7 @@ h4 {
 
 #multiple_time_1 .lds-ellipsis div,
 #multiple_time_2 .lds-ellipsis div,
-#single_time_1 .lds-ellipsis div,
-#single_time_2 .lds-ellipsis div {
+#single_time .lds-ellipsis div {
 	background: #fff;
 }
 
@@ -725,15 +725,13 @@ label.radio,
 label.checkbox {
 	display: block;
 	position: relative;
-	padding-top: 0.15rem;
 	padding-left: 35px;
-	margin: 0.5rem 0;
 	cursor: pointer;
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-	width: 15rem;
+	width: 100%;
 	text-align: left;
 	font-size: medium;
 }
@@ -755,10 +753,9 @@ label.checkbox .checkmark {
 	left: 0;
 	height: 25px;
 	width: 25px;
-	/* background-color: #eee; */
-	border: 1px solid rgba(255, 255, 255, 0.4);
-	background-color: rgba(0, 0, 0, 0.1);
-	border-radius: 3px;
+	border: var(--control-border);
+	background-color: var(--control-bg);
+	border-radius: var(--border-radius);
 }
 
 label.radio .checkmark {
@@ -767,23 +764,20 @@ label.radio .checkmark {
 	left: 0;
 	height: 25px;
 	width: 25px;
-	/* background-color: #eee; */
-	border: 1px solid rgba(255, 255, 255, 0.4);
-	background-color: rgba(0, 0, 0, 0.1);
+	border: var(--control-border);
+	background-color: var(--control-bg);
 	border-radius: 50%;
 }
 
 /* On mouse-over, add a grey background color */
 label.radio:hover input ~ .checkmark,
 label.checkbox:hover input ~ .checkmark {
-	/* background-color: #ccc; */
 	background-color: rgba(0, 0, 0, 0.3);
 }
 
 /* When the checkbox is checked, add a blue background */
 label.radio input:checked ~ .checkmark,
 label.checkbox input:checked ~ .checkmark {
-	/* background-color: #2196F3; */
 	border: 1px solid rgba(255, 255, 255, 0.4);
 	background-color: rgba(0, 0, 0, 0.1);
 }
@@ -804,8 +798,8 @@ label.checkbox input:checked ~ .checkmark:after {
 
 /* Style the checkmark/indicator */
 label.checkbox .checkmark:after {
-	left: 9px;
-	top: 5px;
+	left: 8px;
+	top: 3px;
 	width: 5px;
 	height: 10px;
 	border: solid white;
@@ -817,8 +811,8 @@ label.checkbox .checkmark:after {
 
 /* Style the indicator (dot/circle) */
 label.radio .checkmark:after {
-	top: 8px;
-	left: 8px;
+	top: 7px;
+	left: 7px;
 	width: 9px;
 	height: 9px;
 	border-radius: 50%;
