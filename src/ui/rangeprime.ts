@@ -19,12 +19,15 @@ import {
 	btnTryAgain,
 	btnCancel,
 	errorHeader,
+	errorResult,
 	header,
 	loading3,
 	loading4,
 	progressIndicator,
 	currentCountIndicator,
 	btnShowResult,
+	rangePrimeSummaryHtml,
+	rangePrimeTooHugeHtml,
 	timerIndicator,
 } from "./builders";
 
@@ -78,7 +81,7 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 
 		if (minValue === null || maxValue === null || colValue === null) {
 			genUI(
-				`${errorHeader()}Please enter valid range values${btnTryAgain}`,
+				errorResult("Please enter valid range values"),
 				function () {
 					attachShowRangePrimeEvents({
 						showStart,
@@ -111,7 +114,7 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 
 		if (minValue === null || maxValue === null || colValue === null) {
 			genUI(
-				`${errorHeader()}Please enter valid range values${btnTryAgain}`,
+				errorResult("Please enter valid range values"),
 				function () {
 					attachShowRangePrimeEvents({
 						showStart,
@@ -139,17 +142,14 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 	).checked;
 
 	if (state.min === null || state.max === null || state.columns === null) {
-		genUI(
-			`${errorHeader()}Please enter valid range values${btnTryAgain}`,
-			function () {
-				attachShowRangePrimeEvents({
-					showStart,
-					showRangePrimeOutput,
-					showTooltip,
-					onBigIntModeChange,
-				});
-			},
-		);
+		genUI(errorResult("Please enter valid range values"), function () {
+			attachShowRangePrimeEvents({
+				showStart,
+				showRangePrimeOutput,
+				showTooltip,
+				onBigIntModeChange,
+			});
+		});
 		return;
 	}
 
@@ -215,12 +215,13 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 											container.classList.add("result");
 										}
 										genUI(
-											`
-                                    ${header()}
-                                    <span>We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b> using <b>${method}</b></span>.
-                                    <span>The range is too large to render in this browser. Narrow the range to see the primes.<span>
-									${btnTryAgain}
-                                    `,
+											`${rangePrimeTooHugeHtml(
+												formatNumber(state.primeFound),
+												formatNumber(state.min),
+												formatNumber(state.max),
+												formatTime(processTime),
+												method,
+											)}${btnTryAgain}`,
 											function () {
 												attachShowRangePrimeEvents({
 													showStart,
@@ -239,11 +240,13 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 										container.classList.add("result");
 									}
 									genUI(
-										`
-                                    ${header()}
-                                    <span>We found <b>${formatNumber(state.primeFound)} prime number</b> between <b>${formatNumber(state.min)}</b> and <b>${formatNumber(state.max)}</b> in <b>${formatTime(processTime)}</b> using <b>${method}</b>.</span>
-									<div>${btnShowResult} ${btnTryAgain}</div>
-                                    `,
+										`${rangePrimeSummaryHtml(
+											formatNumber(state.primeFound),
+											formatNumber(state.min),
+											formatNumber(state.max),
+											formatTime(processTime),
+											method,
+										)}<div>${btnShowResult} ${btnTryAgain}</div>`,
 										function () {
 											attachShowRangePrimeEvents({
 												showStart,
@@ -255,7 +258,7 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 									);
 								} else {
 									genUI(
-										`${errorHeader()}Fail to find prime number${btnTryAgain}`,
+										errorResult("Fail to find prime number"),
 										function () {
 											attachShowRangePrimeEvents({
 												showStart,
@@ -269,7 +272,9 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 							},
 							function (e) {
 								genUI(
-									`${errorHeader()}Fail to find prime number. ${e}${btnTryAgain}`,
+									errorResult(
+										`Fail to find prime number. ${e}`,
+									),
 									function () {
 										attachShowRangePrimeEvents({
 											showStart,
@@ -308,21 +313,20 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 					},
 				);
 			} else {
-				genUI(
-					`${errorHeader()}Web Worker not available${btnTryAgain}`,
-					function () {
-						attachShowRangePrimeEvents({
-							showStart,
-							showRangePrimeOutput,
-							showTooltip,
-							onBigIntModeChange,
-						});
-					},
-				);
+				genUI(errorResult("Web Worker not available"), function () {
+					attachShowRangePrimeEvents({
+						showStart,
+						showRangePrimeOutput,
+						showTooltip,
+						onBigIntModeChange,
+					});
+				});
 			}
 		} else {
 			genUI(
-				`${errorHeader()}Min must be a positive integer and less or equal with Max${btnTryAgain}`,
+				errorResult(
+					"Min must be a positive integer and less or equal with Max",
+				),
 				function () {
 					attachShowRangePrimeEvents({
 						showStart,
@@ -335,7 +339,7 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 		}
 	} else {
 		genUI(
-			`${errorHeader()}Max and Col must be a positive integer${btnTryAgain}`,
+			errorResult("Max and Col must be a positive integer"),
 			function () {
 				attachShowRangePrimeEvents({
 					showStart,

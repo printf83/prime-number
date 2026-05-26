@@ -12,12 +12,18 @@ import {
 	setInnerHtml,
 	showSinglePrimeOutput,
 	attachNumberCopyHandler,
-	createPrimeResultHtml,
-	createPrimeStatusHtml,
 	initPrimeFactorTable,
 	appendPrimeFactorRow,
 	updateProgress,
 } from "../dom";
+import {
+	createPrimeResultHtml,
+	createPrimeStatusHtml,
+	factorTableHtml,
+	singlePrimeInitialOutputHtml,
+	singlePrimeDivisorMessageHtml,
+	singlePrimeTimeHtml,
+} from "./builders";
 import { runWorker, stopWorker } from "../workers";
 import {
 	loading2,
@@ -65,12 +71,9 @@ export function calcSinglePrimeImpl(): void {
 		const progressId = state.showProgress ? genId() : null;
 		const foundFactorPairs = new Map<number | bigint, number | bigint>();
 
-		showSinglePrimeOutput(`
-			<div id="singleprime_status">Checking ${timerIndicator(timerId)}</div>
-			<div id="singleprime_factors"></div>
-			${loading4()}
-			${progressIndicator(progressId)} 
-			`);
+		showSinglePrimeOutput(
+			singlePrimeInitialOutputHtml(timerId, progressId),
+		);
 		initSinglePrimeFactorTable();
 		if (currentSinglePrimeTimerCancel) {
 			currentSinglePrimeTimerCancel();
@@ -138,6 +141,9 @@ export function calcSinglePrimeImpl(): void {
 									state.result[state.result.length - 1];
 								const singlePrimeMethod =
 									getSinglePrimeMethod();
+								const factorHtml = state.showCalculation
+									? factorTableHtml(String(e))
+									: String(e);
 								if (state.result.length === 2) {
 									showSinglePrimeOutput(
 										createPrimeResultHtml(
@@ -145,7 +151,10 @@ export function calcSinglePrimeImpl(): void {
 											"singleprime_number",
 											formatNumber(lastNumber),
 											true,
-											`<span class="small">It can only be divided with ${e}</span>`,
+											singlePrimeDivisorMessageHtml(
+												factorHtml,
+												true,
+											),
 											singlePrimeMethod,
 											"",
 										),
@@ -160,14 +169,15 @@ export function calcSinglePrimeImpl(): void {
 											"singleprime_number",
 											formatNumber(lastNumber),
 											false,
-											`
-											<span class="small">It can${
-												state.result.length === 1
-													? ` only`
-													: ``
-											} be divided with ${e}</span>`,
+											singlePrimeDivisorMessageHtml(
+												factorHtml,
+												state.result.length === 1,
+											),
 											singlePrimeMethod,
-											`<div><span class="small" id="single_time">${loading2}</span></div>`,
+											singlePrimeTimeHtml(
+												"single_time",
+												loading2,
+											),
 										),
 									);
 									attachSinglePrimeCopyHandler(

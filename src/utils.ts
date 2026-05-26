@@ -3,30 +3,10 @@ export function formatNumber(num: number | bigint): string {
 		return num.toLocaleString("en-US");
 	}
 
-	return `<div class="font-danger">Error!</div>`;
+	return "Error!";
 }
 
 export type DivisorPair = [number | bigint, number | bigint];
-
-export function renderDivisorRow(
-	divisor: number | bigint,
-	quotient: number | bigint,
-): string {
-	return `
-		<tr>
-			<td>÷</td>
-			<td>${formatNumber(divisor)}</td>
-			<td>=</td>
-			<td>${formatNumber(quotient)}</td>
-		</tr>
-	`;
-}
-
-export function renderDivisorTable(rows: DivisorPair[]): string {
-	return `<div class="small"><span>It can be divided with</span><div class="scrollable"><table class="prime-divisors"><tbody>${rows
-		.map(([divisor, quotient]) => renderDivisorRow(divisor, quotient))
-		.join("")}</tbody></table></div></div>`;
-}
 
 export function parseIntInput(value: string): number | null {
 	const n = parseInt(value, 10);

@@ -14,7 +14,7 @@ export const state = {
 	columns: 6 as number | bigint,
 	showPrimeOnly: false,
 	showCalculation: true,
-	singleNumber: 999999999900062 as number | bigint,
+	singleNumber: 999999999900070 as number | bigint,
 	showProgress: true,
 };
 

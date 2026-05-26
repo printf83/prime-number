@@ -53,9 +53,7 @@ import { formatNumber } from "./utils";
 					.join(", ")
 					.replace(/, ((?:.(?!, ))+)$/, " and $1");
 			} else {
-				const rows = renderFactorRows(data, num, pr, progress);
-
-				result = `<div class="scrollable"><table>${rows}</table></div>`;
+				result = renderFactorRows(data, num, pr, progress);
 			}
 
 			postMessage({ type: "data", data: result });

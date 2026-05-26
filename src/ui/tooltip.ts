@@ -6,11 +6,16 @@ import {
 	secTimer,
 	setInnerHtml,
 	attachNumberCopyHandler,
-	createPrimeResultHtml,
 	initPrimeFactorTable,
 	appendPrimeFactorRow,
 	updateProgress,
 } from "../dom";
+import {
+	createPrimeResultHtml,
+	factorTableHtml,
+	tooltipDivisorMessageHtml,
+	tooltipTimeHtml,
+} from "./builders";
 import { runWorker, stopWorkerIfCurrentJob, WorkerJob } from "../workers";
 import {
 	loading2,
@@ -164,6 +169,9 @@ export function showTooltip(e: Event): void {
 							function (e) {
 								const singlePrimeMethod =
 									getSinglePrimeMethod();
+								const factorHtml = state.showCalculation
+									? factorTableHtml(String(e))
+									: String(e);
 								if (state.result.length === 2) {
 									genTooltip(
 										target,
@@ -176,9 +184,15 @@ export function showTooltip(e: Event): void {
 												],
 											),
 											true,
-											`<div><span class="small">It can only be divided with ${e}</span></div>`,
+											tooltipDivisorMessageHtml(
+												factorHtml,
+												true,
+											),
 											singlePrimeMethod,
-											`<div><span id="tooltip_time">${loading2}</span></div>`,
+											tooltipTimeHtml(
+												"tooltip_time",
+												loading2,
+											),
 										),
 									);
 									attachTooltipNumberCopyHandler(
@@ -200,9 +214,15 @@ export function showTooltip(e: Event): void {
 												],
 											),
 											false,
-											`<div class="small"><span>It can be divided with</span> ${e}</div>`,
+											tooltipDivisorMessageHtml(
+												factorHtml,
+												false,
+											),
 											singlePrimeMethod,
-											`<div><span id="tooltip_time">${loading2}</span></div>`,
+											tooltipTimeHtml(
+												"tooltip_time",
+												loading2,
+											),
 										),
 									);
 									attachTooltipNumberCopyHandler(

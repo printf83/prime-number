@@ -1,5 +1,10 @@
 import { PerformanceWithMemory } from "./state";
 import { formatList, formatNumber, formatTime } from "./utils";
+import {
+	primeFactorRowHtml,
+	primeFactorTableHtml,
+	copyStatusHtml,
+} from "./ui/builders";
 
 export function runCallback(callback?: () => void): void {
 	if (typeof callback === "function") {
@@ -45,35 +50,6 @@ export function genTooltip(target: HTMLElement, html: string): void {
 	});
 }
 
-export function createPrimeResultHtml(
-	tag: string,
-	id: string,
-	number: string,
-	isPrime: boolean,
-	resultHtml: string,
-	method: string,
-	timeHTtml: string,
-): string {
-	return `<${tag} id="${id}">${number}</${tag}><div><b class="${
-		isPrime ? "font-success" : "font-danger"
-	}">${isPrime ? "Is a prime number" : "Is NOT a prime number"}</b></div>${resultHtml}<div class="small">Using ${method}</div><div>${timeHTtml}</div>`;
-}
-
-export function createPrimeStatusHtml(
-	tag: string,
-	id: string,
-	number: string,
-	isPrime: boolean,
-): string {
-	return `<${tag} id="${id}">${number}</${tag}><span><b class="${
-		isPrime ? "font-success" : "font-danger"
-	}">${isPrime ? "Is a prime number" : "Is NOT a prime number"}</b></span>`;
-}
-
-export function primeFactorTableHtml(bodyId: string): string {
-	return `<div class="small"><span>It can be divided with</span><div class="scrollable"><table class="prime-divisors"><tbody id="${bodyId}"></tbody></table></div></div>`;
-}
-
 export function initPrimeFactorTable(
 	containerId: string,
 	bodyId: string,
@@ -90,10 +66,10 @@ export function appendPrimeFactorRow(
 	if (!factorBody) {
 		return;
 	}
-	const row = `<tr><td>÷</td><td>${formatNumber(divisor)}</td><td>=</td><td>${formatNumber(
-		quotient,
-	)}</td></tr>`;
-	factorBody.insertAdjacentHTML("beforeend", row);
+	factorBody.insertAdjacentHTML(
+		"beforeend",
+		primeFactorRowHtml(divisor, quotient),
+	);
 }
 
 export function attachNumberCopyHandler(
@@ -108,15 +84,11 @@ export function attachNumberCopyHandler(
 			? () =>
 					setInnerHtml(
 						statusId,
-						"<span class='small'>Copied to clipboard</span>",
+						copyStatusHtml("Copied to clipboard"),
 					)
 			: undefined,
 		statusId
-			? () =>
-					setInnerHtml(
-						statusId,
-						"<span class='small'>Copy failed</span>",
-					)
+			? () => setInnerHtml(statusId, copyStatusHtml("Copy failed"))
 			: undefined,
 	);
 }

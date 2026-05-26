@@ -1,4 +1,5 @@
 import { state } from "../state";
+import { formatNumber } from "../utils";
 
 export function ctlCheckbox(
 	id: string,
@@ -43,8 +44,12 @@ export function ctlNumber(
 	</div>`;
 }
 
-export function ctlButton(id: string, label: string): string {
-	return `<button type="button" id="${id}" aria-label="${label}">${label}</button>`;
+export function ctlButton(id: string, label: string, smicon?: string): string {
+	if (smicon) {
+		return `<button type="button" id="${id}" aria-label="${label}"><span class="sm-label">${smicon}</span><span class="md-label">${label}</span></button>`;
+	} else {
+		return `<button type="button" id="${id}" aria-label="${label}">${label}</button>`;
+	}
 }
 
 export function ctlTextResult(id: string): string {
@@ -64,6 +69,70 @@ export const errorHeader = function () {
 	return `<h2 class="font-danger">Error!${state.big ? bigTitle : smallTitle}</h2>`;
 };
 
+export function errorResult(message: string): string {
+	return `${errorHeader()}<div>${message}</div>${btnTryAgain}`;
+}
+
+export function errorTextHtml(message: string): string {
+	return `<div class="font-danger">${message}</div>`;
+}
+
+export function rangePrimeResultHtml(visibleCount: number): string {
+	return `
+		${header()}
+		<span>Showing <b>${formatNumber(visibleCount)} numbers</b> in a paged view.</span>
+		<span>Use the paging buttons below to move through results.</span>
+		<div class="result_container">
+			<div class="result-viewport">
+				<div class="result-inner"></div>
+			</div>
+		</div>
+		<div class="result-page-info">
+			<div class="paging-label" id="paging_label">Page 1 of 1</div>
+		</div>
+		<div class="result-scroll-controls">
+			${btnScrollFirst}${btnScrollPrev10}${btnScrollPrev}${btnTryAgain2}${btnScrollNext}${btnScrollNext10}${btnScrollLast}
+		</div>
+	`;
+}
+
+export function rangePrimeSummaryHtml(
+	primeFound: string,
+	min: string,
+	max: string,
+	processTime: string,
+	method: string,
+): string {
+	return `
+		${header()}
+		<span>We found <b>${primeFound} prime number</b> between <b>${min}</b> and <b>${max}</b> in <b>${processTime}</b> using <b>${method}</b>.</span>
+	`;
+}
+
+export function rangePrimeTooHugeHtml(
+	primeFound: string,
+	min: string,
+	max: string,
+	processTime: string,
+	method: string,
+): string {
+	return `
+		${rangePrimeSummaryHtml(primeFound, min, max, processTime, method)}
+		<span>The range is too large to render in this browser. Narrow the range to see the primes.</span>
+	`;
+}
+
+export function resultItemHtml(
+	value: number | bigint,
+	isPrime: boolean,
+): string {
+	return `<span class="result-item ${isPrime ? "prime" : "composite"}">${formatNumber(value)}</span>`;
+}
+
+export function resultRowHtml(items: string[]): string {
+	return `<div class="result-row">${items.join("")}</div>`;
+}
+
 export function timerIndicator(id: string) {
 	return `<span id="${id}"></span>`;
 }
@@ -80,7 +149,86 @@ export function currentCountIndicator(id: string | null) {
 		: "";
 }
 
+export function copyStatusHtml(message: string): string {
+	return `<span class="small">${message}</span>`;
+}
+
+export function singlePrimeInitialOutputHtml(
+	timerId: string,
+	progressId: string | null,
+): string {
+	return `
+		<div id="singleprime_status">Checking ${timerIndicator(timerId)}</div>
+		<div id="singleprime_factors"></div>
+		${loading4()}
+		${progressIndicator(progressId)}
+	`;
+}
+
+export function singlePrimeDivisorMessageHtml(
+	divisorInfo: string,
+	only: boolean,
+): string {
+	return `<span class="small">It can${only ? ` only` : ``} be divided with ${divisorInfo}</span>`;
+}
+
+export function singlePrimeTimeHtml(id: string, loadingMarkup: string): string {
+	return `<div><span class="small" id="${id}">${loadingMarkup}</span></div>`;
+}
+
+export function tooltipDivisorMessageHtml(
+	divisorInfo: string,
+	only: boolean,
+): string {
+	return `<div class="small"><span>It can${only ? ` only` : ``} be divided with</span> ${divisorInfo}</div>`;
+}
+
+export function tooltipTimeHtml(id: string, loadingMarkup: string): string {
+	return `<div><span id="${id}">${loadingMarkup}</span></div>`;
+}
+
+export function createPrimeResultHtml(
+	tag: string,
+	id: string,
+	number: string,
+	isPrime: boolean,
+	resultHtml: string,
+	method: string,
+	timeHTtml: string,
+): string {
+	return `<${tag} id="${id}">${number}</${tag}><div><b class="${
+		isPrime ? "font-success" : "font-danger"
+	}">${isPrime ? "Is a prime number" : "Is NOT a prime number"}</b></div>${resultHtml}<div class="small">Using ${method}</div><div>${timeHTtml}</div>`;
+}
+
+export function createPrimeStatusHtml(
+	tag: string,
+	id: string,
+	number: string,
+	isPrime: boolean,
+): string {
+	return `<${tag} id="${id}">${number}</${tag}><span><b class="${
+		isPrime ? "font-success" : "font-danger"
+	}">${isPrime ? "Is a prime number" : "Is NOT a prime number"}</b></span>`;
+}
+
+export function primeFactorTableHtml(bodyId: string): string {
+	return `<div class="small"><span>It can be divided with</span><div class="scrollable"><table class="prime-divisors"><tbody id="${bodyId}"></tbody></table></div></div>`;
+}
+
+export function factorTableHtml(rows: string): string {
+	return `<div class="scrollable"><table>${rows}</table></div>`;
+}
+
+export function primeFactorRowHtml(
+	divisor: number | bigint,
+	quotient: number | bigint,
+): string {
+	return `<tr><td>÷</td><td>${formatNumber(divisor)}</td><td>=</td><td>${formatNumber(quotient)}</td></tr>`;
+}
+
 export const btnTryAgain = ctlButton("btn-try-again", "Try Again");
+export const btnTryAgain2 = ctlButton("btn-try-again", "Try Again", "&#8635;");
 export const btnCancel = ctlButton("btn-cancel", "Cancel");
 export const btnScrollFirst = ctlButton("btn-scroll-first", "&#8676;");
 export const btnScrollPrev10 = ctlButton("btn-scroll-prev10", "&#8606;");
