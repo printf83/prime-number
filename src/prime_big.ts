@@ -85,7 +85,7 @@ import {
 			}
 
 			const limitNumber = Number(limit);
-			if (!Number.isSafeInteger(limitNumber) || limitNumber > 20000000) {
+			if (!Number.isSafeInteger(limitNumber)) {
 				throw new Error("Range is too large to compute in the browser");
 			}
 

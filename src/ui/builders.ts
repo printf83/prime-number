@@ -237,8 +237,8 @@ export const btnScrollNext = ctlButton("btn-scroll-next", "&#8594;");
 export const btnScrollNext10 = ctlButton("btn-scroll-next10", "&#8608;");
 export const btnScrollLast = ctlButton("btn-scroll-last", "&#8677;");
 export const btnShowResult = ctlButton("btn-show-result", "Show Result");
-export const loading2 = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`;
-export const loading3 = `<div class="lds-ring-big"><div></div><div></div><div></div><div></div></div>`;
+export const loading2 = `<div><div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div></div>`;
+export const loading3 = `<div><div class="lds-ring-big"><div></div><div></div><div></div><div></div></div></div>`;
 
 export const loading4 = function () {
 	return !state.showProgress ? `${loading2}` : "";

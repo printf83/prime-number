@@ -18,7 +18,6 @@ import { attachShowRangePrimeEvents } from "./events";
 import {
 	btnTryAgain,
 	btnCancel,
-	errorHeader,
 	errorResult,
 	header,
 	loading3,
@@ -80,17 +79,14 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 		const colValue = parseBigIntInput(colElement?.value ?? "");
 
 		if (minValue === null || maxValue === null || colValue === null) {
-			genUI(
-				errorResult("Please enter valid range values"),
-				function () {
-					attachShowRangePrimeEvents({
-						showStart,
-						showRangePrimeOutput,
-						showTooltip,
-						onBigIntModeChange,
-					});
-				},
-			);
+			genUI(errorResult("Please enter valid range values"), function () {
+				attachShowRangePrimeEvents({
+					showStart,
+					showRangePrimeOutput,
+					showTooltip,
+					onBigIntModeChange,
+				});
+			});
 			return;
 		}
 
@@ -113,17 +109,14 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 		const colValue = parseIntInput(colElement?.value ?? "");
 
 		if (minValue === null || maxValue === null || colValue === null) {
-			genUI(
-				errorResult("Please enter valid range values"),
-				function () {
-					attachShowRangePrimeEvents({
-						showStart,
-						showRangePrimeOutput,
-						showTooltip,
-						onBigIntModeChange,
-					});
-				},
-			);
+			genUI(errorResult("Please enter valid range values"), function () {
+				attachShowRangePrimeEvents({
+					showStart,
+					showRangePrimeOutput,
+					showTooltip,
+					onBigIntModeChange,
+				});
+			});
 			return;
 		}
 
@@ -159,20 +152,24 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 				const timerId = genId();
 				const progressId = state.showProgress ? genId() : null;
 				const currentCountId = genId();
+				const container = document.getElementById("container");
+				if (container) {
+					container.classList.add("result");
+				}
 
 				genUI(
 					`
                 ${header()}
-                Finding prime number in <b>${formatNumber(
+                <div>Finding prime number in <b>${formatNumber(
 					state.big
 						? (state.max as bigint) - (state.min as bigint) + 1n
 						: (state.max as number) - (state.min as number) + 1,
-				)}</b> numbers ${timerIndicator(timerId)}
+				)}</b> numbers ${timerIndicator(timerId)}</div>
                 ${loading4()}
 				${currentCountIndicator(currentCountId)}
                 ${progressIndicator(progressId)}
                 ${loading3}
-                ${btnCancel}
+                <div>${btnCancel}</div>
                 `,
 					function () {
 						if (currentRangePrimeTimerCancel) {
@@ -258,7 +255,9 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 									);
 								} else {
 									genUI(
-										errorResult("Fail to find prime number"),
+										errorResult(
+											"Fail to find prime number",
+										),
 										function () {
 											attachShowRangePrimeEvents({
 												showStart,

@@ -9,7 +9,7 @@ export const state = {
 	big: 0,
 	result: [] as (number | bigint)[] | Uint8Array,
 	primeFound: 0,
-	min: 999999999900000 as number | bigint,
+	min: 999999000000000 as number | bigint,
 	max: 999999999999999 as number | bigint,
 	columns: 6 as number | bigint,
 	showPrimeOnly: false,
