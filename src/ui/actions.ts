@@ -16,6 +16,7 @@ import { calcRangePrimeImpl, cleanupRangePrimeTimer } from "./rangeprime";
 import {
 	showRangePrimeOutputImpl,
 	cleanupResultResizeListener,
+	cleanupResultUI,
 } from "./result";
 import {
 	hideTooltip as hideTooltipImpl,
@@ -71,12 +72,16 @@ export function onBigIntModeChange(val: string | number): void {
 	showStart();
 }
 
+let currentShowStartCleanup: (() => void) | null = null;
+
 export function showStart(): void {
 	const container = document.getElementById("container");
 	if (container) {
 		container.classList.remove("result");
 	}
-	cleanupResultResizeListener();
+	currentShowStartCleanup?.();
+	currentShowStartCleanup = null;
+	cleanupResultUI();
 	cleanupSinglePrimeTimers();
 	cleanupRangePrimeTimer();
 	stopWorker();
@@ -103,7 +108,7 @@ export function showStart(): void {
 		${ctlButton("btn-start-calc", "Start Calculate Prime")}
 		`,
 		function () {
-			attachShowStartEvents({
+			currentShowStartCleanup = attachShowStartEvents({
 				calcSinglePrime,
 				calcRangePrime,
 				onShowCalculationChange,

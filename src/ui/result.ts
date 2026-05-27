@@ -26,6 +26,7 @@ interface ResultCallbacks {
 const ROW_HEIGHT = 25;
 let currentResultResizeHandler: EventListenerOrEventListenerObject | null =
 	null;
+let currentResultCleanupHandlers: Array<() => void> = [];
 let primeIndexCache: number[] = [];
 let primeSearchIndex = 0;
 
@@ -38,9 +39,16 @@ export function cleanupResultResizeListener(): void {
 	primeSearchIndex = 0;
 }
 
+export function cleanupResultUI(): void {
+	currentResultCleanupHandlers.forEach((cleanup) => cleanup());
+	currentResultCleanupHandlers.length = 0;
+	cleanupResultResizeListener();
+}
+
 export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 	const { showStart, showRangePrimeOutput, showTooltip, onBigIntModeChange } =
 		callbacks;
+	cleanupResultUI();
 	const container = document.getElementById("container");
 	if (container) {
 		container.classList.add("result");
@@ -85,12 +93,13 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		: Math.ceil(resultLength / col);
 
 	genUI(rangePrimeResultHtml(visibleCount), function () {
-		attachShowRangePrimeEvents({
+		const cleanupRangePrimeEvents = attachShowRangePrimeEvents({
 			showStart,
 			showRangePrimeOutput: showRangePrimeOutput,
 			showTooltip,
 			onBigIntModeChange,
 		});
+		currentResultCleanupHandlers.push(cleanupRangePrimeEvents);
 		const viewport = document.querySelector(
 			".result-viewport",
 		) as HTMLElement | null;
@@ -252,6 +261,26 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		const pagingThumb = document.getElementById(
 			"paging_thumb",
 		) as HTMLElement | null;
+		const pagingTrack = document.querySelector(
+			".paging-track",
+		) as HTMLElement | null;
+		const resultContainer = document.querySelector(
+			".result_container",
+		) as HTMLElement | null;
+
+		currentResultCleanupHandlers = [];
+
+		function addResultListener(
+			target: EventTarget,
+			type: string,
+			listener: EventListener,
+			options?: boolean | AddEventListenerOptions,
+		): void {
+			target.addEventListener(type, listener, options);
+			currentResultCleanupHandlers.push(() => {
+				target.removeEventListener(type, listener, options);
+			});
+		}
 
 		function attachLongPressAction(
 			button: HTMLButtonElement | null,
@@ -298,25 +327,105 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 				}, 250);
 			};
 
-			button.addEventListener("mousedown", () => startRepeat());
-			button.addEventListener(
-				"touchstart",
-				(event) => {
-					event.preventDefault();
-					startRepeat();
-				},
-				{ passive: false },
-			);
-			button.addEventListener("mouseup", clearRepeat);
-			button.addEventListener("mouseleave", clearRepeat);
-			button.addEventListener("touchend", clearRepeat);
-			button.addEventListener("touchcancel", clearRepeat);
-			button.addEventListener("blur", clearRepeat);
-			button.addEventListener("click", (event) => {
+			const mouseDownHandler = () => startRepeat();
+			const touchStartHandler: EventListener = (event) => {
+				const touchEvent = event as TouchEvent;
+				touchEvent.preventDefault();
+				startRepeat();
+			};
+			const mouseUpHandler = clearRepeat;
+			const mouseLeaveHandler = clearRepeat;
+			const touchEndHandler = clearRepeat;
+			const touchCancelHandler = clearRepeat;
+			const blurHandler = clearRepeat;
+			const clickHandler: EventListener = (event) => {
+				const mouseEvent = event as MouseEvent;
 				if (suppressClick) {
-					event.preventDefault();
-					event.stopImmediatePropagation();
+					mouseEvent.preventDefault();
+					mouseEvent.stopImmediatePropagation();
 					suppressClick = false;
+				}
+			};
+			addResultListener(button, "mousedown", mouseDownHandler);
+			addResultListener(button, "touchstart", touchStartHandler, {
+				passive: false,
+			});
+			addResultListener(button, "mouseup", mouseUpHandler);
+			addResultListener(button, "mouseleave", mouseLeaveHandler);
+			addResultListener(button, "touchend", touchEndHandler);
+			addResultListener(button, "touchcancel", touchCancelHandler);
+			addResultListener(button, "blur", blurHandler);
+			addResultListener(button, "click", clickHandler);
+			currentResultCleanupHandlers.push(clearRepeat);
+		}
+
+		function attachPagingThumbDrag(): void {
+			if (!pagingThumb || !pagingTrack) {
+				return;
+			}
+
+			let dragging = false;
+			let pointerId: number | null = null;
+
+			const updatePosition = (clientY: number): void => {
+				const rect = pagingTrack.getBoundingClientRect();
+				const position = Math.min(
+					Math.max(0, clientY - rect.top),
+					rect.height,
+				);
+				const ratio = rect.height > 0 ? position / rect.height : 0;
+				const page = Math.round(ratio * (pageCount - 1));
+				goToPage(page);
+			};
+
+			const onPointerMove = (event: PointerEvent): void => {
+				if (!dragging || event.pointerId !== pointerId) {
+					return;
+				}
+				updatePosition(event.clientY);
+			};
+
+			const endDrag = (event: PointerEvent): void => {
+				if (!dragging || event.pointerId !== pointerId) {
+					return;
+				}
+				dragging = false;
+				pointerId = null;
+				if (pagingThumb.hasPointerCapture(event.pointerId)) {
+					pagingThumb.releasePointerCapture(event.pointerId);
+				}
+				window.removeEventListener("pointermove", onPointerMove);
+				window.removeEventListener("pointerup", endDrag);
+				window.removeEventListener("pointercancel", endDrag);
+			};
+
+			const pointerDownHandler: EventListener = (event) => {
+				const pointerEvent = event as PointerEvent;
+				if (pointerEvent.button !== 0) {
+					return;
+				}
+				pointerEvent.preventDefault();
+				pointerEvent.stopPropagation();
+				dragging = true;
+				pointerId = pointerEvent.pointerId;
+				pagingThumb.setPointerCapture(pointerId);
+				updatePosition(pointerEvent.clientY);
+				window.addEventListener("pointermove", onPointerMove);
+				window.addEventListener("pointerup", endDrag);
+				window.addEventListener("pointercancel", endDrag);
+			};
+
+			addResultListener(pagingThumb, "pointerdown", pointerDownHandler);
+			currentResultCleanupHandlers.push(() => {
+				window.removeEventListener("pointermove", onPointerMove);
+				window.removeEventListener("pointerup", endDrag);
+				window.removeEventListener("pointercancel", endDrag);
+				if (
+					dragging &&
+					pointerId !== null &&
+					pagingThumb.hasPointerCapture(pointerId)
+				) {
+					pagingThumb.releasePointerCapture(pointerId);
 				}
 			});
 		}
@@ -334,6 +443,42 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 
 			pagingThumb.style.height = `${sizePercent}%`;
 			pagingThumb.style.top = `${topPercent}%`;
+		}
+
+		function goToPageByTrack(offsetY: number): void {
+			if (!pagingTrack) {
+				return;
+			}
+			const rect = pagingTrack.getBoundingClientRect();
+			const position = Math.min(
+				Math.max(0, offsetY - rect.top),
+				rect.height,
+			);
+			const ratio = rect.height > 0 ? position / rect.height : 0;
+			const page = Math.round(ratio * (pageCount - 1));
+			goToPage(page);
+		}
+
+		function attachWheelPageChange(element: HTMLElement | null): void {
+			if (!element) {
+				return;
+			}
+
+			addResultListener(
+				element,
+				"wheel",
+				(event) => {
+					const wheelEvent = event as WheelEvent;
+					wheelEvent.preventDefault();
+					const delta = Math.sign(wheelEvent.deltaY);
+					if (delta > 0) {
+						goToPage(currentPage + 1);
+					} else if (delta < 0) {
+						goToPage(currentPage - 1);
+					}
+				},
+				{ passive: false },
+			);
 		}
 
 		function goToPage(page: number): void {
@@ -374,50 +519,80 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		}
 
 		if (btnScrollFirstElement) {
-			btnScrollFirstElement.addEventListener("click", () => goToPage(0));
+			addResultListener(btnScrollFirstElement, "click", () =>
+				goToPage(0),
+			);
 		}
 
 		if (btnScrollLastElement) {
-			btnScrollLastElement.addEventListener("click", () =>
+			addResultListener(btnScrollLastElement, "click", () =>
 				goToPage(pageCount - 1),
 			);
 		}
 
 		if (btnScrollPrev10Element) {
-			btnScrollPrev10Element.addEventListener("click", () =>
+			addResultListener(btnScrollPrev10Element, "click", () =>
 				goToPage(currentPage - 10),
 			);
 		}
 
 		if (btnScrollNext10Element) {
-			btnScrollNext10Element.addEventListener("click", () =>
+			addResultListener(btnScrollNext10Element, "click", () =>
 				goToPage(currentPage + 10),
 			);
 		}
 
 		if (btnScrollPrevPageElement) {
-			btnScrollPrevPageElement.addEventListener("click", () =>
+			addResultListener(btnScrollPrevPageElement, "click", () =>
 				goToPage(currentPage - 1),
 			);
 		}
 
 		if (btnScrollPrevElement) {
-			btnScrollPrevElement.addEventListener("click", () =>
+			addResultListener(btnScrollPrevElement, "click", () =>
 				goToPage(currentPage - 1),
 			);
 		}
 
 		if (btnScrollNextPageElement) {
-			btnScrollNextPageElement.addEventListener("click", () =>
+			addResultListener(btnScrollNextPageElement, "click", () =>
 				goToPage(currentPage + 1),
 			);
 		}
 
 		if (btnScrollNextElement) {
-			btnScrollNextElement.addEventListener("click", () =>
+			addResultListener(btnScrollNextElement, "click", () =>
 				goToPage(currentPage + 1),
 			);
 		}
+
+		if (pagingTrack) {
+			const onTrackClick: EventListener = (event) => {
+				const trackEvent = event as MouseEvent | TouchEvent;
+				const clientY =
+					trackEvent instanceof MouseEvent
+						? trackEvent.clientY
+						: trackEvent.touches && trackEvent.touches[0]
+							? trackEvent.touches[0].clientY
+							: 0;
+				goToPageByTrack(clientY);
+			};
+
+			addResultListener(pagingTrack, "click", onTrackClick);
+			addResultListener(
+				pagingTrack,
+				"touchstart",
+				(event) => {
+					const touchEvent = event as TouchEvent;
+					touchEvent.preventDefault();
+					onTrackClick(touchEvent);
+				},
+				{ passive: false },
+			);
+		}
+
+		attachPagingThumbDrag();
+		attachWheelPageChange(resultContainer);
 
 		attachLongPressAction(btnScrollPrevElement, () =>
 			goToPage(currentPage - 1),

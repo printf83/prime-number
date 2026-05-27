@@ -9,7 +9,22 @@ export interface ShowStartEventHandlers {
 	onShowPrimeOnlyChange: () => void;
 }
 
-export function attachShowStartEvents(handlers: ShowStartEventHandlers): void {
+export function attachShowStartEvents(
+	handlers: ShowStartEventHandlers,
+): () => void {
+	const cleanupHandlers: Array<() => void> = [];
+	const addListener = (
+		target: EventTarget,
+		type: string,
+		listener: EventListener,
+		options?: boolean | AddEventListenerOptions,
+	): void => {
+		target.addEventListener(type, listener, options);
+		cleanupHandlers.push(() => {
+			target.removeEventListener(type, listener, options);
+		});
+	};
+
 	const numElement = document.getElementById(
 		"singleNumber",
 	) as HTMLInputElement | null;
@@ -29,47 +44,78 @@ export function attachShowStartEvents(handlers: ShowStartEventHandlers): void {
 	);
 
 	if (numElement) {
-		numElement.addEventListener("change", handlers.calcSinglePrime);
-		numElement.addEventListener("keyup", function (event) {
-			if (event.key === "Enter") {
+		addListener(
+			numElement,
+			"change",
+			handlers.calcSinglePrime as EventListener,
+		);
+		const keyupHandler: EventListener = (event) => {
+			const keyboardEvent = event as KeyboardEvent;
+			if (keyboardEvent.key === "Enter") {
 				handlers.calcSinglePrime();
 			}
-		});
+		};
+		addListener(numElement, "keyup", keyupHandler);
 	}
 
 	if (startButton) {
-		startButton.addEventListener("click", handlers.calcRangePrime);
+		addListener(
+			startButton,
+			"click",
+			handlers.calcRangePrime as EventListener,
+		);
 	}
 
 	if (otCheckbox) {
-		otCheckbox.addEventListener("change", handlers.onShowCalculationChange);
+		addListener(
+			otCheckbox,
+			"change",
+			handlers.onShowCalculationChange as EventListener,
+		);
 	}
 
 	if (prCheckbox) {
-		prCheckbox.addEventListener("change", handlers.onShowProgressChange);
+		addListener(
+			prCheckbox,
+			"change",
+			handlers.onShowProgressChange as EventListener,
+		);
 	}
 
 	if (bigIntButtons.length > 0) {
 		bigIntButtons.forEach((button) => {
-			button.addEventListener("click", function (event) {
-				event.preventDefault();
+			const handler: EventListener = (event) => {
+				const mouseEvent = event as MouseEvent;
+				mouseEvent.preventDefault();
 				handlers.onBigIntModeChange(0);
-			});
+			};
+			addListener(button, "click", handler);
 		});
 	}
 
 	if (smallIntButtons.length > 0) {
 		smallIntButtons.forEach((button) => {
-			button.addEventListener("click", function (event) {
-				event.preventDefault();
+			const handler: EventListener = (event) => {
+				const mouseEvent = event as MouseEvent;
+				mouseEvent.preventDefault();
 				handlers.onBigIntModeChange(1);
-			});
+			};
+			addListener(button, "click", handler);
 		});
 	}
 
 	osInputs.forEach((input) => {
-		input.addEventListener("change", handlers.onShowPrimeOnlyChange);
+		addListener(
+			input,
+			"change",
+			handlers.onShowPrimeOnlyChange as EventListener,
+		);
 	});
+
+	return () => {
+		cleanupHandlers.forEach((cleanup) => cleanup());
+		cleanupHandlers.length = 0;
+	};
 }
 
 export interface ShowRangePrimeEventHandlers {
@@ -81,7 +127,19 @@ export interface ShowRangePrimeEventHandlers {
 
 export function attachShowRangePrimeEvents(
 	handlers: ShowRangePrimeEventHandlers,
-): void {
+): () => void {
+	const cleanupHandlers: Array<() => void> = [];
+	const addListener = (
+		target: EventTarget,
+		type: string,
+		listener: EventListener,
+		options?: boolean | AddEventListenerOptions,
+	): void => {
+		target.addEventListener(type, listener, options);
+		cleanupHandlers.push(() => {
+			target.removeEventListener(type, listener, options);
+		});
+	};
 	const btnTryAgainList =
 		document.querySelectorAll<HTMLButtonElement>("#btn-try-again");
 	const btnShowResult = document.getElementById("btn-show-result");
@@ -95,44 +153,62 @@ export function attachShowRangePrimeEvents(
 
 	if (btnTryAgainList.length > 0) {
 		btnTryAgainList.forEach((button) => {
-			button.addEventListener("click", () => {
+			const handler: EventListener = () => {
 				stopWorker();
 				handlers.showStart();
-			});
+			};
+			addListener(button, "click", handler);
 		});
 	}
 
 	const btnCancel = document.getElementById("btn-cancel");
 	if (btnCancel) {
-		btnCancel.addEventListener("click", () => {
+		addListener(btnCancel, "click", () => {
 			stopWorker();
 			handlers.showStart();
 		});
 	}
 
 	if (btnShowResult) {
-		btnShowResult.addEventListener("click", handlers.showRangePrimeOutput);
+		addListener(
+			btnShowResult,
+			"click",
+			handlers.showRangePrimeOutput as EventListener,
+		);
 	}
 
 	if (btnBigIntList.length > 0) {
 		btnBigIntList.forEach((button) => {
-			button.addEventListener("click", (event) => {
-				event.preventDefault();
+			const handler: EventListener = (event) => {
+				const mouseEvent = event as MouseEvent;
+				mouseEvent.preventDefault();
 				handlers.onBigIntModeChange(1);
-			});
+			};
+			addListener(button, "click", handler);
 		});
 	}
 
 	if (btnSmallIntList.length > 0) {
 		btnSmallIntList.forEach((button) => {
-			button.addEventListener("click", (event) => {
-				event.preventDefault();
+			const handler: EventListener = (event) => {
+				const mouseEvent = event as MouseEvent;
+				mouseEvent.preventDefault();
 				handlers.onBigIntModeChange(0);
-			});
+			};
+			addListener(button, "click", handler);
 		});
 	}
 
 	if (resultContainer) {
-		resultContainer.addEventListener("click", handlers.showTooltip);
+		addListener(
+			resultContainer,
+			"click",
+			handlers.showTooltip as EventListener,
+		);
 	}
+
+	return () => {
+		cleanupHandlers.forEach((cleanup) => cleanup());
+		cleanupHandlers.length = 0;
+	};
 }

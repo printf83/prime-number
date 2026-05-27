@@ -353,7 +353,7 @@ button:hover {
 	width: 100%;
 	background: rgba(255, 255, 255, 0.35);
 	border-radius: 999px;
-	cursor: pointer;
+	touch-action: none;
 }
 
 .paging-thumb:hover {
