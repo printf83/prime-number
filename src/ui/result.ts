@@ -26,12 +26,16 @@ interface ResultCallbacks {
 const ROW_HEIGHT = 25;
 let currentResultResizeHandler: EventListenerOrEventListenerObject | null =
 	null;
+let primeIndexCache: number[] = [];
+let primeSearchIndex = 0;
 
 export function cleanupResultResizeListener(): void {
 	if (currentResultResizeHandler !== null) {
 		window.removeEventListener("resize", currentResultResizeHandler);
 		currentResultResizeHandler = null;
 	}
+	primeIndexCache.length = 0;
+	primeSearchIndex = 0;
 }
 
 export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
@@ -42,32 +46,43 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		container.classList.add("result");
 	}
 	const resultArray = state.result as number[] | Uint8Array;
-	const visibleCount = state.showPrimeOnly
-		? state.primeFound
-		: resultArray.length;
+	primeIndexCache.length = 0;
+	primeSearchIndex = 0;
+	const showPrimeOnly = state.showPrimeOnly;
+	const visibleCount = showPrimeOnly ? state.primeFound : resultArray.length;
 	const col = Math.max(
 		1,
 		state.big
 			? Number(state.columns as bigint)
 			: Number(state.columns as number),
 	);
+	const bigMode = state.big !== 0;
+	const minValue = state.min;
+	const minValueNumber = bigMode ? 0 : (minValue as number);
+	const minValueBigInt = bigMode ? (minValue as bigint) : 0n;
+	const resultLength = resultArray.length;
+	const primeCount = state.primeFound;
 
-	const primeValues: Array<number | bigint> = [];
-	if (state.showPrimeOnly) {
-		for (let index = 0; index < resultArray.length; index++) {
-			if (resultArray[index] === 1) {
-				primeValues.push(
-					state.big
-						? (state.min as bigint) + BigInt(index)
-						: (state.min as number) + index,
-				);
+	function ensurePrimeCount(count: number): void {
+		const requestedCount = Math.min(count, primeCount);
+		if (primeIndexCache.length >= requestedCount) {
+			return;
+		}
+
+		while (
+			primeIndexCache.length < requestedCount &&
+			primeSearchIndex < resultLength
+		) {
+			if (resultArray[primeSearchIndex] === 1) {
+				primeIndexCache.push(primeSearchIndex);
 			}
+			primeSearchIndex += 1;
 		}
 	}
 
-	const totalRows = state.showPrimeOnly
-		? Math.ceil(primeValues.length / col)
-		: Math.ceil(resultArray.length / col);
+	const totalRows = showPrimeOnly
+		? Math.ceil(primeCount / col)
+		: Math.ceil(resultLength / col);
 
 	genUI(rangePrimeResultHtml(visibleCount), function () {
 		attachShowRangePrimeEvents({
@@ -91,32 +106,36 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		}
 
 		function getValue(index: number): number | bigint {
-			return state.big
-				? (state.min as bigint) + BigInt(index)
-				: (state.min as number) + index;
+			return bigMode
+				? minValueBigInt + BigInt(index)
+				: minValueNumber + index;
 		}
 
 		function renderRow(row: number): string {
 			const start = row * col;
+			const rowEnd = start + col;
 			const items: string[] = [];
 
-			if (state.showPrimeOnly) {
-				for (
-					let index = start;
-					index < Math.min(primeValues.length, start + col);
-					index++
-				) {
-					const value = primeValues[index];
-					items.push(resultItemHtml(value, true));
+			if (showPrimeOnly) {
+				const end = Math.min(primeCount, rowEnd);
+
+				for (let index = start; index < end; index++) {
+					items.push(
+						resultItemHtml(getValue(primeIndexCache[index]), true),
+					);
 				}
 			} else {
 				for (
 					let index = start;
-					index < Math.min(resultArray.length, start + col);
+					index < Math.min(resultLength, start + col);
 					index++
 				) {
-					const value = getValue(index);
-					items.push(resultItemHtml(value, resultArray[index] === 1));
+					items.push(
+						resultItemHtml(
+							getValue(index),
+							resultArray[index] === 1,
+						),
+					);
 				}
 			}
 
@@ -172,6 +191,11 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		function render(): void {
 			const firstRow = currentPage * rowsPerPage;
 			const lastRow = Math.min(totalRows, firstRow + rowsPerPage);
+
+			if (showPrimeOnly) {
+				const requiredPrimes = Math.min(primeCount, lastRow * col);
+				ensurePrimeCount(requiredPrimes);
+			}
 
 			let html = "";
 			for (let row = firstRow; row < lastRow; row++) {
