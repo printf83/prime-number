@@ -234,8 +234,14 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		const btnScrollPrevElement = document.getElementById(
 			"btn-scroll-prev",
 		) as HTMLButtonElement | null;
+		const btnScrollPrevPageElement = document.getElementById(
+			"btn-scroll-prev-page",
+		) as HTMLButtonElement | null;
 		const btnScrollNextElement = document.getElementById(
 			"btn-scroll-next",
+		) as HTMLButtonElement | null;
+		const btnScrollNextPageElement = document.getElementById(
+			"btn-scroll-next-page",
 		) as HTMLButtonElement | null;
 		const btnScrollNext10Element = document.getElementById(
 			"btn-scroll-next10",
@@ -243,6 +249,92 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 		const btnScrollLastElement = document.getElementById(
 			"btn-scroll-last",
 		) as HTMLButtonElement | null;
+		const pagingThumb = document.getElementById(
+			"paging_thumb",
+		) as HTMLElement | null;
+
+		function attachLongPressAction(
+			button: HTMLButtonElement | null,
+			action: () => void,
+		): void {
+			if (!button) {
+				return;
+			}
+
+			let delayId: number | null = null;
+			let intervalId: number | null = null;
+			let repeatStarted = false;
+			let suppressClick = false;
+
+			const clearRepeat = (): void => {
+				if (delayId !== null) {
+					window.clearTimeout(delayId);
+					delayId = null;
+				}
+				if (intervalId !== null) {
+					window.clearInterval(intervalId);
+					intervalId = null;
+				}
+				if (repeatStarted) {
+					suppressClick = true;
+					repeatStarted = false;
+				}
+			};
+
+			const startRepeat = (): void => {
+				if (button.disabled) {
+					return;
+				}
+				delayId = window.setTimeout(() => {
+					repeatStarted = true;
+					action();
+					intervalId = window.setInterval(() => {
+						if (button.disabled) {
+							clearRepeat();
+							return;
+						}
+						action();
+					}, 80);
+				}, 250);
+			};
+
+			button.addEventListener("mousedown", () => startRepeat());
+			button.addEventListener(
+				"touchstart",
+				(event) => {
+					event.preventDefault();
+					startRepeat();
+				},
+				{ passive: false },
+			);
+			button.addEventListener("mouseup", clearRepeat);
+			button.addEventListener("mouseleave", clearRepeat);
+			button.addEventListener("touchend", clearRepeat);
+			button.addEventListener("touchcancel", clearRepeat);
+			button.addEventListener("blur", clearRepeat);
+			button.addEventListener("click", (event) => {
+				if (suppressClick) {
+					event.preventDefault();
+					event.stopImmediatePropagation();
+					suppressClick = false;
+				}
+			});
+		}
+
+		function updatePagingThumb(): void {
+			if (!pagingThumb) {
+				return;
+			}
+
+			const sizePercent = Math.max(100 / pageCount, 5);
+			const topPercent =
+				pageCount > 1
+					? (currentPage / (pageCount - 1)) * (100 - sizePercent)
+					: 0;
+
+			pagingThumb.style.height = `${sizePercent}%`;
+			pagingThumb.style.top = `${topPercent}%`;
+		}
 
 		function goToPage(page: number): void {
 			currentPage = Math.max(0, Math.min(pageCount - 1, page));
@@ -260,11 +352,17 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 			if (btnScrollPrev10Element) {
 				btnScrollPrev10Element.disabled = atFirst;
 			}
+			if (btnScrollPrevPageElement) {
+				btnScrollPrevPageElement.disabled = atFirst;
+			}
 			if (btnScrollPrevElement) {
 				btnScrollPrevElement.disabled = atFirst;
 			}
 			if (btnScrollNextElement) {
 				btnScrollNextElement.disabled = atLast;
+			}
+			if (btnScrollNextPageElement) {
+				btnScrollNextPageElement.disabled = atLast;
 			}
 			if (btnScrollNext10Element) {
 				btnScrollNext10Element.disabled = atLast;
@@ -272,6 +370,7 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 			if (btnScrollLastElement) {
 				btnScrollLastElement.disabled = atLast;
 			}
+			updatePagingThumb();
 		}
 
 		if (btnScrollFirstElement) {
@@ -296,9 +395,21 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 			);
 		}
 
+		if (btnScrollPrevPageElement) {
+			btnScrollPrevPageElement.addEventListener("click", () =>
+				goToPage(currentPage - 1),
+			);
+		}
+
 		if (btnScrollPrevElement) {
 			btnScrollPrevElement.addEventListener("click", () =>
 				goToPage(currentPage - 1),
+			);
+		}
+
+		if (btnScrollNextPageElement) {
+			btnScrollNextPageElement.addEventListener("click", () =>
+				goToPage(currentPage + 1),
 			);
 		}
 
@@ -307,6 +418,19 @@ export function showRangePrimeOutputImpl(callbacks: ResultCallbacks): void {
 				goToPage(currentPage + 1),
 			);
 		}
+
+		attachLongPressAction(btnScrollPrevElement, () =>
+			goToPage(currentPage - 1),
+		);
+		attachLongPressAction(btnScrollNextElement, () =>
+			goToPage(currentPage + 1),
+		);
+		attachLongPressAction(btnScrollPrevPageElement, () =>
+			goToPage(currentPage - 1),
+		);
+		attachLongPressAction(btnScrollNextPageElement, () =>
+			goToPage(currentPage + 1),
+		);
 
 		render();
 		updateScrollButtons();

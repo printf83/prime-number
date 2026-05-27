@@ -86,6 +86,13 @@ export function rangePrimeResultHtml(visibleCount: number): string {
 			<div class="result-viewport">
 				<div class="result-inner"></div>
 			</div>
+			<div class="result-paging" aria-label="Page scrollbar">
+				<button type="button" id="btn-scroll-prev-page" class="paging-arrow" aria-label="Previous page">&#9650;</button>
+				<div class="paging-track">
+					<div class="paging-thumb" id="paging_thumb"></div>
+				</div>
+				<button type="button" id="btn-scroll-next-page" class="paging-arrow" aria-label="Next page">&#9660;</button>
+			</div>
 		</div>
 		<div class="result-page-info">
 			<div class="paging-label" id="paging_label">Page 1 of 1</div>
