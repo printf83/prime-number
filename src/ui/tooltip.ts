@@ -28,6 +28,26 @@ function getSinglePrimeMethod(): string {
 	return "Miller-Rabin";
 }
 
+function isInsideTooltipOrResult(target: HTMLElement | null): boolean {
+	if (!target) {
+		return false;
+	}
+
+	const tooltipContainer = document.getElementById("tooltip_container");
+	if (tooltipContainer && tooltipContainer.contains(target)) {
+		return true;
+	}
+
+	return target.closest(".result-item") instanceof HTMLElement;
+}
+
+document.addEventListener("click", (event) => {
+	const clicked = event.target as HTMLElement | null;
+	if (!isInsideTooltipOrResult(clicked)) {
+		hideTooltip();
+	}
+});
+
 let currentTooltipWorkerJob: WorkerJob | null = null;
 let currentTooltipTimerCancel: (() => void) | null = null;
 let currentTooltipRenderTimeCancel: (() => void) | null = null;
