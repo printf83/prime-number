@@ -36,9 +36,9 @@ export function attachShowStartEvents(
 		"showProgress",
 	) as HTMLInputElement | null;
 	const bigIntButtons =
-		document.querySelectorAll<HTMLButtonElement>("#btn-bigint");
+		document.querySelectorAll<HTMLButtonElement>(".btn-bigint");
 	const smallIntButtons =
-		document.querySelectorAll<HTMLButtonElement>("#btn-smallint");
+		document.querySelectorAll<HTMLButtonElement>(".btn-smallint");
 	const osInputs = document.querySelectorAll<HTMLInputElement>(
 		'input[name="showPrimeOnly"]',
 	);
@@ -144,9 +144,9 @@ export function attachShowRangePrimeEvents(
 		document.querySelectorAll<HTMLButtonElement>("#btn-try-again");
 	const btnShowResult = document.getElementById("btn-show-result");
 	const btnBigIntList =
-		document.querySelectorAll<HTMLButtonElement>("#btn-bigint");
+		document.querySelectorAll<HTMLButtonElement>(".btn-bigint");
 	const btnSmallIntList =
-		document.querySelectorAll<HTMLButtonElement>("#btn-smallint");
+		document.querySelectorAll<HTMLButtonElement>(".btn-smallint");
 	const resultContainer = document.querySelector(
 		".result_container",
 	) as HTMLElement | null;
@@ -182,7 +182,7 @@ export function attachShowRangePrimeEvents(
 			const handler: EventListener = (event) => {
 				const mouseEvent = event as MouseEvent;
 				mouseEvent.preventDefault();
-				handlers.onBigIntModeChange(1);
+				handlers.onBigIntModeChange(0);
 			};
 			addListener(button, "click", handler);
 		});
@@ -193,7 +193,7 @@ export function attachShowRangePrimeEvents(
 			const handler: EventListener = (event) => {
 				const mouseEvent = event as MouseEvent;
 				mouseEvent.preventDefault();
-				handlers.onBigIntModeChange(0);
+				handlers.onBigIntModeChange(1);
 			};
 			addListener(button, "click", handler);
 		});

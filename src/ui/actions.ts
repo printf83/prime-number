@@ -104,11 +104,19 @@ export function showStart(): void {
 		${ctlRadio("showPrimeOnly_1", "showPrimeOnly", 0, state.showPrimeOnly ? false : true, "Show All")}
 		${ctlRadio("showPrimeOnly_2", "showPrimeOnly", 1, state.showPrimeOnly ? true : false, "Prime Only")}
 
-		${ctlNumber("resultColumns", state.columns, "Result Columns", "col_container")}
+		${ctlNumber(
+			"resultColumns",
+			state.columns,
+			"Result Columns",
+			"col_container",
+			"number",
+			'min="1" max="15"',
+		)}
 		${ctlButton("btn-start-calc", "Start Calculate Prime")}
 		`,
 		function () {
-			currentShowStartCleanup = attachShowStartEvents({
+			let resultColumnsCleanup: (() => void) | null = null;
+			const startCleanup = attachShowStartEvents({
 				calcSinglePrime,
 				calcRangePrime,
 				onShowCalculationChange,
@@ -116,6 +124,51 @@ export function showStart(): void {
 				onBigIntModeChange,
 				onShowPrimeOnlyChange,
 			});
+
+			const resultColumnsElement = document.getElementById(
+				"resultColumns",
+			) as HTMLInputElement | null;
+
+			if (resultColumnsElement) {
+				const clampColumns = (): void => {
+					const value = resultColumnsElement.value.trim();
+					if (value === "") {
+						return;
+					}
+					const parsed = Number(value);
+					if (Number.isNaN(parsed)) {
+						return;
+					}
+					const clamped = Math.max(
+						1,
+						Math.min(15, Math.floor(parsed)),
+					);
+					if (clamped !== parsed) {
+						resultColumnsElement.value = String(clamped);
+					}
+				};
+
+				resultColumnsElement.addEventListener("input", clampColumns);
+				resultColumnsElement.addEventListener("blur", clampColumns);
+
+				resultColumnsCleanup = () => {
+					resultColumnsElement.removeEventListener(
+						"input",
+						clampColumns,
+					);
+					resultColumnsElement.removeEventListener(
+						"blur",
+						clampColumns,
+					);
+				};
+			}
+
+			currentShowStartCleanup = () => {
+				startCleanup();
+				if (resultColumnsCleanup) {
+					resultColumnsCleanup();
+				}
+			};
 			onShowPrimeOnlyChange();
 			calcSinglePrime();
 		},

@@ -78,7 +78,13 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 		const maxValue = parseBigIntInput(maxElement?.value ?? "");
 		const colValue = parseBigIntInput(colElement?.value ?? "");
 
-		if (minValue === null || maxValue === null || colValue === null) {
+		if (
+			minValue === null ||
+			maxValue === null ||
+			colValue === null ||
+			colValue < 1n ||
+			colValue > 15n
+		) {
 			genUI(errorResult("Please enter valid range values"), function () {
 				attachShowRangePrimeEvents({
 					showStart,
@@ -108,7 +114,13 @@ export function calcRangePrimeImpl(callbacks: RangePrimeCallbacks): void {
 		const maxValue = parseIntInput(maxElement?.value ?? "");
 		const colValue = parseIntInput(colElement?.value ?? "");
 
-		if (minValue === null || maxValue === null || colValue === null) {
+		if (
+			minValue === null ||
+			maxValue === null ||
+			colValue === null ||
+			colValue < 1 ||
+			colValue > 15
+		) {
 			genUI(errorResult("Please enter valid range values"), function () {
 				attachShowRangePrimeEvents({
 					showStart,

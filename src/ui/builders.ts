@@ -36,11 +36,15 @@ export function ctlNumber(
 	value: number | bigint,
 	label: string,
 	container_id?: string,
+	inputType: "text" | "number" = "text",
+	attrs = "",
 ): string {
 	return `
 	<div class="form-group"${container_id ? ` id="${container_id}"` : ""}>
 		<label for="${id}">${label}</label>
-		<input type="number" id="${id}" value="${value}" />
+		<input type="${inputType}" ${
+			inputType === "text" ? `inputmode="numeric" pattern="[0-9]*"` : ""
+		} id="${id}" value="${value}" ${attrs} autocomplete="off" spellcheck="false" />
 	</div>`;
 }
 
@@ -56,8 +60,8 @@ export function ctlTextResult(id: string): string {
 	return `<div class="form-group" role="status" aria-live="polite"><div id="${id}" class="d-flex-column"></div></div>`;
 }
 
-export const bigTitle = ` <sup class="pointer" title="BigInt"><button type="button" id="btn-bigint" class="mode-toggle small" aria-label="Switch to BigInt mode">&beta;igInt</button></sup>`;
-export const smallTitle = ` <sup class="pointer" title="Number"><button type="button" id="btn-smallint" class="mode-toggle small" aria-label="Switch to Integer mode">&#938;nteger</button></sup>`;
+export const bigTitle = ` <sup class="pointer" title="Maximum supported by BigInt"><button type="button" class="mode-toggle small btn-bigint" aria-label="Switch to BigInt mode">&beta;igInt</button></sup>`;
+export const smallTitle = ` <sup class="pointer" title="Maximum 9007199254740991"><button type="button" class="mode-toggle small btn-smallint" aria-label="Switch to Integer mode">&#938;nteger</button></sup>`;
 
 export const header = function () {
 	return `<h2>Prime Number Checker${state.big ? bigTitle : smallTitle}</h2>`;
@@ -203,7 +207,7 @@ export function createPrimeResultHtml(
 	method: string,
 	timeHTtml: string,
 ): string {
-	return `<${tag} id="${id}" class="clickable-copy" title="Click to copy number">${number}</${tag}><div><b class="${
+	return `<${tag} id="${id}" class="pointer" title="Click to copy number">${number}</${tag}><div><b class="${
 		isPrime ? "font-success" : "font-danger"
 	}">${isPrime ? "Is a prime number" : "Is NOT a prime number"}</b></div>${resultHtml}<div class="small">Using ${method}</div><div>${timeHTtml}</div>`;
 }
@@ -214,7 +218,7 @@ export function createPrimeStatusHtml(
 	number: string,
 	isPrime: boolean,
 ): string {
-	return `<${tag} id="${id}" class="clickable-copy" title="Click to copy number">${number}</${tag}><span><b class="${
+	return `<${tag} id="${id}" class="pointer" title="Click to copy number">${number}</${tag}><span><b class="${
 		isPrime ? "font-success" : "font-danger"
 	}">${isPrime ? "Is a prime number" : "Is NOT a prime number"}</b></span>`;
 }
