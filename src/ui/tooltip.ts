@@ -137,7 +137,7 @@ export function showTooltip(e: Event): void {
 		genTooltip(
 			target,
 			`
-			<h3 id="tooltip_number" title="Click to copy number">${formatNumber(num)}</h3>
+			<h3 id="tooltip_number" class="clickable-copy" title="Click to copy number">${formatNumber(num)}</h3>
 			<div id="tooltip_status">Checking ${timerIndicator(timerId)}</div>
 			<div id="tooltip_factors"></div>
 			${loading4()}

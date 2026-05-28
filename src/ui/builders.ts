@@ -203,7 +203,7 @@ export function createPrimeResultHtml(
 	method: string,
 	timeHTtml: string,
 ): string {
-	return `<${tag} id="${id}">${number}</${tag}><div><b class="${
+	return `<${tag} id="${id}" class="clickable-copy" title="Click to copy number">${number}</${tag}><div><b class="${
 		isPrime ? "font-success" : "font-danger"
 	}">${isPrime ? "Is a prime number" : "Is NOT a prime number"}</b></div>${resultHtml}<div class="small">Using ${method}</div><div>${timeHTtml}</div>`;
 }
@@ -214,7 +214,7 @@ export function createPrimeStatusHtml(
 	number: string,
 	isPrime: boolean,
 ): string {
-	return `<${tag} id="${id}">${number}</${tag}><span><b class="${
+	return `<${tag} id="${id}" class="clickable-copy" title="Click to copy number">${number}</${tag}><span><b class="${
 		isPrime ? "font-success" : "font-danger"
 	}">${isPrime ? "Is a prime number" : "Is NOT a prime number"}</b></span>`;
 }

@@ -103,8 +103,6 @@ export function attachCopyOnClick(
 	if (!element) {
 		return;
 	}
-	element.style.cursor = "pointer";
-	element.title = "Click to copy number";
 	element.addEventListener("click", () => {
 		const text = value.replace(/,/g, "");
 		if (!navigator.clipboard?.writeText) {
