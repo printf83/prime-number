@@ -37,15 +37,32 @@ export function showSinglePrimeOutput(
 	setInnerHtml("singleNumberResult", html, callback);
 }
 
+export function supportsNativeTooltipPopover(): boolean {
+	return Boolean(
+		typeof HTMLElement !== "undefined" &&
+		"showPopover" in HTMLElement.prototype &&
+		"hidePopover" in HTMLElement.prototype &&
+		typeof HTMLButtonElement !== "undefined" &&
+		"popoverTargetElement" in HTMLButtonElement.prototype &&
+		window.CSS?.supports?.("position-area", "block-start") &&
+		window.CSS?.supports?.("selector(:popover-open)"),
+	);
+}
+
 export function genTooltip(target: HTMLElement, html: string): void {
 	setInnerHtml("tooltip", html, function () {
-		const rect = target.getBoundingClientRect();
-		const tooltip_container = document.getElementById("tooltip_container");
-		if (tooltip_container) {
-			tooltip_container.style.top = `${rect.top + window.scrollY - 5}px`;
-			tooltip_container.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
-			tooltip_container.style.display = "block";
-			tooltip_container.setAttribute("aria-hidden", "false");
+		const tooltip = document.getElementById(
+			"tooltip",
+		) as HTMLElement | null;
+		if (!tooltip) {
+			return;
+		}
+
+		tooltip.classList.remove("tooltip-hidden");
+		tooltip.setAttribute("aria-hidden", "false");
+		tooltip.style.removeProperty("display");
+		if (!supportsNativeTooltipPopover()) {
+			tooltip.style.display = "block";
 		}
 	});
 }

@@ -60,7 +60,7 @@ export function attachLongPressAction(
 	};
 	const mouseUpHandler = clearRepeat;
 	const mouseLeaveHandler = clearRepeat;
-	const touchEndHandler: EventListener = (event) => {
+	const touchEndHandler: EventListener = () => {
 		if (delayId !== null && !repeatStarted) {
 			action();
 			suppressClick = true;

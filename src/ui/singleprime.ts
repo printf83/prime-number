@@ -25,12 +25,7 @@ import {
 	singlePrimeTimeHtml,
 } from "./builders";
 import { runWorker, stopWorker } from "../workers";
-import {
-	loading2,
-	loading4,
-	progressIndicator,
-	timerIndicator,
-} from "./builders";
+import { loading2 } from "./builders";
 
 function getSinglePrimeMethod(): string {
 	return "Miller-Rabin";

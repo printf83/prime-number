@@ -145,7 +145,7 @@ button.mode-toggle {
 
 .btn-bigint:hover,
 .btn-smallint:hover {
-	color: rgba(255, 255, 255, 0.8);
+	color: var(--primary-color-light);
 	background: none;
 }
 
@@ -191,7 +191,7 @@ h2 {
 	font-size: small;
 	border-radius: var(--border-radius);
 	border: var(--control-border);
-	padding: var(--control-padding);
+	padding: 5px 7.5px;
 	font-weight: bold;
 	display: inline-block;
 }
@@ -397,18 +397,23 @@ button:hover {
 }
 
 .result-item {
+	appearance: none;
+	border: none;
+	background: transparent;
 	display: inline-flex;
 	justify-content: end;
 	align-items: center;
 	min-width: 2rem;
 	padding: 0.1rem 0.4rem;
 	border-radius: var(--border-radius);
-	font-size: 0.9rem;
-	line-height: 1.2;
+	font-size: 0.9rem !important;
+	line-height: 1.2 !important;
 	color: #fff;
 	overflow: hidden;
 	white-space: nowrap;
 	cursor: pointer;
+	font: inherit;
+	margin: 0;
 }
 
 .result-item.prime {
@@ -535,29 +540,47 @@ a {
 }
 
 /* tooltip */
-#tooltip_container {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	display: none;
-}
-
 #tooltip {
 	background-color: #212529;
 	color: #fff;
+	border: none;
+	outline: none;
+	box-shadow: 0 0 5px #212529;
+	margin: 0;
 	padding: 0.25rem 0.75rem 1rem 0.75rem;
 	border-radius: 5px;
 	font-size: small;
 	text-align: center;
-	position: absolute;
-	width: 20rem;
+	width: min(var(--tooltip-width), calc(100vw - 1rem));
 	min-height: 7.53rem;
-	transform: translate(-50%, -100%);
+	inset: auto;
+	z-index: 99999;
+}
+
+@supports (position-area: block-start) {
+	#tooltip:popover-open {
+		position-area: block-start center;
+		margin-bottom: 0.5rem;
+	}
+}
+
+@supports not (position-area: block-start) {
+	#tooltip {
+		position: fixed;
+		top: 1rem;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 20rem;
+	}
+}
+
+#tooltip.tooltip-hidden {
+	display: none;
 }
 
 #tooltip_number:hover,
 #singleprime_number:hover {
-	color: rgba(255, 255, 255, 0.8);
+	color: var(--primary-color-light);
 }
 
 #tooltip small {
@@ -568,25 +591,6 @@ a {
 	#tooltip {
 		width: 80vw;
 	}
-}
-
-#arrow,
-#arrow::before {
-	position: absolute;
-	width: 8px;
-	height: 8px;
-	background-color: #212529;
-}
-
-#arrow {
-	visibility: hidden;
-}
-
-#arrow::before {
-	visibility: visible;
-	content: "";
-	transform: rotate(45deg);
-	margin-top: -4px;
 }
 
 #tooltip small {
@@ -628,8 +632,7 @@ h4 {
 }
 
 /* shadow */
-#tooltip,
-#arrow::before {
+#tooltip {
 	box-shadow: 0px 0px 5px 0px #212529;
 	-webkit-box-shadow: 0px 0px 5px 0px #212529;
 	-moz-box-shadow: 0px 0px 5px 0px #212529;

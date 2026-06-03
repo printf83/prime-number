@@ -4,6 +4,7 @@ import {
 	genTooltip,
 	monitorRenderTime,
 	secTimer,
+	supportsNativeTooltipPopover,
 	setInnerHtml,
 	attachNumberCopyHandler,
 	initPrimeFactorTable,
@@ -33,8 +34,8 @@ function isInsideTooltipOrResult(target: HTMLElement | null): boolean {
 		return false;
 	}
 
-	const tooltipContainer = document.getElementById("tooltip_container");
-	if (tooltipContainer && tooltipContainer.contains(target)) {
+	const tooltip = document.getElementById("tooltip");
+	if (tooltip && tooltip.contains(target)) {
 		return true;
 	}
 
@@ -61,15 +62,20 @@ export function hideTooltip(): void {
 		currentTooltipRenderTimeCancel();
 		currentTooltipRenderTimeCancel = null;
 	}
-	const tooltip_container = document.getElementById("tooltip_container");
+	const tooltip = document.getElementById("tooltip") as HTMLElement | null;
 	const tooltipWasVisible =
-		tooltip_container &&
-		getComputedStyle(tooltip_container).display !== "none" &&
-		tooltip_container.getAttribute("aria-hidden") !== "true";
+		tooltip &&
+		getComputedStyle(tooltip).display !== "none" &&
+		tooltip.getAttribute("aria-hidden") !== "true";
 
-	if (tooltip_container) {
-		tooltip_container.style.display = "none";
-		tooltip_container.setAttribute("aria-hidden", "true");
+	if (tooltip) {
+		tooltip.setAttribute("aria-hidden", "true");
+		if (supportsNativeTooltipPopover()) {
+			(tooltip as HTMLElement & { hidePopover(): void }).hidePopover();
+		} else {
+			tooltip.style.display = "none";
+		}
+		tooltip.classList.add("tooltip-hidden");
 	}
 
 	if (tooltipWasVisible && currentTooltipWorkerJob) {
@@ -96,6 +102,7 @@ export function showTooltip(e: Event): void {
 	}
 
 	if (target) {
+		hideTooltip();
 		const rawText = target.innerText.trim().replace(/,/g, "");
 		const num = state.big ? BigInt(rawText) : parseInt(rawText, 10);
 		const tooltipStart = window.performance.now();

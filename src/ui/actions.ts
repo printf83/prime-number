@@ -13,11 +13,7 @@ import {
 } from "./builders";
 import { calcSinglePrimeImpl, cleanupSinglePrimeTimers } from "./singleprime";
 import { calcRangePrimeImpl, cleanupRangePrimeTimer } from "./rangeprime";
-import {
-	showRangePrimeOutputImpl,
-	cleanupResultResizeListener,
-	cleanupResultUI,
-} from "./result";
+import { showRangePrimeOutputImpl, cleanupResultUI } from "./result";
 import {
 	hideTooltip as hideTooltipImpl,
 	showTooltip as showTooltipImpl,

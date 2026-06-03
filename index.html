@@ -45,15 +45,13 @@
 			<div><small id="mem"></small></div>
 		</div>
 
-		<div id="tooltip_container" aria-hidden="true">
-			<div
-				id="tooltip"
-				role="tooltip"
-				aria-live="polite"
-				class="d-flex-column"
-			></div>
-			<div id="arrow" aria-hidden="true"></div>
-		</div>
+		<div
+			id="tooltip"
+			popover
+			role="tooltip"
+			aria-live="polite"
+			class="d-flex-column tooltip-hidden"
+		></div>
 
 		<script type="module" src="/src/index.ts"></script>
 	</body>

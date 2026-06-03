@@ -8,14 +8,6 @@ import {
 	attachWheelPageChange,
 } from "./resultPaging";
 import {
-	btnTryAgain,
-	btnTryAgain2,
-	btnScrollFirst,
-	btnScrollPrev10,
-	btnScrollPrev,
-	btnScrollNext,
-	btnScrollNext10,
-	btnScrollLast,
 	rangePrimeResultHtml,
 	resultItemHtml,
 	resultRowHtml,
@@ -32,7 +24,7 @@ const ROW_HEIGHT = 25;
 let currentResultResizeHandler: EventListenerOrEventListenerObject | null =
 	null;
 let currentResultCleanupHandlers: Array<() => void> = [];
-let primeIndexCache: number[] = [];
+const primeIndexCache: number[] = [];
 let primeSearchIndex = 0;
 
 export function cleanupResultResizeListener(): void {

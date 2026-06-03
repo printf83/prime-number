@@ -137,7 +137,7 @@ export function resultItemHtml(
 	value: number | bigint,
 	isPrime: boolean,
 ): string {
-	return `<span class="result-item ${isPrime ? "prime" : "composite"}">${formatNumber(value)}</span>`;
+	return `<button type="button" class="result-item ${isPrime ? "prime" : "composite"}" popovertarget="tooltip" popovertargetaction="show">${formatNumber(value)}</button>`;
 }
 
 export function resultRowHtml(items: string[]): string {
